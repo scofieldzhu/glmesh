@@ -40,8 +40,8 @@ GLMESH_NAMESPACE_BEGIN
 struct GLMESH_API glmMesh : public glmInstantiator<glmMesh>
 {
     static constexpr glmIndex kPolyRestartIndex = 0xFFFFFFFF;    
-    static constexpr size_t kMaxVertexNumber = 1e7;
-    static constexpr size_t kMaxFacetNumber = 1e8;
+    static constexpr size_t kMaxVertexNumber = 10000000;
+    static constexpr size_t kMaxFacetNumber = 100000000;
     static constexpr size_t kMaxVertexNumberOfPolyFacet = 6;
     static constexpr size_t kMaxFacetByteSize = kMaxFacetNumber * (kMaxVertexNumberOfPolyFacet + 1) * kIndexTypeSize;
     static constexpr size_t kMaxVertexRelatedByteSize = (kVertexTypeSize + kColorTypeSize + kNormalTypeSize) * kMaxVertexNumber;

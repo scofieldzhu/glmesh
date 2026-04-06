@@ -98,9 +98,37 @@ bool glmMeshActor::createSource(glmMeshRenderer* ren)
     matrix_ = glm::translate(glm::mat4(1.0), -center_point);
     auto ren_camera = ren->activeCamera();
     ren_camera->setModel(matrix_);
-    ren_camera->setEye({0.0f, 0.0f, diagonal_len * 1.6f});
-    ren_camera->setFarPlaneDist(ren_camera->eye()[2]);
-    ren_camera->setWinAspect(ren->renderSize()[0] / ren->renderSize()[1]);
+    // ren_camera->setEye({0.0f, 0.0f, diagonal_len * 1.6f});
+    // ren_camera->setFarPlaneDist(ren_camera->eye()[2]);
+    // ren_camera->setWinAspect(ren->renderSize()[0] / ren->renderSize()[1]);
+
+    // 相机位置  
+    float camera_distance = diagonal_len * 1.6f;  
+    ren_camera->setEye({0.0f, 0.0f, camera_distance});  
+    ren_camera->setFocalPoint({0,0,0});  // 如果有这个方法 
+    ren_camera->setViewUp({0.0f, 1.0f, 0.0f}); 
+    
+    // 修正近远平面计算  
+    float near_plane = camera_distance * 0.01f;  // 相机距离的1%  
+    if(near_plane < 0.1f) near_plane = 0.1f;     // 确保近平面不会太小  
+    
+    float far_plane = camera_distance * 2.0f;    // 相机距离的2倍  
+    
+    ren_camera->setNearPlaneDist(near_plane);  
+    ren_camera->setFarPlaneDist(far_plane);  
+    
+    ren_camera->setWinAspect(ren->renderSize()[0] / ren->renderSize()[1]);  
+    
+
+    spdlog::debug("Camera eye: ({}, {}, {})",   
+                  ren_camera->eye()[0], ren_camera->eye()[1], ren_camera->eye()[2]);  
+    spdlog::debug("Near plane: {}", ren_camera->nearPlaneDist());  
+    spdlog::debug("Far plane: {}", ren_camera->farPlaneDist());  
+    spdlog::debug("Model diagonal: {}", diagonal_len);  
+    spdlog::debug("Model center: ({}, {}, {})",   
+                  (boundingbox.max.x + boundingbox.min.x) / 2.0f,  
+                  (boundingbox.max.y + boundingbox.min.y) / 2.0f,  
+                  (boundingbox.max.z + boundingbox.min.z) / 2.0f);  
 
     if(vao_ == nullptr){
         vao_ = std::make_shared<glmVertexArray>();
@@ -176,6 +204,29 @@ void glmMeshActor::draw(glmMeshRenderer* ren)
     auto ren_camera = renderers_[0]->activeCamera();
     ren_camera->recalc();
     ren_camera->syncDataToShader(program_);
+
+
+        // 测试一个顶点的变换  
+    // if(cur_mesh_cloud_ && !cur_mesh_cloud_->vertices.empty()) {  
+    //     glm::vec4 test_vertex(cur_mesh_cloud_->vertices[0], 1.0f);  
+    //     glm::vec4 world_pos = matrix_ * test_vertex;  
+    //     glm::vec4 view_pos = ren_camera->view() * world_pos;  
+    //     glm::vec4 clip_pos = ren_camera->projection() * view_pos;  
+        
+    //     spdlog::debug("Test vertex transformation:");  
+    //     spdlog::debug("  Local: ({}, {}, {})", test_vertex.x, test_vertex.y, test_vertex.z);  
+    //     spdlog::debug("  World: ({}, {}, {})", world_pos.x, world_pos.y, world_pos.z);  
+    //     spdlog::debug("  View: ({}, {}, {})", view_pos.x, view_pos.y, view_pos.z);  
+    //     spdlog::debug("  Clip: ({}, {}, {})", clip_pos.x, clip_pos.y, clip_pos.z);  
+        
+    //     // 透视除法后的NDC坐标  
+    //     if(clip_pos.w != 0) {  
+    //         glm::vec3 ndc = glm::vec3(clip_pos) / clip_pos.w;  
+    //         spdlog::debug("  NDC: ({}, {}, {})", ndc.x, ndc.y, ndc.z);  
+    //         // NDC坐标应该在[-1, 1]范围内才能显示  
+    //     }  
+    // }  
+
     program_->setUniformInt("primitive_type", 1);
     if(cur_mesh_cloud_->colors.empty()){
         program_->setUniformInt("use_vcolor", 0);

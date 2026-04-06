@@ -62,7 +62,7 @@ int main(int argc, char * argv[])
     format.setVersion(4, 6);
     format.setProfile(QSurfaceFormat::CoreProfile);
 #endif
-    format.setDepthBufferSize(16);
+    format.setDepthBufferSize(24);
 
     std::unique_ptr<MainWindow> main_win = std::make_unique<MainWindow>(app, format);
 

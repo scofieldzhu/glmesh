@@ -110,6 +110,12 @@ void glmMeshRenderer::destroy()
     mesh_actor_.reset();
 }
 
+void glmMeshRenderer::configOpengl()
+{
+    
+
+}
+
 void glmMeshRenderer::render()
 {
     glClearColor(0.0, 0.0, 0.0, 1.0);

@@ -84,14 +84,12 @@ if(WIN32)
     )
 endif()
 
-target_include_directories(${PROJECT_NAME}
-    PRIVATE
+target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${GLM_INCLUDE_DIRS}
 )
 
-target_link_libraries(${PROJECT_NAME}
-    PRIVATE
+target_link_libraries(${PROJECT_NAME} PRIVATE
     spdlog::spdlog
     glm::glm
 )

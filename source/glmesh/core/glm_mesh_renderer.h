@@ -56,6 +56,7 @@ public:
     ~glmMeshRenderer();
 
 private:
+    void configOpengl();
     void syncCameraToShader();
     glmShaderProgramPtr program_;
     glmCameraPtr camera_;
