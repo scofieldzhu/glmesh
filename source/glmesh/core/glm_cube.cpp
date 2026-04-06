@@ -97,7 +97,7 @@ bool glmCube::createSource(glmMeshRenderer *ren)
     vao_ = glmVertexArray::New();
     vbo_ = glmBuffer::New(GL_ARRAY_BUFFER);
     vao_->bindBuffer(*vbo_);
-    vbo_->allocate(sizeof(vertice_data), vertice_data, GL_STATIC_DRAW);
+    vbo_->createImmutableDataStore(sizeof(vertice_data), vertice_data, GL_STATIC_DRAW);
     vao_->getAttrib(0)->setPointer(3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), BUFFER_OFFSET(0));
     vao_->getAttrib(0)->enable();
     prog_ = glmShaderProgram::New();

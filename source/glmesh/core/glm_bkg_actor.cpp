@@ -63,7 +63,7 @@ bool glmBkgActor::createSource(glmMeshRenderer* ren)
         1.0f,  1.0f, 0.0f,  top_color_[0], top_color_[1], top_color_[2]
     };
     vertex_buffer_ = glmBuffer::New(GL_ARRAY_BUFFER);
-    vertex_buffer_->allocate(sizeof(rt_vertices), rt_vertices, 0);
+    vertex_buffer_->createImmutableDataStore(sizeof(rt_vertices), rt_vertices, 0);
     vao_ = glmVertexArray::New();
     vao_->bindCurrent();
     vao_->bindBuffer(*vertex_buffer_);

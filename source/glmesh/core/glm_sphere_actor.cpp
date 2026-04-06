@@ -114,16 +114,16 @@ bool glmSphereActor::createSource(glmMeshRenderer* ren)
     vao_->bindBuffer(*vbo_);
     uint32_t vbs = vertexes_.size() * kVertexTypeSize;
     uint32_t cbs = colors_.size() * kColorTypeSize;
-    vbo_->allocate(vbs + cbs, nullptr, GL_DYNAMIC_STORAGE_BIT);
-    vbo_->allocateSub(0, vbs, vertexes_.data());
-    vbo_->allocateSub(vbs, cbs, colors_.data());
+    vbo_->createImmutableDataStore(vbs + cbs, nullptr, GL_DYNAMIC_STORAGE_BIT);
+    vbo_->writeSubData(0, vbs, vertexes_.data());
+    vbo_->writeSubData(vbs, cbs, colors_.data());
     vao_->getAttrib(0)->setPointer(3, GL_FLOAT, GL_FALSE, kVertexTypeSize, BUFFER_OFFSET(0));
     vao_->getAttrib(0)->enable();
     vao_->getAttrib(1)->setPointer(4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(vbs));
     vao_->getAttrib(1)->enable();
 
     ebo_ = glmBuffer::New(GL_ELEMENT_ARRAY_BUFFER);
-    ebo_->allocate(indices_.size() * sizeof(glmIndex), indices_.data(), 0);
+    ebo_->createImmutableDataStore(indices_.size() * sizeof(glmIndex), indices_.data(), 0);
     vao_->bindBuffer(*ebo_);
 
     return true;

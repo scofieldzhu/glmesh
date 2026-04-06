@@ -34,6 +34,7 @@
 #include "glmesh/core/glm_base_type.h"
 #include "glmesh/core/glm_export.h"
 #include "glmesh/core/glm_instantiator.h"
+#include <optional>
 
 GLMESH_NAMESPACE_BEGIN
 
@@ -41,14 +42,17 @@ class GLMESH_API glmBuffer : public glmInstantiator<glmBuffer>
 {
 public:
     auto type()const{ return type_; }
-    auto id()const{ return id_; }
-    void allocate(uint32_t size, const void* data, uint32_t flags);    
-    void allocateSub(int32_t offset, uint32_t size, const void* data);
+    bool valid()const{ return id_.has_value(); }
+    auto id()const{ return id_.value(); }
+    bool createImmutableDataStore(uint32_t size, const void* data, uint32_t flags);    
+    auto dataStoreCreated()const{ return data_store_created_; }
+    bool writeSubData(int32_t offset, uint32_t size, const void* data);
     glmBuffer(uint32_t type);
     ~glmBuffer();
 
 private:
-    uint32_t id_ = 0;
+    std::optional<uint32_t> id_;
+    bool data_store_created_ = false;
     uint32_t type_;
 };
 

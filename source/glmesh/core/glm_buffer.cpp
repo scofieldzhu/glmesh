@@ -30,28 +30,60 @@
 
 #include "glm_buffer.h"
 #include "glad/glad.h"
+#include <spdlog/spdlog.h>
 
 GLMESH_NAMESPACE_BEGIN
 
 glmBuffer::glmBuffer(uint32_t type)
     :type_(type)
 {
-    glCreateBuffers(1, &id_);
+    uint32_t buf_id = 0;
+    glCreateBuffers(1, &buf_id);
+    if(glGetError() == GL_NO_ERROR && buf_id != 0 && glIsBuffer(buf_id)){
+        id_ = buf_id;
+    }
 }
 
 glmBuffer::~glmBuffer()
 {
-    glDeleteBuffers(1, &id_);
+    if(id_){
+        glDeleteBuffers(1, &(id_.value()));
+    }    
 }
 
-void glmBuffer::allocate(uint32_t size, const void* data, uint32_t flags)
+bool glmBuffer::createImmutableDataStore(uint32_t size, const void* data, uint32_t flags)
 {
-    glNamedBufferStorage(id_, size, data, flags);
+    if(!valid()){
+        SPDLOG_ERROR("It's not valid buffer id!");
+        return false;
+    }
+    glNamedBufferStorage(id_.value(), size, data, flags);
+    GLenum err = glGetError();
+    if(err == GL_NO_ERROR){
+        data_store_created_ = true;
+        return true;
+    }
+    SPDLOG_ERROR("CreateImmutableDataStore failed! GLenum err:{}", err);
+    return false;
 }
 
-void glmBuffer::allocateSub(int32_t offset, uint32_t size, const void* data)
+bool glmBuffer::writeSubData(int32_t offset, uint32_t size, const void* data)
 {
-    glNamedBufferSubData(id_, offset, size, data);
+    if(!valid()){
+        SPDLOG_ERROR("It's not valid buffer id!");
+        return false;
+    }
+    if(!data_store_created_){
+        SPDLOG_ERROR("Data store not created yet!");
+        return false;
+    }
+    glNamedBufferSubData(id_.value(), offset, size, data);
+    GLenum err = glGetError();
+    if(err == GL_NO_ERROR){
+        return true;
+    }
+    SPDLOG_ERROR("WriteSubData failed! GLenum err:{}", err);
+    return false;
 }
 
 GLMESH_NAMESPACE_END

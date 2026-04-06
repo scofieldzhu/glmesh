@@ -137,7 +137,7 @@ bool glmMeshActor::createSource(glmMeshRenderer* ren)
     buffer_ = nullptr; //release old buffer
     if(buffer_ == nullptr){
         buffer_ = glmBuffer::New(GL_ARRAY_BUFFER);
-        buffer_->allocate(glmMesh::kMaxVertexRelatedByteSize, nullptr, GL_DYNAMIC_STORAGE_BIT);
+        buffer_->createImmutableDataStore(glmMesh::kMaxVertexRelatedByteSize, nullptr, GL_DYNAMIC_STORAGE_BIT);
     }
     vao_->bindBuffer(*buffer_);
 
@@ -145,18 +145,18 @@ bool glmMeshActor::createSource(glmMeshRenderer* ren)
     uint32_t cbs = cur_mesh_cloud_->calcByteSizeOfColors();
     uint32_t nbs = cur_mesh_cloud_->calcByteSizeOfNormals();
     int32_t current_offset = 0;
-    buffer_->allocateSub(current_offset, vbs, cur_mesh_cloud_->vertices.data());
+    buffer_->writeSubData(current_offset, vbs, cur_mesh_cloud_->vertices.data());
     vao_->getAttrib(0)->setPointer(3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(current_offset));
     vao_->getAttrib(0)->enable();
     current_offset += vbs;
     if(cbs){
-        buffer_->allocateSub(current_offset, cbs, cur_mesh_cloud_->colors.data());
+        buffer_->writeSubData(current_offset, cbs, cur_mesh_cloud_->colors.data());
         vao_->getAttrib(1)->setPointer(4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(current_offset));
         vao_->getAttrib(1)->enable();
     }
     current_offset += cbs;
     if(nbs){
-        buffer_->allocateSub(current_offset, nbs, cur_mesh_cloud_->normals.data());
+        buffer_->writeSubData(current_offset, nbs, cur_mesh_cloud_->normals.data());
         vao_->getAttrib(2)->setPointer(3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(current_offset));
         vao_->getAttrib(2)->enable();
     }
@@ -164,11 +164,11 @@ bool glmMeshActor::createSource(glmMeshRenderer* ren)
     
     if(indices_buffer_ == nullptr){
         indices_buffer_ = glmBuffer::New(GL_ELEMENT_ARRAY_BUFFER);
-        indices_buffer_->allocate(glmMesh::kMaxFacetByteSize, nullptr, GL_DYNAMIC_STORAGE_BIT);
+        indices_buffer_->createImmutableDataStore(glmMesh::kMaxFacetByteSize, nullptr, GL_DYNAMIC_STORAGE_BIT);
     }
     if(cur_mesh_cloud_->existFacetData()){        
         auto indices_data_mb = cur_mesh_cloud_->genFacetMemory();
-        indices_buffer_->allocateSub(0, static_cast<uint32_t>(indices_data_mb->size()), indices_data_mb->blockData());
+        indices_buffer_->writeSubData(0, static_cast<uint32_t>(indices_data_mb->size()), indices_data_mb->blockData());
         vao_->bindBuffer(*indices_buffer_);
     }else{
         vao_->unbindBuffer(*indices_buffer_);
@@ -204,28 +204,6 @@ void glmMeshActor::draw(glmMeshRenderer* ren)
     auto ren_camera = renderers_[0]->activeCamera();
     ren_camera->recalc();
     ren_camera->syncDataToShader(program_);
-
-
-        // 测试一个顶点的变换  
-    // if(cur_mesh_cloud_ && !cur_mesh_cloud_->vertices.empty()) {  
-    //     glm::vec4 test_vertex(cur_mesh_cloud_->vertices[0], 1.0f);  
-    //     glm::vec4 world_pos = matrix_ * test_vertex;  
-    //     glm::vec4 view_pos = ren_camera->view() * world_pos;  
-    //     glm::vec4 clip_pos = ren_camera->projection() * view_pos;  
-        
-    //     spdlog::debug("Test vertex transformation:");  
-    //     spdlog::debug("  Local: ({}, {}, {})", test_vertex.x, test_vertex.y, test_vertex.z);  
-    //     spdlog::debug("  World: ({}, {}, {})", world_pos.x, world_pos.y, world_pos.z);  
-    //     spdlog::debug("  View: ({}, {}, {})", view_pos.x, view_pos.y, view_pos.z);  
-    //     spdlog::debug("  Clip: ({}, {}, {})", clip_pos.x, clip_pos.y, clip_pos.z);  
-        
-    //     // 透视除法后的NDC坐标  
-    //     if(clip_pos.w != 0) {  
-    //         glm::vec3 ndc = glm::vec3(clip_pos) / clip_pos.w;  
-    //         spdlog::debug("  NDC: ({}, {}, {})", ndc.x, ndc.y, ndc.z);  
-    //         // NDC坐标应该在[-1, 1]范围内才能显示  
-    //     }  
-    // }  
 
     program_->setUniformInt("primitive_type", 1);
     if(cur_mesh_cloud_->colors.empty()){
