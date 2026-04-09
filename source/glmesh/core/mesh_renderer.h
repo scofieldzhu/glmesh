@@ -4,7 +4,7 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates 
  *  coherent OpenGL.
  *  
- *  File: ply_reader.h 
+ *  File: mesh_poly_data_renderer.h 
  *  Copyright (c) 2024-2024 scofieldzhu
  *  
  *  MIT License
@@ -28,15 +28,44 @@
  *  SOFTWARE.
  */
 
-#ifndef __ply_reader_h__
-#define __ply_reader_h__
+#ifndef __mesh_poly_data_renderer_h__
+#define __mesh_poly_data_renderer_h__
 
-#include "glmesh/core/mesh_poly_data.h"
-#include <QString>
+#include "glmesh/core/glm_base_type.h"
+#include "glmesh/core/glm_export.h"
+#include "glmesh/core/instantiator.h"
 
-namespace ply_reader
+GLMESH_NAMESPACE_BEGIN
+
+class GLMESH_API MeshRenderer : public Instantiator<MeshRenderer>, public std::enable_shared_from_this<MeshRenderer>
 {
-    bool LoadFile(const QString& file, glmesh::MeshPolyData& result_mesh, bool need_triangulate);
+public:
+    void setBackgroudTopColor(const glm::vec3& color);
+    void setBackgroudBottomColor(const glm::vec3& color);
+    glmMeshPtr currentMeshCloud()const;
+    void loadMeshCloud(glmMeshPtr mesh_cloud);
+    bool initialize(float width, float height);
+    void destroy();
+    void resize(float width, float height);
+    glm::vec2 renderSize()const{ return render_size_; }
+    void render();
+    auto meshActor(){ return mesh_actor_; }
+    auto bkgActor(){ return bkg_; }
+    glmCameraPtr activeCamera(){ return camera_; }
+    MeshRenderer();
+    ~MeshRenderer();
+
+private:
+    void configOpengl();
+    void syncCameraToShader();
+    glmShaderProgramPtr program_;
+    glmCameraPtr camera_;
+    glmSpherePtr sphere_;
+    glmBkgActorPtr bkg_;
+    glmMeshActorPtr mesh_actor_;
+    glm::vec2 render_size_;
 };
+
+GLMESH_NAMESPACE_END
 
 #endif

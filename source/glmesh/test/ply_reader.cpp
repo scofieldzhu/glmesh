@@ -38,7 +38,7 @@
 using namespace pcl;
 using namespace glmesh;
 
-bool ply_reader::LoadFile(const QString& filename, glmesh::glmMesh& result_mesh, bool need_triangulate)
+bool ply_reader::LoadFile(const QString& filename, glmesh::MeshPolyData& result_mesh, bool need_triangulate)
 {
     pcl::PolygonMesh mesh;
     if (pcl::io::loadPLYFile(filename.toLocal8Bit().toStdString().c_str(), mesh) == -1) {

@@ -4,7 +4,7 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates 
  *  coherent OpenGL.
  *  
- *  File: ply_reader.h 
+ *  File: misc.h 
  *  Copyright (c) 2024-2024 scofieldzhu
  *  
  *  MIT License
@@ -28,15 +28,16 @@
  *  SOFTWARE.
  */
 
-#ifndef __ply_reader_h__
-#define __ply_reader_h__
+#ifndef __misc_h__
+#define __misc_h__
 
-#include "glmesh/core/mesh_poly_data.h"
-#include <QString>
+#include "glmesh/core/glm_base_type.h"
+#include <string>
 
-namespace ply_reader
-{
-    bool LoadFile(const QString& file, glmesh::MeshPolyData& result_mesh, bool need_triangulate);
-};
+GLMESH_NAMESPACE_BEGIN
+
+std::string Vec3ToStr(const glm::vec3& v);
+
+GLMESH_NAMESPACE_END
 
 #endif

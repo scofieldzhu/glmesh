@@ -4,7 +4,7 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates 
  *  coherent OpenGL.
  *  
- *  File: ply_reader.h 
+ *  File: win_event_handler_publisher.cpp 
  *  Copyright (c) 2024-2024 scofieldzhu
  *  
  *  MIT License
@@ -28,15 +28,48 @@
  *  SOFTWARE.
  */
 
-#ifndef __ply_reader_h__
-#define __ply_reader_h__
+#include "win_event_handler_publisher.h"
+#include <algorithm>
+#include "win_event_handler.h"
 
-#include "glmesh/core/mesh_poly_data.h"
-#include <QString>
+GLMESH_NAMESPACE_BEGIN
 
-namespace ply_reader
+WinEventHandlerPublisher::WinEventHandlerPublisher()
 {
-    bool LoadFile(const QString& file, glmesh::MeshPolyData& result_mesh, bool need_triangulate);
-};
+}
 
-#endif
+WinEventHandlerPublisher::~WinEventHandlerPublisher()
+{
+}
+
+void WinEventHandlerPublisher::publish(const WinEvent& event)
+{
+    std::lock_guard<std::mutex> auto_lock(lock_);
+    for(auto h : handlers_){
+        h->handleEvent(event);
+    }
+}
+
+void WinEventHandlerPublisher::addHandler(WinEventHandler *e)
+{
+    std::lock_guard<std::mutex> auto_lock(lock_);
+    if(e){
+        handlers_.push_back(e);
+    }
+}
+
+void WinEventHandlerPublisher::removeHandler(WinEventHandler* e)
+{
+    std::lock_guard<std::mutex> auto_lock(lock_);
+    if(e){
+        handlers_.erase(std::remove(handlers_.begin(), handlers_.end(), e));
+    }
+}
+
+void WinEventHandlerPublisher::clear()
+{
+    std::lock_guard<std::mutex> auto_lock(lock_);
+    handlers_.clear();
+}
+
+GLMESH_NAMESPACE_END

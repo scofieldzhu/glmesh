@@ -33,10 +33,10 @@
 #include <QFileDialog>
 #include <QColorDialog>
 #include <spdlog/spdlog.h>
-#include <glmesh/core/glm_mesh.h>
-#include <glmesh/core/glm_mesh_renderer.h>
-#include <glmesh/core/glm_trackball.h>
-#include <glmesh/core/glm_mesh_actor.h>
+#include <glmesh/core/mesh_poly_data.h>
+#include <glmesh/core/mesh_renderer.h>
+#include <glmesh/core/trackball.h>
+#include <glmesh/core/mesh_actor.h>
 #include "ply_reader.h"
 #include "mesh_process.h"
 
@@ -78,7 +78,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::onRotationButtonChanged(int index)
 {
-    ren_window_->trackball()->bindRotationToMouseButton(static_cast<glmesh::glmMouseButton>(index));
+    ren_window_->trackball()->bindRotationToMouseButton(static_cast<glmesh::MouseButton>(index));
 }
 
 void MainWindow::onMenuItemSlot_ChangeColor(bool checked)
@@ -143,7 +143,7 @@ void MainWindow::onMenuItemSlot_LoadMeshData(bool checked)
         return; // user cancel
     }
     last_mesh_dir_ = QFileInfo(file_name).absoluteDir().absolutePath();
-    glmesh::glmMeshPtr mesh_cloud = std::make_shared<glmesh::glmMesh>();
+    glmesh::glmMeshPtr mesh_cloud = std::make_shared<glmesh::MeshPolyData>();
     ply_reader::LoadFile(file_name, *mesh_cloud, false);
     doLoadMeshData(mesh_cloud);
     auto win_title = stUserTitle;

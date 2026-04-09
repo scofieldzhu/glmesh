@@ -28,13 +28,14 @@
  *  SOFTWARE.
  */
 
-#ifndef __glm_base_type_h__
-#define __glm_base_type_h__
+#ifndef __base_type_h__
+#define __base_type_h__
 
 #include <vector>
 #include <memory>
 #include <cstdint>
 #include <numeric>
+#include <optional>
 #include <glm/glm.hpp>
 #include "glmesh/core/glm_nsp.h"
 
@@ -67,46 +68,46 @@ using TriangleFacetList = std::vector<glmTriangleFacet>;
 using glmPolyFacet = glmIndices;
 using glmPolyFacetList = std::vector<glmPolyFacet>;
 
-struct glmMemoryBlock;
-using glmMemoryBlockPtr = std::shared_ptr<glmMemoryBlock>;
+struct MemoryBlock;
+using glmMemoryBlockPtr = std::shared_ptr<MemoryBlock>;
 
-struct glmMesh;
-using glmMeshPtr = std::shared_ptr<glmMesh>;
+struct MeshPolyData;
+using glmMeshPtr = std::shared_ptr<MeshPolyData>;
 
-class glmBuffer;
-using glmBufferPtr = std::shared_ptr<glmBuffer>;
+class Buffer;
+using glmBufferPtr = std::shared_ptr<Buffer>;
 
-class glmVertexArray;
-using glmVertexArrayPtr = std::shared_ptr<glmVertexArray>;
+class VertexArray;
+using glmVertexArrayPtr = std::shared_ptr<VertexArray>;
 
-class glmVertexArrayAttrib;
-class glmShaderProgram;
-using glmShaderProgramPtr = std::shared_ptr<glmShaderProgram>;
+class VertexArrayAttrib;
+class ShaderProgram;
+using glmShaderProgramPtr = std::shared_ptr<ShaderProgram>;
 
-class glmMeshRenderer;
-using glmMeshRendererPtr = std::shared_ptr<glmMeshRenderer>;
+class MeshRenderer;
+using glmMeshRendererPtr = std::shared_ptr<MeshRenderer>;
 using glmMeshRendererList = std::vector<glmMeshRendererPtr>;
 
 using glmMatrix = glm::mat4;
 
-class glmWinEventHandler;
+class WinEventHandler;
 
-class glmTrackball;
+class Trackball;
 
-class glmActor;
-using glmActorPtr = std::shared_ptr<glmActor>;
+class Actor;
+using glmActorPtr = std::shared_ptr<Actor>;
 
 class glmBkgActor;
 using glmBkgActorPtr = std::shared_ptr<glmBkgActor>;
 
-class glmSphereActor;
-using glmSpherePtr = std::shared_ptr<glmSphereActor>;
+class SphereActor;
+using glmSpherePtr = std::shared_ptr<SphereActor>;
 
-class glmMeshActor;
-using glmMeshActorPtr = std::shared_ptr<glmMeshActor>;
+class MeshActor;
+using glmMeshActorPtr = std::shared_ptr<MeshActor>;
 
-class glmCamera;
-using glmCameraPtr = std::shared_ptr<glmCamera>;
+class Camera;
+using glmCameraPtr = std::shared_ptr<Camera>;
 
 struct glmBoundingBox
 {

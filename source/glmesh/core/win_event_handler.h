@@ -4,7 +4,7 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates 
  *  coherent OpenGL.
  *  
- *  File: ply_reader.h 
+ *  File: win_event_handler.h 
  *  Copyright (c) 2024-2024 scofieldzhu
  *  
  *  MIT License
@@ -28,15 +28,20 @@
  *  SOFTWARE.
  */
 
-#ifndef __ply_reader_h__
-#define __ply_reader_h__
+#ifndef __win_event_handler_h__
+#define __win_event_handler_h__
 
-#include "glmesh/core/mesh_poly_data.h"
-#include <QString>
+#include "glmesh/core/win_event.h"
 
-namespace ply_reader
+GLMESH_NAMESPACE_BEGIN
+
+class WinEventHandler
 {
-    bool LoadFile(const QString& file, glmesh::MeshPolyData& result_mesh, bool need_triangulate);
+public:
+    virtual void handleEvent(const WinEvent& event) = 0;
+    virtual ~WinEventHandler() = default;
 };
+
+GLMESH_NAMESPACE_END
 
 #endif

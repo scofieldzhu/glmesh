@@ -4,7 +4,7 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates 
  *  coherent OpenGL.
  *  
- *  File: ply_reader.h 
+ *  File: camera.cpp 
  *  Copyright (c) 2024-2024 scofieldzhu
  *  
  *  MIT License
@@ -28,15 +28,93 @@
  *  SOFTWARE.
  */
 
-#ifndef __ply_reader_h__
-#define __ply_reader_h__
+#include "camera.h"
+#include <glm/gtx/transform.hpp>
+#include "shader_program.h"
 
-#include "glmesh/core/mesh_poly_data.h"
-#include <QString>
+GLMESH_NAMESPACE_BEGIN
 
-namespace ply_reader
+Camera::Camera()
 {
-    bool LoadFile(const QString& file, glmesh::MeshPolyData& result_mesh, bool need_triangulate);
-};
+}
 
-#endif
+Camera::~Camera()
+{
+}
+
+void Camera::setModel(const glmMatrix& mat)
+{
+    model_ = mat;
+}
+
+void Camera::setEye(const glmPt3& pt)
+{
+    eye_ = pt;
+}
+
+void Camera::setProjection(const glmMatrix& mat)
+{
+    projection_ = mat;
+}
+
+void Camera::setView(const glmMatrix& mat)
+{
+    view_ = mat;
+}
+
+void Camera::setFocalPoint(const glmPt3 &pt)
+{
+    focal_point_ = pt;
+}
+
+void Camera::setViewUp(const glmNormal &n)
+{
+    viewup_ = n;
+}
+
+void Camera::setWinAspect(float f)
+{
+    win_aspect_ = f;
+}
+
+void Camera::setFarPlaneDist(float dist)
+{
+    far_plane_dist_ = dist;
+}
+
+void Camera::setNearPlaneDist(float dist)
+{
+    near_plane_dist_ = dist;
+}
+
+void Camera::setFovy(float f)
+{
+    fovy_ = f;
+}
+
+void Camera::calcProjection()
+{
+    projection_ = glm::perspective(glm::radians(fovy_), win_aspect_, near_plane_dist_, far_plane_dist_);  
+}
+
+void Camera::calcView()
+{
+    view_ = glm::lookAt(eye_, focal_point_, viewup_);
+}
+
+void Camera::recalc()
+{
+    calcView();
+    calcProjection();
+}
+
+void Camera::syncDataToShader(glmShaderProgramPtr prog)
+{
+    if(prog){
+        prog->setUniformMatrix4fv("model", model_);
+        prog->setUniformMatrix4fv("view", view_);
+        prog->setUniformMatrix4fv("projection", projection_);
+    }
+}
+
+GLMESH_NAMESPACE_END

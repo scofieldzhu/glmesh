@@ -4,7 +4,7 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates 
  *  coherent OpenGL.
  *  
- *  File: ply_reader.h 
+ *  File: vertex_array.cpp 
  *  Copyright (c) 2024-2024 scofieldzhu
  *  
  *  MIT License
@@ -28,15 +28,46 @@
  *  SOFTWARE.
  */
 
-#ifndef __ply_reader_h__
-#define __ply_reader_h__
+#include "vertex_array.h"
+#include "glad/glad.h"
+#include "buffer.h"
 
-#include "glmesh/core/mesh_poly_data.h"
-#include <QString>
+GLMESH_NAMESPACE_BEGIN
 
-namespace ply_reader
+VertexArray::VertexArray()
 {
-    bool LoadFile(const QString& file, glmesh::MeshPolyData& result_mesh, bool need_triangulate);
-};
+    glGenVertexArrays(1, &id_);
+}
 
-#endif
+VertexArray::~VertexArray()
+{
+}
+
+void VertexArray::bindCurrent()
+{
+    glBindVertexArray(id_);
+}
+
+void VertexArray::bindBuffer(const Buffer& buffer)
+{
+    glBindBuffer(buffer.type(), buffer.id());
+}
+
+void VertexArray::unbindBuffer(const Buffer &buffer)
+{
+    glBindBuffer(buffer.type(), 0);
+}
+
+VertexArrayAttrib* VertexArray::getAttrib(uint32_t index)
+{
+    auto it = attrib_map_.find(index);
+    if(it != attrib_map_.end()){
+        return (*it).second.get();
+    }
+    auto attrib = std::make_unique<VertexArrayAttrib>(index);
+    auto attrib_pointer = attrib.get();
+    attrib_map_.insert({index, std::move(attrib)});
+    return attrib_pointer;
+}
+
+GLMESH_NAMESPACE_END

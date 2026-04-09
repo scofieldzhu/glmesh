@@ -4,7 +4,7 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates 
  *  coherent OpenGL.
  *  
- *  File: ply_reader.h 
+ *  File: win_event.h 
  *  Copyright (c) 2024-2024 scofieldzhu
  *  
  *  MIT License
@@ -28,15 +28,51 @@
  *  SOFTWARE.
  */
 
-#ifndef __ply_reader_h__
-#define __ply_reader_h__
+#ifndef __win_event_h__
+#define __win_event_h__
 
-#include "glmesh/core/mesh_poly_data.h"
-#include <QString>
+#include "glmesh/core/glm_base_type.h"
 
-namespace ply_reader
+GLMESH_NAMESPACE_BEGIN
+
+enum class MouseButton
 {
-    bool LoadFile(const QString& file, glmesh::MeshPolyData& result_mesh, bool need_triangulate);
+    kNone,
+    kLeft,
+    kRight,
+    kMiddle
 };
+
+enum class EventSource
+{
+    kNull,
+    kMouseDevice,
+    kKeyboard,
+    kWindow
+};
+
+enum class EventType
+{
+    kNull,
+    kPress,
+    kDoublePress,
+    kRelease,
+    kMove,
+    kWheelScroll,
+    kResize
+};
+
+struct WinEvent
+{
+    EventSource source = EventSource::kNull;
+    EventType type = EventType::kNull;
+    int event_button_id = -1;
+    float scroll_delta = 0.0f;
+    glm::vec2 pos{0.0f, 0.0f};
+    glm::vec2 win_size{0.0f, 0.0f};
+    void* extra_data = nullptr;
+};
+
+GLMESH_NAMESPACE_END
 
 #endif

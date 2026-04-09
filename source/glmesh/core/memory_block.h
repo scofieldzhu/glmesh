@@ -4,7 +4,7 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates 
  *  coherent OpenGL.
  *  
- *  File: ply_reader.h 
+ *  File: memory_block.h 
  *  Copyright (c) 2024-2024 scofieldzhu
  *  
  *  MIT License
@@ -28,15 +28,32 @@
  *  SOFTWARE.
  */
 
-#ifndef __ply_reader_h__
-#define __ply_reader_h__
+#ifndef __memory_block_h__
+#define __memory_block_h__
 
-#include "glmesh/core/mesh_poly_data.h"
-#include <QString>
+#include "glmesh/core/glm_base_type.h"
+#include "glmesh/core/glm_export.h"
+#include "glmesh/core/instantiator.h"
 
-namespace ply_reader
+GLMESH_NAMESPACE_BEGIN
+
+struct GLMESH_API MemoryBlock : public Instantiator<MemoryBlock>
 {
-    bool LoadFile(const QString& file, glmesh::MeshPolyData& result_mesh, bool need_triangulate);
+    const char* blockData()const{ return block_data_; }
+    char* blockData(){ return block_data_; }
+    auto size()const{ return size_; }
+    explicit MemoryBlock(size_t s);
+    MemoryBlock(char* ptr, size_t s);
+    ~MemoryBlock();
+
+private:
+    char* block_data_ = nullptr;
+    size_t size_ = 0;
+    bool allocted_ = false;
 };
+
+using glmMemoryBlockPtr = std::shared_ptr<MemoryBlock>;
+
+GLMESH_NAMESPACE_END
 
 #endif

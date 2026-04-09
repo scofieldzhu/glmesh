@@ -4,7 +4,7 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates 
  *  coherent OpenGL.
  *  
- *  File: ply_reader.h 
+ *  File: memory_block.cpp 
  *  Copyright (c) 2024-2024 scofieldzhu
  *  
  *  MIT License
@@ -28,15 +28,28 @@
  *  SOFTWARE.
  */
 
-#ifndef __ply_reader_h__
-#define __ply_reader_h__
+#include "memory_block.h"
 
-#include "glmesh/core/mesh_poly_data.h"
-#include <QString>
+GLMESH_NAMESPACE_BEGIN
 
-namespace ply_reader
+MemoryBlock::MemoryBlock(size_t s)
 {
-    bool LoadFile(const QString& file, glmesh::MeshPolyData& result_mesh, bool need_triangulate);
-};
+    assert(s);
+    block_data_ = new char[s]{0};
+    size_ = s;
+    allocted_ = true;
+}
 
-#endif
+MemoryBlock::MemoryBlock(char* ptr, size_t s)
+{
+    block_data_ = ptr;
+    size_ = s;
+}
+
+MemoryBlock::~MemoryBlock()
+{
+    if(allocted_)
+        delete[] block_data_;
+}
+
+GLMESH_NAMESPACE_END

@@ -4,7 +4,7 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates 
  *  coherent OpenGL.
  *  
- *  File: ply_reader.h 
+ *  File: vertex_array.h 
  *  Copyright (c) 2024-2024 scofieldzhu
  *  
  *  MIT License
@@ -28,15 +28,35 @@
  *  SOFTWARE.
  */
 
-#ifndef __ply_reader_h__
-#define __ply_reader_h__
+#ifndef __vertex_array_h__
+#define __vertex_array_h__
 
-#include "glmesh/core/mesh_poly_data.h"
-#include <QString>
+#include <map>
+#include "glmesh/core/vertex_array_attrib.h"
+#include "glmesh/core/glm_export.h"
+#include "glmesh/core/instantiator.h"
 
-namespace ply_reader
+GLMESH_NAMESPACE_BEGIN
+
+class GLMESH_API VertexArray : public Instantiator<VertexArray>
 {
-    bool LoadFile(const QString& file, glmesh::MeshPolyData& result_mesh, bool need_triangulate);
+public:
+    void bindCurrent();
+    void bindBuffer(const Buffer& buffer);
+    void unbindBuffer(const Buffer& buffer);
+    uint32_t id()const{ return id_; }
+    VertexArrayAttrib* getAttrib(uint32_t index);
+    VertexArray& operator=(const VertexArray&) = delete;
+    VertexArray();
+    VertexArray(const VertexArray&) = delete;
+    ~VertexArray();
+
+private:
+    uint32_t id_ = 0;
+    using AttribUPtr = std::unique_ptr<VertexArrayAttrib>;
+    std::map<uint32_t, AttribUPtr> attrib_map_;
 };
+
+GLMESH_NAMESPACE_END
 
 #endif

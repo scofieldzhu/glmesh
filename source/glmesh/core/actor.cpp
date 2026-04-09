@@ -4,7 +4,7 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates 
  *  coherent OpenGL.
  *  
- *  File: ply_reader.h 
+ *  File: actor.cpp 
  *  Copyright (c) 2024-2024 scofieldzhu
  *  
  *  MIT License
@@ -27,16 +27,45 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *  SOFTWARE.
  */
+#include "actor.h"
+#include <glm/gtc/matrix_transform.hpp>
+#include <spdlog/spdlog.h>
 
-#ifndef __ply_reader_h__
-#define __ply_reader_h__
+GLMESH_NAMESPACE_BEGIN
 
-#include "glmesh/core/mesh_poly_data.h"
-#include <QString>
-
-namespace ply_reader
+Actor::Actor()
+    :matrix_(glm::identity<glm::mat4>())
 {
-    bool LoadFile(const QString& file, glmesh::MeshPolyData& result_mesh, bool need_triangulate);
-};
+}
 
-#endif
+Actor::~Actor()
+{    
+}
+
+bool Actor::addToRenderer(glmMeshRendererPtr ren)
+{
+    if(ren == nullptr){
+        spdlog::error("Null renderer pointer!");
+        return false;
+    }
+    if(!source_created_){
+        if(!createSource(ren.get())){
+            spdlog::error("Create source failed!");
+            return false;
+        }
+        source_created_ = true;        
+    }
+    renderers_.push_back(ren);
+    return true;
+}
+
+bool Actor::existRenderer() const
+{
+    return !renderers_.empty();
+}
+
+void Actor::removeFromRenderer(glmMeshRendererPtr ren)
+{
+}
+
+GLMESH_NAMESPACE_END

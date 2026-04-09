@@ -4,7 +4,7 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates 
  *  coherent OpenGL.
  *  
- *  File: ply_reader.h 
+ *  File: actor.h 
  *  Copyright (c) 2024-2024 scofieldzhu
  *  
  *  MIT License
@@ -28,15 +28,36 @@
  *  SOFTWARE.
  */
 
-#ifndef __ply_reader_h__
-#define __ply_reader_h__
+#ifndef __actor_h__
+#define __actor_h__
 
-#include "glmesh/core/mesh_poly_data.h"
-#include <QString>
+#include "glmesh/core/glm_base_type.h"
+#include "glmesh/core/glm_export.h"
+#include "glmesh/core/instantiator.h"
 
-namespace ply_reader
+GLMESH_NAMESPACE_BEGIN
+
+class GLMESH_API Actor
 {
-    bool LoadFile(const QString& file, glmesh::MeshPolyData& result_mesh, bool need_triangulate);
+public:
+    virtual void draw(MeshRenderer* ren) = 0;        
+    const glmMeshRendererList& renderers()const{ return renderers_; }
+    void setMatrix(const glmMatrix& matrix){ matrix_ = matrix; }
+    const auto& matrix() const{ return matrix_; }
+    virtual bool addToRenderer(glmMeshRendererPtr ren);
+    bool existRenderer()const;
+    virtual void removeFromRenderer(glmMeshRendererPtr ren);
+    virtual ~Actor();
+
+protected:
+    virtual bool createSource(MeshRenderer* ren) = 0;
+    Actor();
+    glmMatrix matrix_;
+    glmMeshRendererList renderers_;
+    bool source_created_ = false;
 };
 
-#endif
+GLMESH_NAMESPACE_END
+
+#endif 
+

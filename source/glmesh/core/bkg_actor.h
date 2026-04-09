@@ -4,7 +4,7 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates 
  *  coherent OpenGL.
  *  
- *  File: ply_reader.h 
+ *  File: bkg_actor.h 
  *  Copyright (c) 2024-2024 scofieldzhu
  *  
  *  MIT License
@@ -28,15 +28,32 @@
  *  SOFTWARE.
  */
 
-#ifndef __ply_reader_h__
-#define __ply_reader_h__
+#ifndef __bkg_actor_h__
+#define __bkg_actor_h__
 
-#include "glmesh/core/mesh_poly_data.h"
-#include <QString>
+#include "glmesh/core/actor.h"
+#include "glmesh/core/instantiator.h"
 
-namespace ply_reader
+GLMESH_NAMESPACE_BEGIN
+
+class glmBkgActor : public Actor, public Instantiator<glmBkgActor>
 {
-    bool LoadFile(const QString& file, glmesh::MeshPolyData& result_mesh, bool need_triangulate);
+public:    
+    void draw(MeshRenderer* ren) override;
+    void setTopColor(const glm::vec3& clr);
+    void setBottomColor(const glm::vec3& clr);
+    glmBkgActor();
+    ~glmBkgActor();
+
+private:
+    bool createSource(MeshRenderer* ren) override;
+    glm::vec3 top_color_ = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 bottom_color_ = glm::vec3(0.5f, 0.5f, 1.0f);
+    glmShaderProgramPtr program_;
+    glmVertexArrayPtr vao_;
+    glmBufferPtr vertex_buffer_;
 };
 
-#endif
+GLMESH_NAMESPACE_END
+
+#endif // __bkg_actor_h__

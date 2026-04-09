@@ -4,7 +4,7 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates 
  *  coherent OpenGL.
  *  
- *  File: ply_reader.h 
+ *  File: cube.h 
  *  Copyright (c) 2024-2024 scofieldzhu
  *  
  *  MIT License
@@ -28,15 +28,28 @@
  *  SOFTWARE.
  */
 
-#ifndef __ply_reader_h__
-#define __ply_reader_h__
+#ifndef __cube_h__
+#define __cube_h__
 
-#include "glmesh/core/mesh_poly_data.h"
-#include <QString>
+#include "actor.h"
 
-namespace ply_reader
+GLMESH_NAMESPACE_BEGIN
+
+class GLMESH_API Cube : public Actor, public Instantiator<Cube>
 {
-    bool LoadFile(const QString& file, glmesh::MeshPolyData& result_mesh, bool need_triangulate);
+public:
+    void draw(MeshRenderer* ren) override;
+    Cube();
+    ~Cube();
+
+private:
+    bool createSource(MeshRenderer* ren) override;
+    glmVertexArrayPtr vao_;
+    glmShaderProgramPtr prog_;
+    glmBufferPtr vbo_;
+
 };
+
+GLMESH_NAMESPACE_END
 
 #endif

@@ -28,8 +28,8 @@
  *  SOFTWARE.
  */
 
-#ifndef __glm_nsp_h__
-#define __glm_nsp_h__
+#ifndef __nsp_h__
+#define __nsp_h__
 
 #define GLMESH_NAMESPACE_BEGIN namespace glmesh{
 #define GLMESH_NAMESPACE_END }

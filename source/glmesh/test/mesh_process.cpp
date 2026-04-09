@@ -33,7 +33,7 @@
 #include <pcl/point_cloud.h> 
 #include <pcl/PolygonMesh.h>
 #include <pcl/surface/ear_clipping.h>
-#include "glmesh/core/glm_mesh.h"
+#include "glmesh/core/mesh_poly_data.h"
 
 using namespace glmesh;
 
@@ -79,7 +79,7 @@ pcl::PolygonMesh::Ptr glmMeshToPclMesh(glmesh::glmMeshPtr source_mesh)
 
 glmMeshPtr PclMeshToglmMesh(pcl::PolygonMesh::Ptr pcl_mesh)
 {
-    glmMeshPtr result_mesh = std::make_shared<glmMesh>();
+    glmMeshPtr result_mesh = std::make_shared<MeshPolyData>();
     for(size_t i = 0; i < pcl_mesh->cloud.data.size(); i += pcl_mesh->cloud.point_step){
         float x = *reinterpret_cast<float*>(&pcl_mesh->cloud.data[i + pcl_mesh->cloud.fields[0].offset]);
         float y = *reinterpret_cast<float*>(&pcl_mesh->cloud.data[i + pcl_mesh->cloud.fields[1].offset]);

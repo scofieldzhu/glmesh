@@ -4,7 +4,7 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates 
  *  coherent OpenGL.
  *  
- *  File: ply_reader.h 
+ *  File: buffer.h 
  *  Copyright (c) 2024-2024 scofieldzhu
  *  
  *  MIT License
@@ -28,15 +28,33 @@
  *  SOFTWARE.
  */
 
-#ifndef __ply_reader_h__
-#define __ply_reader_h__
+#ifndef __buffer_h__
+#define __buffer_h__
 
-#include "glmesh/core/mesh_poly_data.h"
-#include <QString>
+#include "glmesh/core/glm_base_type.h"
+#include "glmesh/core/glm_export.h"
+#include "glmesh/core/instantiator.h"
 
-namespace ply_reader
+GLMESH_NAMESPACE_BEGIN
+
+class GLMESH_API Buffer : public Instantiator<Buffer>
 {
-    bool LoadFile(const QString& file, glmesh::MeshPolyData& result_mesh, bool need_triangulate);
+public:
+    auto type()const{ return type_; }
+    bool valid()const{ return id_.has_value(); }
+    auto id()const{ return id_.value(); }
+    bool createImmutableDataStore(uint32_t size, const void* data, uint32_t flags);    
+    auto dataStoreCreated()const{ return data_store_created_; }
+    bool writeSubData(int32_t offset, uint32_t size, const void* data);
+    Buffer(uint32_t type);
+    ~Buffer();
+
+private:
+    std::optional<uint32_t> id_;
+    bool data_store_created_ = false;
+    uint32_t type_;
 };
+
+GLMESH_NAMESPACE_END
 
 #endif

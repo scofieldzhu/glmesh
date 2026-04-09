@@ -33,9 +33,9 @@
 #include <QResizeEvent>
 #include <QApplication>
 #include <spdlog/spdlog.h>
-#include "glmesh/core/glm_trackball.h"
-#include "glmesh/core/glm_mesh_renderer.h"
-#include "glmesh/core/glm_mesh_actor.h"
+#include "glmesh/core/trackball.h"
+#include "glmesh/core/mesh_renderer.h"
+#include "glmesh/core/mesh_actor.h"
 
 using namespace glmesh;
 
@@ -43,8 +43,8 @@ using namespace glmesh;
 
 RenderWindow::RenderWindow(QWidget* parent, Qt::WindowFlags f)
     :QOpenGLWidget(parent, f),
-    renderer_(std::make_shared<glmMeshRenderer>()),
-    trackball_(std::make_unique<glmTrackball>(renderer_))
+    renderer_(std::make_shared<MeshRenderer>()),
+    trackball_(std::make_unique<Trackball>(renderer_))
 {
     addHandler(trackball_.get());
     setMouseTracking(true);
@@ -61,9 +61,9 @@ void RenderWindow::mouseReleaseEvent(QMouseEvent* event)
     QOpenGLWidget::mouseReleaseEvent(event);
     //spdlog::debug("mouseReleaseEvent:{}", (int)event->button());
 
-    glmWinEvent target_event;
-    target_event.source = glmEventSource::kMouseDevice;
-    target_event.type = glmEventType::kRelease;
+    WinEvent target_event;
+    target_event.source = EventSource::kMouseDevice;
+    target_event.type = EventType::kRelease;
     target_event.event_button_id = event->button();
     target_event.pos = {event->pos().x(), event->pos().y()};
     target_event.extra_data = this;
@@ -76,9 +76,9 @@ void RenderWindow::mouseMoveEvent(QMouseEvent* event)
     QOpenGLWidget::mouseMoveEvent(event);
     //spdlog::debug("mouseMoveEvent:{}", (int)event->button());
 
-    glmWinEvent target_event;
-    target_event.source = glmEventSource::kMouseDevice;
-    target_event.type = glmEventType::kMove;
+    WinEvent target_event;
+    target_event.source = EventSource::kMouseDevice;
+    target_event.type = EventType::kMove;
     target_event.event_button_id = event->button();
     target_event.pos = {event->pos().x(), event->pos().y()};
     target_event.extra_data = this;
@@ -91,10 +91,10 @@ void RenderWindow::wheelEvent(QWheelEvent* event)
     QOpenGLWidget::wheelEvent(event);
     //spdlog::debug("wheelEvent");
 
-    glmWinEvent target_event;
-    target_event.source = glmEventSource::kMouseDevice;
-    target_event.type = glmEventType::kWheelScroll;
-    target_event.event_button_id = (int)glmMouseButton::kMiddle;
+    WinEvent target_event;
+    target_event.source = EventSource::kMouseDevice;
+    target_event.type = EventType::kWheelScroll;
+    target_event.event_button_id = (int)MouseButton::kMiddle;
     target_event.scroll_delta = event->angleDelta().y() / 120.0f;
     target_event.pos = {event->pos().x(), event->pos().y()};
     target_event.extra_data = this;
@@ -107,9 +107,9 @@ void RenderWindow::mousePressEvent(QMouseEvent* event)
     QOpenGLWidget::mousePressEvent(event);
     //spdlog::debug("mousePressEvent:{}", (int)event->button());
 
-    glmWinEvent target_event;
-    target_event.source = glmEventSource::kMouseDevice;
-    target_event.type = glmEventType::kPress;
+    WinEvent target_event;
+    target_event.source = EventSource::kMouseDevice;
+    target_event.type = EventType::kPress;
     target_event.event_button_id = event->button();
     target_event.pos = {event->pos().x(), event->pos().y()};
     target_event.extra_data = this;
@@ -139,19 +139,19 @@ void RenderWindow::resizeGL(int w, int h)
     const QSize& new_size = {w, h};
     AUTO_MAKE_CURRENT_CALL(renderer_->resize(new_size.width(), new_size.height()))
     
-    glmWinEvent target_event;
-    target_event.source = glmEventSource::kWindow;
-    target_event.type = glmEventType::kResize;
+    WinEvent target_event;
+    target_event.source = EventSource::kWindow;
+    target_event.type = EventType::kResize;
     target_event.win_size = {(float)new_size.width(), (float)new_size.height()};
     target_event.extra_data = this;
     publish(target_event);
     update();
 }
 
-void RenderWindow::publish(const glmWinEvent& event)
+void RenderWindow::publish(const WinEvent& event)
 {
     makeCurrent();
-    glmWinEventHandlerPublisher::publish(event);
+    WinEventHandlerPublisher::publish(event);
     doneCurrent();
 }
 

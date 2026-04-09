@@ -34,7 +34,7 @@
 #include "glmesh/core/glm_base_type.h"
 #include <pcl/PolygonMesh.h>
 
-pcl::PolygonMesh::Ptr glmMeshToPclMesh(glmesh::glmMeshPtr glm_mesh);
+pcl::PolygonMesh::Ptr glmMeshToPclMesh(glmesh::glmMeshPtr mesh_poly_data);
 glmesh::glmMeshPtr PclMeshToglmMesh(pcl::PolygonMesh::Ptr pcl_mesh);
 glmesh::glmMeshPtr Triangulate(glmesh::glmMeshPtr poly_mesh);
 

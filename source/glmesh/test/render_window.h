@@ -32,15 +32,15 @@
 #define __render_window_h__
 
 #include <QOpenGLWidget>
-#include "glmesh/core/glm_win_event_handler_publisher.h"
+#include "glmesh/core/win_event_handler_publisher.h"
 
-class RenderWindow : public QOpenGLWidget, public glmesh::glmWinEventHandlerPublisher
+class RenderWindow : public QOpenGLWidget, public glmesh::WinEventHandlerPublisher
 {
     Q_OBJECT
 public:
     void initializeGL() override;
     void resizeGL(int w, int h) override;
-    void publish(const glmesh::glmWinEvent& event) override;
+    void publish(const glmesh::WinEvent& event) override;
     auto renderer()const { return renderer_.get(); }
     auto trackball()const { return trackball_.get(); }
     bool existMeshData()const;
@@ -57,7 +57,7 @@ protected:
     void mouseMoveEvent(QMouseEvent*) override;
     void wheelEvent(QWheelEvent*) override;
     glmesh::glmMeshRendererPtr renderer_;
-    std::unique_ptr<glmesh::glmTrackball> trackball_;
+    std::unique_ptr<glmesh::Trackball> trackball_;
 };
 
 #endif

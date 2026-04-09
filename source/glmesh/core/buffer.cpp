@@ -4,7 +4,7 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates 
  *  coherent OpenGL.
  *  
- *  File: ply_reader.h 
+ *  File: buffer.cpp 
  *  Copyright (c) 2024-2024 scofieldzhu
  *  
  *  MIT License
@@ -28,15 +28,62 @@
  *  SOFTWARE.
  */
 
-#ifndef __ply_reader_h__
-#define __ply_reader_h__
+#include "buffer.h"
+#include "glad/glad.h"
+#include <spdlog/spdlog.h>
 
-#include "glmesh/core/mesh_poly_data.h"
-#include <QString>
+GLMESH_NAMESPACE_BEGIN
 
-namespace ply_reader
+Buffer::Buffer(uint32_t type)
+    :type_(type)
 {
-    bool LoadFile(const QString& file, glmesh::MeshPolyData& result_mesh, bool need_triangulate);
-};
+    uint32_t buf_id = 0;
+    glCreateBuffers(1, &buf_id);
+    if(glGetError() == GL_NO_ERROR && buf_id != 0 && glIsBuffer(buf_id)){
+        id_ = buf_id;
+    }
+}
 
-#endif
+Buffer::~Buffer()
+{
+    if(id_){
+        glDeleteBuffers(1, &(id_.value()));
+    }    
+}
+
+bool Buffer::createImmutableDataStore(uint32_t size, const void* data, uint32_t flags)
+{
+    if(!valid()){
+        SPDLOG_ERROR("It's not valid buffer id!");
+        return false;
+    }
+    glNamedBufferStorage(id_.value(), size, data, flags);
+    GLenum err = glGetError();
+    if(err == GL_NO_ERROR){
+        data_store_created_ = true;
+        return true;
+    }
+    SPDLOG_ERROR("CreateImmutableDataStore failed! GLenum err:{}", err);
+    return false;
+}
+
+bool Buffer::writeSubData(int32_t offset, uint32_t size, const void* data)
+{
+    if(!valid()){
+        SPDLOG_ERROR("It's not valid buffer id!");
+        return false;
+    }
+    if(!data_store_created_){
+        SPDLOG_ERROR("Data store not created yet!");
+        return false;
+    }
+    glNamedBufferSubData(id_.value(), offset, size, data);
+    GLenum err = glGetError();
+    if(err == GL_NO_ERROR){
+        return true;
+    }
+    SPDLOG_ERROR("WriteSubData failed! GLenum err:{}", err);
+    return false;
+}
+
+GLMESH_NAMESPACE_END

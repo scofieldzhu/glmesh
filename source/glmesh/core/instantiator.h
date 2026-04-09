@@ -4,7 +4,7 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates 
  *  coherent OpenGL.
  *  
- *  File: ply_reader.h 
+ *  File: instantiator.h 
  *  Copyright (c) 2024-2024 scofieldzhu
  *  
  *  MIT License
@@ -28,15 +28,25 @@
  *  SOFTWARE.
  */
 
-#ifndef __ply_reader_h__
-#define __ply_reader_h__
+#ifndef __instantiator_h__
+#define __instantiator_h__
 
-#include "glmesh/core/mesh_poly_data.h"
-#include <QString>
+#include <memory>
+#include "glmesh/core/glm_nsp.h"
 
-namespace ply_reader
+GLMESH_NAMESPACE_BEGIN
+
+template <class D>
+class Instantiator
 {
-    bool LoadFile(const QString& file, glmesh::MeshPolyData& result_mesh, bool need_triangulate);
+public: 
+    template <typename... Args>
+    static std::shared_ptr<D> New(Args&&... args)
+    {
+        return std::make_shared<D>(std::forward<Args>(args)...);
+    }
 };
+
+GLMESH_NAMESPACE_END
 
 #endif

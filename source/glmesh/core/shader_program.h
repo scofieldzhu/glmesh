@@ -4,7 +4,7 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates 
  *  coherent OpenGL.
  *  
- *  File: ply_reader.h 
+ *  File: shader_program.h 
  *  Copyright (c) 2024-2024 scofieldzhu
  *  
  *  MIT License
@@ -28,15 +28,38 @@
  *  SOFTWARE.
  */
 
-#ifndef __ply_reader_h__
-#define __ply_reader_h__
+#ifndef __shader_program_h__
+#define __shader_program_h__
 
-#include "glmesh/core/mesh_poly_data.h"
-#include <QString>
+#include "glmesh/core/glm_base_type.h"
+#include "glmesh/core/glm_export.h"
+#include "glmesh/core/instantiator.h"
 
-namespace ply_reader
+GLMESH_NAMESPACE_BEGIN
+
+class GLMESH_API ShaderProgram : public Instantiator<ShaderProgram>
 {
-    bool LoadFile(const QString& file, glmesh::MeshPolyData& result_mesh, bool need_triangulate);
+public:
+    uint32_t addShaderSource(const char* source, uint32_t shader_type);
+    uint32_t addShaderFile(const char* filename, uint32_t shader_type);  
+    bool link();   
+    void use();
+    int32_t getUniformLocation(const char* name)const;
+    void setUniformMatrix4fv(int32_t location, const glm::mat4& mat)const;
+    void setUniformMatrix4fv(const char* name, const glm::mat4& mat)const;
+    void setUniformVec4(const char* name, const glm::vec4& v)const;
+    void setUniformVec3(const char* name, const glm::vec3& v)const;
+    void setUniformInt(const char* name, int v)const;
+    uint32_t id()const{ return id_; }
+    ShaderProgram();
+    ~ShaderProgram();
+
+private:    
+    void releaseShaders();
+    uint32_t id_ = 0;
+    std::vector<uint32_t> shaders_;
 };
+
+GLMESH_NAMESPACE_END
 
 #endif

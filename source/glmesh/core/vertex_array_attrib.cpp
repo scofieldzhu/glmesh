@@ -4,7 +4,7 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates 
  *  coherent OpenGL.
  *  
- *  File: ply_reader.h 
+ *  File: vertex_array_attrib.cpp 
  *  Copyright (c) 2024-2024 scofieldzhu
  *  
  *  MIT License
@@ -28,15 +28,33 @@
  *  SOFTWARE.
  */
 
-#ifndef __ply_reader_h__
-#define __ply_reader_h__
+#include "vertex_array_attrib.h"
+#include "glad/glad.h"
 
-#include "glmesh/core/mesh_poly_data.h"
-#include <QString>
+GLMESH_NAMESPACE_BEGIN
 
-namespace ply_reader
+VertexArrayAttrib::VertexArrayAttrib(uint32_t index)
+    :index_(index)
 {
-    bool LoadFile(const QString& file, glmesh::MeshPolyData& result_mesh, bool need_triangulate);
-};
+}
 
-#endif
+VertexArrayAttrib::~VertexArrayAttrib()
+{
+}
+
+void VertexArrayAttrib::enable()
+{
+    glEnableVertexAttribArray(index_);
+}
+
+void VertexArrayAttrib::disable()
+{
+    glDisableVertexAttribArray(index_);
+}
+
+void VertexArrayAttrib::setPointer(int32_t size, uint32_t type, bool normalized, size_t stride, const void* pointer)
+{
+    glVertexAttribPointer(index_, size, type, normalized, static_cast<GLsizei>(stride), pointer);
+}
+
+GLMESH_NAMESPACE_END
