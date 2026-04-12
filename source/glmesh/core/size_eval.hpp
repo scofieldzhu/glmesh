@@ -4,8 +4,8 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates 
  *  coherent OpenGL.
  *  
- *  File: glm_export.h 
- *  Copyright (c) 2024-2024 scofieldzhu
+ *  File: shader_program.h 
+ *  Copyright (c) 2024-2026 scofieldzhu
  *  
  *  MIT License
  *  
@@ -28,19 +28,26 @@
  *  SOFTWARE.
  */
 
-#ifndef __glm_export_h__
-#define __glm_export_h__
+#ifndef __size_eval_hpp__
+#define __size_eval_hpp__
 
+#include <cstddef>
 #include "glmesh/glm_nsp.h"
 
-#if defined(WIN32) || defined(_WIN32) || defined(_WINDOWS) || defined(_WINDLL)
-    #ifdef GLMESH_EXPORT
-        #define GLMESH_API __declspec(dllexport)
-    #else 
-        #define GLMESH_API __declspec(dllimport)
-    #endif
-#else 
-    #define GLMESH_API
-#endif
+GLMESH_NAMESPACE_BEGIN
+
+template <class Container>
+constexpr std::size_t EvalPayloadSizeOfContainer(const Container& c)
+{
+    return c.size() * sizeof(typename Container::value_type);
+}
+
+template <class... Containers>
+constexpr std::size_t EvalPayloadSizeOfContainers(const Containers&... cs)
+{
+    return (EvalPayloadSizeOfContainer(cs) + ...);
+}
+
+GLMESH_NAMESPACE_END
 
 #endif

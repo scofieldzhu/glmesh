@@ -1,12 +1,7 @@
 
-set(PROJECT_NAME "glmesh.core")
-
-project(${PROJECT_NAME})
-
-find_package(glm REQUIRED COMPONENTS glm::glm)
+set(PKG_PROJ "glmesh.core")
 
 set(EXPORT_HEAD_FILES
-    "glm_nsp.h"
     "glm_export.h"
     "glm_base_type.h"
     "buffer.h"
@@ -72,24 +67,13 @@ configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/shader_source.h"
 )
 
-add_library(${PROJECT_NAME}
-    SHARED
+add_library(${PKG_PROJ} SHARED
     ${EXPORT_HEAD_FILES}
     ${SOURCE_FILES}
 )
 
 if(WIN32)
-    target_compile_definitions(${PROJECT_NAME} PRIVATE
+    target_compile_definitions(${PKG_PROJ} PRIVATE
         GLMESH_EXPORT
     )
 endif()
-
-target_include_directories(${PROJECT_NAME} PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${INCLUDE_DIRS}
-)
-
-target_link_libraries(${PROJECT_NAME} PRIVATE
-    spdlog::spdlog
-    glm::glm
-)

@@ -29,7 +29,7 @@
  */
 
 #include "bkg_actor.h"
-#include <glad/glad.h>
+#include "glad/glad.h"
 #include "shader_program.h"
 #include "shader_source.h"
 #include "buffer.h"

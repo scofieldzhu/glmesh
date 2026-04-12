@@ -32,7 +32,7 @@
 #include <spdlog/spdlog.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
-#include <glad/glad.h>
+#include "glad/glad.h"
 #include "shader_program.h"
 #include "misc.h"
 #include "buffer.h"
@@ -90,7 +90,7 @@ void MeshActor::updateMeshCloud(glmMeshPtr mesh_cloud)
 
 bool MeshActor::createSource(MeshRenderer* ren)
 {
-    auto mesh_byte_size = cur_mesh_cloud_->calcTotalByteSize();
+    //auto mesh_byte_size = cur_mesh_cloud_->evalByteSize();
     auto boundingbox = cur_mesh_cloud_->calcBoundingBox();
     glm::vec3 center_point = cur_mesh_cloud_->calcCenterPoint();
     float diagonal_len = boundingbox.calcDiagonalLength();
@@ -141,9 +141,9 @@ bool MeshActor::createSource(MeshRenderer* ren)
     }
     vao_->bindBuffer(*buffer_);
 
-    uint32_t vbs = cur_mesh_cloud_->calcByteSizeOfVertices();
-    uint32_t cbs = cur_mesh_cloud_->calcByteSizeOfColors();
-    uint32_t nbs = cur_mesh_cloud_->calcByteSizeOfNormals();
+    uint32_t vbs = EvalPayloadSizeOfContainer(cur_mesh_cloud_->vertices);  
+    uint32_t cbs = EvalPayloadSizeOfContainer(cur_mesh_cloud_->colors); 
+    uint32_t nbs = EvalPayloadSizeOfContainer(cur_mesh_cloud_->normals);
     int32_t current_offset = 0;
     buffer_->writeSubData(current_offset, vbs, cur_mesh_cloud_->vertices.data());
     vao_->getAttrib(0)->setPointer(3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(current_offset));
@@ -167,7 +167,7 @@ bool MeshActor::createSource(MeshRenderer* ren)
         indices_buffer_->createImmutableDataStore(MeshPolyData::kMaxFacetByteSize, nullptr, GL_DYNAMIC_STORAGE_BIT);
     }
     if(cur_mesh_cloud_->existFacetData()){        
-        auto indices_data_mb = cur_mesh_cloud_->genFacetMemory();
+        auto indices_data_mb = cur_mesh_cloud_->allocFacetData();
         indices_buffer_->writeSubData(0, static_cast<uint32_t>(indices_data_mb->size()), indices_data_mb->blockData());
         vao_->bindBuffer(*indices_buffer_);
     }else{
@@ -224,7 +224,7 @@ void MeshActor::draw(MeshRenderer* ren)
         glDrawArrays(GL_POINTS, 0, static_cast<GLsizei>(cur_mesh_cloud_->vertices.size()));
     }else{            
         if(cur_mesh_cloud_->existFacetData()){
-            if(cur_mesh_cloud_->isTriangulated()){
+            if(cur_mesh_cloud_->triangulated()){
                 glDrawElements(GL_TRIANGLE_STRIP, static_cast<GLsizei>(cur_mesh_cloud_->calcIndiceCount()), GL_UNSIGNED_INT, nullptr);
             }else{
                 glEnable(GL_PRIMITIVE_RESTART);

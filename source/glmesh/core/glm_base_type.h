@@ -37,33 +37,38 @@
 #include <numeric>
 #include <optional>
 #include <glm/glm.hpp>
-#include "glmesh/core/glm_nsp.h"
+#include "glmesh/glm_nsp.h"
 
 GLMESH_NAMESPACE_BEGIN
 
+enum class BufferType
+{
+
+};
+
 using glmIndex = uint32_t;
 using glmIndices = std::vector<glmIndex>;
-static constexpr size_t kIndexTypeSize = sizeof(glmIndex);
+constexpr size_t kIndexTypeSize = sizeof(glmIndex);
 
 using glmVertex = glm::vec3;
-static constexpr size_t kVertexTypeSize = sizeof(glmVertex);
+constexpr size_t kVertexTypeSize = sizeof(glmVertex);
 using glmVertexList = std::vector<glmVertex>;
 inline size_t CalcBytesOfVertexList(const glmVertexList& vl){ return vl.size() * kVertexTypeSize; }
 
 using glmPt3 = glm::vec3;
 
 using glmNormal = glm::vec3;    
-static constexpr size_t kNormalTypeSize = kVertexTypeSize;
+constexpr size_t kNormalTypeSize = kVertexTypeSize;
 using glmNormalList = std::vector<glmNormal>;
 
 using glmClr = glm::vec4;
-static constexpr size_t kColorTypeSize = sizeof(glmClr);
+constexpr size_t kColorTypeSize = sizeof(glmClr);
 using glmColorList = std::vector<glmClr>;
 
 using glmClr3 = glm::vec3;
 
 using glmTriangleFacet = glm::u32vec3;
-using TriangleFacetList = std::vector<glmTriangleFacet>;
+using glmTriangleFacetSet = std::vector<glmTriangleFacet>;
 
 using glmPolyFacet = glmIndices;
 using glmPolyFacetList = std::vector<glmPolyFacet>;
@@ -124,8 +129,15 @@ enum class glmDisplayMode
     kFacet
 };
 
+enum class glmFacetType
+{
+    kNone,
+    kTriangle,
+    kPolygon
+};
+
 GLMESH_NAMESPACE_END
 
-#define BUFFER_OFFSET(a) ((void*)(a))
+#define BUFFER_OFFSET(a) (reinterpret_cast<void*>(a))
 
 #endif

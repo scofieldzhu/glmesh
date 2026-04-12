@@ -34,34 +34,31 @@
 #include "glmesh/core/memory_block.h"
 #include "glmesh/core/glm_export.h"
 #include "glmesh/core/instantiator.h"
+#include "glmesh/core/size_eval.hpp"
 
 GLMESH_NAMESPACE_BEGIN
 
 struct GLMESH_API MeshPolyData : public Instantiator<MeshPolyData>
 {
     static constexpr glmIndex kPolyRestartIndex = 0xFFFFFFFF;    
-    static constexpr size_t kMaxVertexNumber = 10000000;
-    static constexpr size_t kMaxFacetNumber = 100000000;
+    static constexpr size_t kMaxVertexNumber = 50e4;
+    static constexpr size_t kMaxFacetNumber = 50e4;
     static constexpr size_t kMaxVertexNumberOfPolyFacet = 6;
     static constexpr size_t kMaxFacetByteSize = kMaxFacetNumber * (kMaxVertexNumberOfPolyFacet + 1) * kIndexTypeSize;
     static constexpr size_t kMaxVertexRelatedByteSize = (kVertexTypeSize + kColorTypeSize + kNormalTypeSize) * kMaxVertexNumber;
-    static constexpr size_t kMaxMeshByteSize = kMaxVertexRelatedByteSize + kMaxFacetByteSize;
+    //static constexpr size_t kMaxMeshByteSize = kMaxVertexRelatedByteSize + kMaxFacetByteSize;
     bool valid()const;
-    glmMemoryBlockPtr genFacetMemory();
+    glmMemoryBlockPtr allocFacetData();
     glmBoundingBox calcBoundingBox()const;
     glm::vec3 calcCenterPoint()const;
-    uint32_t calcByteSizeOfVertices()const; 
-    uint32_t calcByteSizeOfColors()const; 
-    uint32_t calcByteSizeOfNormals()const; 
-    uint32_t calcTotalByteSize()const;
     uint32_t calcIndiceCount()const;
     uint32_t calcByteSizeOfFacets()const{ return calcIndiceCount() * kIndexTypeSize; }
-    bool isTriangulated()const{ return !triangle_facets.empty(); }
+    bool triangulated()const{ return !triangle_facets.empty(); }
     bool existFacetData()const{ return triangle_facets.size() || poly_facets.size(); }
     glmVertexList vertices;
     glmColorList colors;
     glmNormalList normals;
-    TriangleFacetList triangle_facets;
+    glmTriangleFacetSet triangle_facets;
     glmPolyFacetList poly_facets;
 };
 

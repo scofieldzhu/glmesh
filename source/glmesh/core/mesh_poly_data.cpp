@@ -58,52 +58,30 @@ glm::vec3 MeshPolyData::calcCenterPoint() const
     return  center * (1.0f / vertices.size());
 }
 
-uint32_t MeshPolyData::calcByteSizeOfVertices() const
-{
-    return sizeof(glmVertex) * static_cast<uint32_t>(vertices.size());
-}
-
-uint32_t MeshPolyData::calcByteSizeOfColors() const
-{
-    return sizeof(glmClr) * static_cast<uint32_t>(colors.size());
-}
-
-uint32_t MeshPolyData::calcByteSizeOfNormals() const
-{
-    return sizeof(glmNormal) * static_cast<uint32_t>(normals.size());
-}
-
-uint32_t MeshPolyData::calcTotalByteSize() const
-{
-    uint32_t total_size = calcByteSizeOfVertices();
-    total_size += calcByteSizeOfColors();
-    total_size += calcByteSizeOfNormals();
-    total_size += calcByteSizeOfFacets();
-    return total_size;
-}
-
 uint32_t MeshPolyData::calcIndiceCount() const
 {
     if(!triangle_facets.empty()){
         return triangle_facets.size() * 3;
     }
-    uint32_t count = 0;
+    std::size_t count = 0;
     if(!poly_facets.empty()){
-        for(const auto& pf : poly_facets)
-            count += (uint32_t)(pf.size());
-        count += poly_facets.size() - 1;
+        for(const auto& pf : poly_facets){
+            count += pf.size();
+        }
+        count += (poly_facets.size() - 1);
     }
     return count;
 }
 
 bool MeshPolyData::valid() const
 {
-    if(vertices.empty() || vertices.size() > kMaxVertexNumber)
+    if(vertices.empty() || vertices.size() > kMaxVertexNumber){
         return false;
+    }
     return calcByteSizeOfFacets() < MeshPolyData::kMaxFacetByteSize;
 }
 
-glmMemoryBlockPtr MeshPolyData::genFacetMemory()
+glmMemoryBlockPtr MeshPolyData::allocFacetData()
 {
     if(poly_facets.empty()){
         if(triangle_facets.empty()){

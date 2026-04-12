@@ -41,6 +41,8 @@ Buffer::Buffer(uint32_t type)
     glCreateBuffers(1, &buf_id);
     if(glGetError() == GL_NO_ERROR && buf_id != 0 && glIsBuffer(buf_id)){
         id_ = buf_id;
+    }else{
+        SPDLOG_ERROR("Create buffer error! err no:{}", glGetError());
     }
 }
 

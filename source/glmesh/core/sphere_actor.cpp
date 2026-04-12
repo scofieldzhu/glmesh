@@ -29,7 +29,7 @@
  */
 
 #include "sphere_actor.h"
-#include <glad/glad.h>
+#include "glad/glad.h"
 #include <spdlog/spdlog.h>
 #include <algorithm>
 #include "vertex_array.h"

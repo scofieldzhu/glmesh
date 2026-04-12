@@ -32,7 +32,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
 #include <spdlog/spdlog.h>
-#include <glad/glad.h>
+#include "glad/glad.h"
 #include "mesh_poly_data.h"
 #include "shader_program.h"
 #include "sphere_actor.h"

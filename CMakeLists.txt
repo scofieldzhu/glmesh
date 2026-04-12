@@ -31,35 +31,40 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-set(build_bin "${CMAKE_BINARY_DIR}/bin")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${build_bin})
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${build_bin})
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${build_bin})
-
 find_package(spdlog REQUIRED)
+message(STATUS "Find spdlog library! ${SPDLOG_VERSION}")
 find_package(glm REQUIRED)
+message(STATUS "Find glm library! ${GLM_VERSION}")
+find_package(PCL REQUIRED)
+message(STATUS "Find pcl library! ${PCL_VERSION}")
 
-add_definitions(-DGLM_ENABLE_EXPERIMENTAL)
-
-include_directories(
-	${CMAKE_SOURCE_DIR}/source
+add_definitions(
+  -DGLM_ENABLE_EXPERIMENTAL
 )
 
-add_compile_options(/wd4996 /wd4275 /wd4251)
+add_compile_definitions(
+  ${PCL_DEFINITIONS}  
+)
 
-# set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/install")
+add_compile_options(
+  /wd4996 
+  /wd4275 
+  /wd4251 
+  /wd4312
+)
 
-# set(CMAKE_INSTALL_INCLUDE "${CMAKE_INSTALL_PREFIX}/include/agile_vision")
-# set(CMAKE_INSTALL_LIB "${CMAKE_INSTALL_PREFIX}/lib")
-# set(CMAKE_INSTALL_BIN "${CMAKE_INSTALL_PREFIX}/bin")
+include_directories(
+  ${CMAKE_SOURCE_DIR}/source
+  ${INCLUDE_DIRS}
+  ${PCL_INCLUDE_DIRS}
+)
 
-add_subdirectory(source/${PROJECT_NAME}/core)
+link_libraries(
+  ${PCL_LIBRARIES}
+  spdlog::spdlog
+  glm::glm
+)
 
-add_subdirectory(source/${PROJECT_NAME}/test)
-
-# install third-party libraries
-# if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-# 	install(FILES ${trd_bin}/spdlogd.dll DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
-# else()
-# 	install(FILES ${trd_bin}/spdlog.dll DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
-# endif()
+#add_subdirectory(source/${PROJECT_NAME}/core)
+add_subdirectory(source/${PROJECT_NAME}/kernel)
+#add_subdirectory(source/${PROJECT_NAME}/test)

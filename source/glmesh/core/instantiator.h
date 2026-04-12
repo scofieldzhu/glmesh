@@ -32,7 +32,7 @@
 #define __instantiator_h__
 
 #include <memory>
-#include "glmesh/core/glm_nsp.h"
+#include "glmesh/glm_nsp.h"
 
 GLMESH_NAMESPACE_BEGIN
 
