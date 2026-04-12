@@ -28,10 +28,11 @@
 *  SOFTWARE.
 */
 #include "gl_point_cloud.h"
+#include "glad.h"
 
 GLMESH_NAMESPACE_BEGIN
 
-void GLPointCloud::upload(const std::vector<GpuVertex>& points, GLenum usage)
+void GLPointCloud::upload(const std::vector<GpuVertex>& points, uint32_t usage)
 {
     vao_.bind();
     vbo_.upload(points.data(), points.size() * sizeof(GpuVertex), usage);

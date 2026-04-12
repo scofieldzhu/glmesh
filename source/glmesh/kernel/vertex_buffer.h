@@ -31,7 +31,6 @@
 #define __vertex_buffer_h__
 
 #include "glmesh/kernel/glm_kernel_basetype.h"
-#include "glmesh/kernel/glad.h"
 
 GLMESH_NAMESPACE_BEGIN
 
@@ -39,7 +38,7 @@ class VertexBuffer
 {
 public:
     void bind() const noexcept;
-    void upload(const void* data, std::size_t size, GLenum usage = GL_STATIC_DRAW) const;
+    void upload(const void* data, std::size_t size, uint32_t usage) const;
     VertexBuffer& operator=(VertexBuffer&& other) noexcept;
 	VertexBuffer();	
 	VertexBuffer(const VertexBuffer&) = delete;
@@ -50,7 +49,7 @@ public:
     ~VertexBuffer();
 
 private:
-    GLuint id_ = 0;
+    uint32_t id_ = 0;
 };
 
 GLMESH_NAMESPACE_END

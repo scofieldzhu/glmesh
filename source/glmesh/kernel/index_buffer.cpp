@@ -28,6 +28,7 @@
 *  SOFTWARE.
 */
 #include "index_buffer.h"
+#include "glad.h"
 
 GLMESH_NAMESPACE_BEGIN
 
@@ -59,7 +60,7 @@ void IndexBuffer::bind() const noexcept
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id_);
 }
 
-void IndexBuffer::upload(const void* data, std::size_t size, GLenum usage /*= GL_STATIC_DRAW*/) const
+void IndexBuffer::upload(const void* data, std::size_t size, uint32_t usage /*= GL_STATIC_DRAW*/) const
 {
 	bind();
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizeiptr>(size), data, usage);

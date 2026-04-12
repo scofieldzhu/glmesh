@@ -4,7 +4,7 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates 
  *  coherent OpenGL.
  *  
- *  File: index_buffer.h 
+ *  File: material.h
  *  Copyright (c) 2024-2026 scofieldzhu
  *  
  *  MIT License
@@ -27,29 +27,26 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *  SOFTWARE.
  */
-#ifndef __index_buffer_h__
-#define __index_buffer_h__
+#ifndef __material_h__
+#define __material_h__
 
 #include "glmesh/kernel/glm_kernel_basetype.h"
 
 GLMESH_NAMESPACE_BEGIN
 
-class IndexBuffer
-{
-public:
-    void bind() const noexcept;
-    void upload(const void* data, std::size_t size, uint32_t usage) const;
-    IndexBuffer& operator=(IndexBuffer&& other) noexcept;
-    IndexBuffer();	
-    IndexBuffer(const IndexBuffer&) = delete;
-    IndexBuffer& operator=(const IndexBuffer&) = delete;
-    IndexBuffer(IndexBuffer&& other) noexcept
-        :id_(std::exchange(other.id_, 0)){
-    }
-    ~IndexBuffer();
+class ShaderProgram;
 
-private:
-    uint32_t id_ = 0;
+struct Material
+{
+    ShaderProgram* shader = nullptr;
+
+    glm::vec3 base_color {1.0f, 1.0f, 1.0f};
+    glm::vec3 light_dir  {1.0f, -1.0f, -1.0f};
+
+    float ambient  = 0.2f;
+    float diffuse  = 1.0f;
+
+    void bind() const;
 };
 
 GLMESH_NAMESPACE_END

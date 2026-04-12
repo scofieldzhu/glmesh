@@ -28,6 +28,7 @@
 *  SOFTWARE.
 */
 #include "vertex_buffer.h"
+#include "glad.h"
 
 GLMESH_NAMESPACE_BEGIN
 
@@ -59,7 +60,7 @@ void VertexBuffer::bind() const noexcept
 	glBindBuffer(GL_ARRAY_BUFFER, id_);
 }
 
-void VertexBuffer::upload(const void* data, std::size_t size, GLenum usage) const
+void VertexBuffer::upload(const void* data, std::size_t size, uint32_t usage) const
 {
 	bind();
 	glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(size), data, usage);

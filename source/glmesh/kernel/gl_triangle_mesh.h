@@ -40,7 +40,7 @@ GLMESH_NAMESPACE_BEGIN
 class GLTriangleMesh
 {
 public:
-    void upload(const std::vector<GpuVertex>& vertices, const std::vector<std::uint32_t>& indices, GLenum usage = GL_STATIC_DRAW);
+    void upload(const std::vector<GpuVertex>& vertices, const std::vector<uint32_t>& indices, uint32_t usage);
     void draw() const noexcept;
 
 private:

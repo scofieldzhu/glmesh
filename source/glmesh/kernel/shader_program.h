@@ -4,7 +4,7 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates 
  *  coherent OpenGL.
  *  
- *  File: index_buffer.h 
+ *  File: shader_program.h
  *  Copyright (c) 2024-2026 scofieldzhu
  *  
  *  MIT License
@@ -27,29 +27,39 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *  SOFTWARE.
  */
-#ifndef __index_buffer_h__
-#define __index_buffer_h__
+#ifndef __shader_program_h__
+#define __shader_program_h__
 
+#include "glmesh/kernel/glm_kernel_export.h"
 #include "glmesh/kernel/glm_kernel_basetype.h"
+#include <unordered_map>
 
 GLMESH_NAMESPACE_BEGIN
 
-class IndexBuffer
+class ShaderProgram
 {
 public:
-    void bind() const noexcept;
-    void upload(const void* data, std::size_t size, uint32_t usage) const;
-    IndexBuffer& operator=(IndexBuffer&& other) noexcept;
-    IndexBuffer();	
-    IndexBuffer(const IndexBuffer&) = delete;
-    IndexBuffer& operator=(const IndexBuffer&) = delete;
-    IndexBuffer(IndexBuffer&& other) noexcept
-        :id_(std::exchange(other.id_, 0)){
-    }
-    ~IndexBuffer();
+    void createFromSource(std::string_view vertex_shader_source, std::string_view frag_shader_source);
+    void createFromFiles(const std::string& vertex_shader_file_path, const std::string& frag_shader_file_path);
+    void use() const noexcept;
+    uint32_t id() const noexcept { return program_id_; }
+    void destroy() noexcept;
+    int32_t uniformLocation(std::string_view name) const;
+    void setInt(std::string_view name, int value) const;
+    void setFloat(std::string_view name, float value) const;
+    void setVec3(std::string_view name, const glm::vec3& value) const;
+    void setMat4(std::string_view name, const glm::mat4& value) const;
+    ShaderProgram& operator=(const ShaderProgram&) = delete;
+    ShaderProgram() = default;
+    ShaderProgram(const ShaderProgram&) = delete;    
+    ShaderProgram(std::string_view vertex_shader_source, std::string_view frag_shader_source);
+    ShaderProgram(ShaderProgram&& other) noexcept;
+    ShaderProgram& operator=(ShaderProgram&& other) noexcept;
+    ~ShaderProgram();
 
 private:
-    uint32_t id_ = 0;
+    uint32_t program_id_ = 0;
+    mutable std::unordered_map<std::string, int32_t> uniform_cache_;
 };
 
 GLMESH_NAMESPACE_END

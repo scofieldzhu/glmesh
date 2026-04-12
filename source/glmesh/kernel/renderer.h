@@ -4,7 +4,7 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates 
  *  coherent OpenGL.
  *  
- *  File: index_buffer.h 
+ *  File: renderer.h
  *  Copyright (c) 2024-2026 scofieldzhu
  *  
  *  MIT License
@@ -27,30 +27,21 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *  SOFTWARE.
  */
-#ifndef __index_buffer_h__
-#define __index_buffer_h__
+#ifndef __renderer_h__
+#define __renderer_h__
 
-#include "glmesh/kernel/glm_kernel_basetype.h"
+#include "glmesh/kernel/gl_triangle_mesh.h"
 
 GLMESH_NAMESPACE_BEGIN
 
-class IndexBuffer
-{
-public:
-    void bind() const noexcept;
-    void upload(const void* data, std::size_t size, uint32_t usage) const;
-    IndexBuffer& operator=(IndexBuffer&& other) noexcept;
-    IndexBuffer();	
-    IndexBuffer(const IndexBuffer&) = delete;
-    IndexBuffer& operator=(const IndexBuffer&) = delete;
-    IndexBuffer(IndexBuffer&& other) noexcept
-        :id_(std::exchange(other.id_, 0)){
-    }
-    ~IndexBuffer();
+class GLTriangleMesh;
+struct Material;
 
-private:
-    uint32_t id_ = 0;
-};
+void DrawMesh(const GLTriangleMesh& mesh,
+              const Material& material,
+              const glm::mat4& model,
+              const glm::mat4& view,
+              const glm::mat4& proj);
 
 GLMESH_NAMESPACE_END
 

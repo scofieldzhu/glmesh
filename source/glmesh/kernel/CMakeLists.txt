@@ -14,13 +14,19 @@ set(EXPORT_HEAD_FILES
     "index_buffer.h"
     "gl_triangle_mesh.h"
     "gl_point_cloud.h"
-    "cpu_to_gpu.h"
-    "glad.h"
-    "khrplatform.h"
+    "cpu_to_gpu.h"    
+    "shader_program.h"
+    "renderer.h"
+    "material.h"
 )
 
 set(SOURCE_FILES
+    "khrplatform.h"
     "cpu_to_gpu.cpp"
+    "material.cpp"
+    "renderer.cpp"
+    "shader_program.cpp"
+    "glad.h"
     "glad.c"
     "gl_triangle_mesh.cpp"
     "gl_point_cloud.cpp"

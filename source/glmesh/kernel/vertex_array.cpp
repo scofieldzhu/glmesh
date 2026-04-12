@@ -28,6 +28,7 @@
 *  SOFTWARE.
 */
 #include "vertex_array.h"
+#include "glad.h"
 
 GLMESH_NAMESPACE_BEGIN
 
@@ -63,6 +64,11 @@ VertexArray::VertexArray(VertexArray&& other) noexcept
 void VertexArray::bind() const noexcept
 {
 	glBindVertexArray(id_);
+}
+
+void VertexArray::unbind() const noexcept
+{
+	glBindVertexArray(0);
 }
 
 GLMESH_NAMESPACE_END

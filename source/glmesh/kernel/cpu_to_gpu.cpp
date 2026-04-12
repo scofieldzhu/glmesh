@@ -35,7 +35,8 @@
 #include <pcl/io/ply_io.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
-#include "glmesh/kernel/gl_triangle_mesh.h"
+#include "gl_triangle_mesh.h"
+#include "glad.h"
 
 GLMESH_NAMESPACE_BEGIN
 
@@ -424,7 +425,7 @@ GLTriangleMesh loadPlyRenderableMesh(const std::string& plyPath)
     const std::vector<GpuVertex> gpuVertices = buildGpuVertices(triangleMesh.vertices);
 
     GLTriangleMesh mesh;
-    mesh.upload(gpuVertices, triangleMesh.indices);
+    mesh.upload(gpuVertices, triangleMesh.indices, GL_STATIC_DRAW);
     return mesh;
 }
 

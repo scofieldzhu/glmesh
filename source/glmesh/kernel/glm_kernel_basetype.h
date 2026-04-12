@@ -34,10 +34,12 @@
 #include <vector>
 #include <memory>
 #include <cstdint>
-#include <numeric>
-#include <optional>
+#include <string>
+#include <string_view>
 #include <glm/glm.hpp>
-#include "glmesh/glm_nsp.h"
+#include <glm/mat4x4.hpp>
+#include <glm/vec3.hpp>
+#include "glmesh/kernel/glm_kernel_export.h"
 
 GLMESH_NAMESPACE_BEGIN
 

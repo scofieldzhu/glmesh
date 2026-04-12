@@ -28,16 +28,18 @@
 *  SOFTWARE.
 */
 #include "gl_triangle_mesh.h"
+#include "glad.h"
 
 GLMESH_NAMESPACE_BEGIN
 
-void GLTriangleMesh::upload(const std::vector<GpuVertex>& vertices, const std::vector<uint32_t>& indices, GLenum usage)
+void GLTriangleMesh::upload(const std::vector<GpuVertex>& vertices, const std::vector<uint32_t>& indices, uint32_t usage)
 {
+    index_count_ = indices.size();
     vao_.bind();
     vbo_.upload(vertices.data(), vertices.size() * sizeof(GpuVertex), usage);
     ebo_.upload(indices.data(), indices.size() * sizeof(uint32_t), usage);
     GpuVertex::SetupAttribs();
-    index_count_ = indices.size();
+    vao_.unbind();    
 }
 
 void GLTriangleMesh::draw() const noexcept

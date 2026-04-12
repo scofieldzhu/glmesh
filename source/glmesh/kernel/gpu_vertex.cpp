@@ -34,6 +34,9 @@ GLMESH_NAMESPACE_BEGIN
 
 void GpuVertex::SetupAttribs()
 {
+    static_assert(std::is_standard_layout_v<GpuVertex>,
+                    "GpuVertex must be standard-layout，then offsetof make sense!");
+                    
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(
         0, 3, GL_FLOAT, GL_FALSE,

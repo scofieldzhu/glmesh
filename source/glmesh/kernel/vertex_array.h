@@ -31,13 +31,13 @@
 #define __vertex_array_h__
 
 #include "glmesh/kernel/glm_kernel_basetype.h"
-#include "glmesh/kernel/glad.h"
 
 GLMESH_NAMESPACE_BEGIN
 
 class VertexArray
 {
 public:
+    void unbind() const noexcept;
     void bind() const noexcept;
     VertexArray& operator=(VertexArray&& other) noexcept;
     VertexArray();
@@ -47,7 +47,7 @@ public:
     ~VertexArray();
 
 private:
-    GLuint id_ = 0;
+    uint32_t id_ = 0;
 };
 
 GLMESH_NAMESPACE_END

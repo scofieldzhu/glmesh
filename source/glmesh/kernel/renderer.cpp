@@ -4,7 +4,7 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates 
  *  coherent OpenGL.
  *  
- *  File: index_buffer.h 
+ *  File: renderer.h
  *  Copyright (c) 2024-2026 scofieldzhu
  *  
  *  MIT License
@@ -27,31 +27,44 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *  SOFTWARE.
  */
-#ifndef __index_buffer_h__
-#define __index_buffer_h__
-
-#include "glmesh/kernel/glm_kernel_basetype.h"
+#include "renderer.h"
+#include "gl_triangle_mesh.h"
+#include "material.h"
+#include "shader_program.h"
 
 GLMESH_NAMESPACE_BEGIN
 
-class IndexBuffer
+void DrawMesh(const GLTriangleMesh &mesh, 
+              const Material &material, 
+              const glm::mat4 &model, 
+              const glm::mat4 &view, 
+              const glm::mat4 &proj
+            )
 {
-public:
-    void bind() const noexcept;
-    void upload(const void* data, std::size_t size, uint32_t usage) const;
-    IndexBuffer& operator=(IndexBuffer&& other) noexcept;
-    IndexBuffer();	
-    IndexBuffer(const IndexBuffer&) = delete;
-    IndexBuffer& operator=(const IndexBuffer&) = delete;
-    IndexBuffer(IndexBuffer&& other) noexcept
-        :id_(std::exchange(other.id_, 0)){
-    }
-    ~IndexBuffer();
+    material.bind();
 
-private:
-    uint32_t id_ = 0;
-};
+    material.shader->setMat4("uModel", model);
+    material.shader->setMat4("uView", view);
+    material.shader->setMat4("uProj", proj);
+
+    mesh.draw();
+}
+
+// app loop:
+// ShaderProgram meshShader;
+// meshShader.createFromFiles("mesh.vert", "mesh.frag");
+
+// Material material;
+// material.shader = &meshShader;
+// material.base_color = glm::vec3(1.0f, 1.0f, 1.0f);
+// material.light_dir  = glm::vec3(1.0f, -1.0f, -1.0f);
+// material.ambient    = 0.2f;
+// material.diffuse    = 1.0f;
+
+// GLTriangleMesh mesh = loadPlyRenderableMesh("bunny.ply");
+
+
+//render:
+// DrawMesh(mesh, material, model, view, proj);
 
 GLMESH_NAMESPACE_END
-
-#endif

@@ -39,7 +39,7 @@ GLMESH_NAMESPACE_BEGIN
 class GLPointCloud
 {
 public:
-    void upload(const std::vector<GpuVertex>& points, GLenum usage = GL_STATIC_DRAW);
+    void upload(const std::vector<GpuVertex>& points, uint32_t usage);
     void draw() const noexcept;
 
 private:
