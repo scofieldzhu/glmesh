@@ -36,7 +36,7 @@ GLMESH_NAMESPACE_BEGIN
 
 class ShaderProgram;
 
-struct Material
+struct GLMESH_KERNEL_API Material
 {
     ShaderProgram* shader = nullptr;
 

@@ -4,7 +4,7 @@
 *  It reduces the amount of OpenGL code required for rendering and facilitates 
 *  coherent OpenGL.
 *  
-*  File: cpu_to_gpu.h
+*  File: gl_init.h
 *  Copyright (c) 2024-2026 scofieldzhu
 *  
 *  MIT License
@@ -27,38 +27,17 @@
 *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 *  SOFTWARE.
 */
-#ifndef __cpu_to_gpu_h__
-#define __cpu_to_gpu_h__
+#ifndef __gl_init_h__
+#define __gl_init_h__
 
-#include "glmesh/kernel/cpu_vertex.h"
-#include "glmesh/kernel/gpu_vertex.h"
-#include "glmesh/kernel/cpu_polygon_mesh.h"
-#include "glmesh/kernel/cpu_triangle_mesh.h"
-#include "glmesh/kernel/gl_triangle_mesh.h"
+#include "glmesh/kernel/glm_kernel_export.h"
 
 GLMESH_NAMESPACE_BEGIN
 
-inline GpuVertex toGpuVertex(const CpuVertex& v)
-{
-    return {
-        .position = v.position,
-        .normal   = v.normal,
-        .color    = v.color
-    };
-}
+using GlProcResolver = void* (*)(const char* name);
 
-inline std::vector<GpuVertex> toGpuVertices(const std::vector<CpuVertex>& src)
-{
-    std::vector<GpuVertex> dst;
-    dst.reserve(src.size());
-
-    for (const auto& v : src)
-        dst.push_back(toGpuVertex(v));
-
-    return dst;  
-}
-
-GLMESH_KERNEL_API GLTriangleMesh LoadPlyRenderableMesh(const std::string& plyPath);
+GLMESH_KERNEL_API bool InitializeGLProc(GlProcResolver resolver);
+GLMESH_KERNEL_API bool IsGLProcInitialized();
 
 GLMESH_NAMESPACE_END
 

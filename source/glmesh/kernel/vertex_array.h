@@ -34,7 +34,7 @@
 
 GLMESH_NAMESPACE_BEGIN
 
-class VertexArray
+class GLMESH_KERNEL_API VertexArray
 {
 public:
     void unbind() const noexcept;

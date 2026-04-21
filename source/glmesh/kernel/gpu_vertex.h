@@ -34,7 +34,7 @@
 
 GLMESH_NAMESPACE_BEGIN
 
-struct GpuVertex
+struct GLMESH_KERNEL_API GpuVertex
 {
     static void SetupAttribs();
     glm::vec3 position;

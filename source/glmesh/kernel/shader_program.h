@@ -36,7 +36,7 @@
 
 GLMESH_NAMESPACE_BEGIN
 
-class ShaderProgram
+class GLMESH_KERNEL_API ShaderProgram
 {
 public:
     void createFromSource(std::string_view vertex_shader_source, std::string_view frag_shader_source);

@@ -37,7 +37,7 @@ GLMESH_NAMESPACE_BEGIN
 class GLTriangleMesh;
 struct Material;
 
-void DrawMesh(const GLTriangleMesh& mesh,
+GLMESH_KERNEL_API void DrawMesh(const GLTriangleMesh& mesh,
               const Material& material,
               const glm::mat4& model,
               const glm::mat4& view,

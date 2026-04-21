@@ -51,7 +51,7 @@ namespace{
 
     GLuint CompileShader(GLenum type, std::string_view source)
     {
-        const GLuint shader_id = glCreateShader(type);
+        const GLuint shader_id = ::glCreateShader(type);
         const auto source_data = reinterpret_cast<const GLchar*>(source.data());
         const auto data_length = static_cast<GLint>(source.size());
         glShaderSource(shader_id, 1, &source_data, &data_length);

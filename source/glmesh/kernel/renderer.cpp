@@ -31,15 +31,16 @@
 #include "gl_triangle_mesh.h"
 #include "material.h"
 #include "shader_program.h"
+#include "glad.h"
+#include <spdlog/spdlog.h>
 
 GLMESH_NAMESPACE_BEGIN
 
-void DrawMesh(const GLTriangleMesh &mesh, 
-              const Material &material, 
-              const glm::mat4 &model, 
-              const glm::mat4 &view, 
-              const glm::mat4 &proj
-            )
+void DrawMesh(const GLTriangleMesh &mesh,
+              const Material &material,
+              const glm::mat4 &model,
+              const glm::mat4 &view,
+              const glm::mat4 &proj)
 {
     material.bind();
 

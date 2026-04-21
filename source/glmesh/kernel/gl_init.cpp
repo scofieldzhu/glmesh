@@ -4,7 +4,7 @@
 *  It reduces the amount of OpenGL code required for rendering and facilitates 
 *  coherent OpenGL.
 *  
-*  File: cpu_to_gpu.h
+*  File: gl_init.cpp
 *  Copyright (c) 2024-2026 scofieldzhu
 *  
 *  MIT License
@@ -27,39 +27,29 @@
 *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 *  SOFTWARE.
 */
-#ifndef __cpu_to_gpu_h__
-#define __cpu_to_gpu_h__
-
-#include "glmesh/kernel/cpu_vertex.h"
-#include "glmesh/kernel/gpu_vertex.h"
-#include "glmesh/kernel/cpu_polygon_mesh.h"
-#include "glmesh/kernel/cpu_triangle_mesh.h"
-#include "glmesh/kernel/gl_triangle_mesh.h"
+#include "gl_init.h"
+#include "glad.h"
+#include <spdlog/spdlog.h>
 
 GLMESH_NAMESPACE_BEGIN
 
-inline GpuVertex toGpuVertex(const CpuVertex& v)
+namespace
 {
-    return {
-        .position = v.position,
-        .normal   = v.normal,
-        .color    = v.color
-    };
+    bool sGLInitialized = false;
 }
 
-inline std::vector<GpuVertex> toGpuVertices(const std::vector<CpuVertex>& src)
+bool InitializeGLProc(GlProcResolver resolver)
 {
-    std::vector<GpuVertex> dst;
-    dst.reserve(src.size());
-
-    for (const auto& v : src)
-        dst.push_back(toGpuVertex(v));
-
-    return dst;  
+    if(resolver == nullptr){
+        return false;
+    }
+    sGLInitialized = (gladLoadGLLoader(reinterpret_cast<GLADloadproc>(resolver)) != 0);
+    return sGLInitialized;
 }
 
-GLMESH_KERNEL_API GLTriangleMesh LoadPlyRenderableMesh(const std::string& plyPath);
+bool IsGLProcInitialized()
+{
+    return sGLInitialized;
+}
 
 GLMESH_NAMESPACE_END
-
-#endif

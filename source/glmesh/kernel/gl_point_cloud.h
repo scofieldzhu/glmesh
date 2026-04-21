@@ -36,7 +36,7 @@
 
 GLMESH_NAMESPACE_BEGIN
 
-class GLPointCloud
+class GLMESH_KERNEL_API GLPointCloud
 {
 public:
     void upload(const std::vector<GpuVertex>& points, uint32_t usage);

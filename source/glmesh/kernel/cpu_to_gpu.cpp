@@ -412,7 +412,7 @@ static std::vector<GpuVertex> buildGpuVertices(const std::vector<CpuVertex>& cpu
     return gpuVertices;
 }
 
-GLTriangleMesh loadPlyRenderableMesh(const std::string& plyPath)
+GLTriangleMesh LoadPlyRenderableMesh(const std::string& plyPath)
 {
     const CpuPolygonMesh polygonMesh = loadPlyAsCpuPolygonMesh(plyPath);
 

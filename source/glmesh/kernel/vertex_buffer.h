@@ -34,7 +34,7 @@
 
 GLMESH_NAMESPACE_BEGIN
 
-class VertexBuffer
+class GLMESH_KERNEL_API VertexBuffer
 {
 public:
     void bind() const noexcept;

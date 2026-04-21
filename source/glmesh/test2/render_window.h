@@ -4,8 +4,8 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates 
  *  coherent OpenGL.
  *  
- *  File: index_buffer.h 
- *  Copyright (c) 2024-2026 scofieldzhu
+ *  File: render_window.h 
+ *  Copyright (c) 2024-2024 scofieldzhu
  *  
  *  MIT License
  *  
@@ -27,31 +27,43 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *  SOFTWARE.
  */
-#ifndef __index_buffer_h__
-#define __index_buffer_h__
 
-#include "glmesh/kernel/glm_kernel_basetype.h"
+#ifndef __render_window_h__
+#define __render_window_h__
 
-GLMESH_NAMESPACE_BEGIN
+#include <QOpenGLWidget>
+#include "glmesh/kernel/renderer.h"
+#include "glmesh/kernel/gl_triangle_mesh.h"
 
-class GLMESH_KERNEL_API IndexBuffer
+class RenderWindow : public QOpenGLWidget//, public glmesh::WinEventHandlerPublisher
 {
+    Q_OBJECT
 public:
-    void bind() const noexcept;
-    void upload(const void* data, std::size_t size, uint32_t usage) const;
-    IndexBuffer& operator=(IndexBuffer&& other) noexcept;
-    IndexBuffer();	
-    IndexBuffer(const IndexBuffer&) = delete;
-    IndexBuffer& operator=(const IndexBuffer&) = delete;
-    IndexBuffer(IndexBuffer&& other) noexcept
-        :id_(std::exchange(other.id_, 0)){
+    void initializeGL() override;
+    void resizeGL(int w, int h) override;
+    // void publish(const glmesh::WinEvent& event) override;
+    // auto renderer()const { return renderer_.get(); }
+    // auto trackball()const { return trackball_.get(); }
+    // bool existMeshData()const;
+    void loadMeshData(glmesh::GLTriangleMesh* mesh, glmesh::Material* m){
+        mesh_ = mesh;
+        material_ = m;
     }
-    ~IndexBuffer();
+    //void deinitializeGL() override;
+    void paintGL() override;    
+    void keyPressEvent(QKeyEvent* event) override;    
+    RenderWindow(QWidget* parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+    virtual ~RenderWindow();
 
-private:
-    uint32_t id_ = 0;
+protected:
+    void mousePressEvent(QMouseEvent*) override;
+    void mouseReleaseEvent(QMouseEvent*) override;
+    void mouseMoveEvent(QMouseEvent*) override;
+    void wheelEvent(QWheelEvent*) override;
+    // glmesh::glmMeshRendererPtr renderer_;
+    // std::unique_ptr<glmesh::Trackball> trackball_;
+    glmesh::GLTriangleMesh* mesh_ = nullptr;
+    glmesh::Material* material_ = nullptr;
 };
-
-GLMESH_NAMESPACE_END
 
 #endif

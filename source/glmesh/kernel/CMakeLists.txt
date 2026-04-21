@@ -18,9 +18,11 @@ set(EXPORT_HEAD_FILES
     "shader_program.h"
     "renderer.h"
     "material.h"
+    "gl_init.h"
 )
 
 set(SOURCE_FILES
+    "gl_init.cpp"
     "khrplatform.h"
     "cpu_to_gpu.cpp"
     "material.cpp"

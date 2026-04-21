@@ -37,7 +37,7 @@
 
 GLMESH_NAMESPACE_BEGIN
 
-class GLTriangleMesh
+class GLMESH_KERNEL_API GLTriangleMesh
 {
 public:
     void upload(const std::vector<GpuVertex>& vertices, const std::vector<uint32_t>& indices, uint32_t usage);
