@@ -7,8 +7,8 @@
 #include <stdexcept>
 
 #include "glmesh/kernel/renderer.h"
-#include "glmesh/kernel/cpu_to_gpu.h"
-#include "glmesh/kernel/gl_init.h"
+#include "glmesh/kernel/core/cpu_to_gpu.h"
+#include "glmesh/kernel/gl/gl_init.h"
 
 #include <QOpenGLContext>
 #include <QDebug>
@@ -16,48 +16,48 @@
 using namespace glmesh;
 
 static const char* kMeshVertexShader = R"(
-#version 330 core
+    #version 330 core
 
-layout (location = 0) in vec3 aPosition;
-layout (location = 1) in vec3 aNormal;
-layout (location = 2) in vec3 aColor;
+    layout (location = 0) in vec3 aPosition;
+    layout (location = 1) in vec3 aNormal;
+    layout (location = 2) in vec3 aColor;
 
-uniform mat4 uModel;
-uniform mat4 uView;
-uniform mat4 uProj;
+    uniform mat4 uModel;
+    uniform mat4 uView;
+    uniform mat4 uProj;
 
-out vec3 vNormal;
-out vec3 vColor;
+    out vec3 vNormal;
+    out vec3 vColor;
 
-void main()
-{
-    gl_Position = uProj * uView * uModel * vec4(aPosition, 1.0);
-    vNormal = mat3(transpose(inverse(uModel))) * aNormal;
-    vColor = aColor;
-}
+    void main()
+    {
+        gl_Position = uProj * uView * uModel * vec4(aPosition, 1.0);
+        vNormal = mat3(transpose(inverse(uModel))) * aNormal;
+        vColor = aColor;
+    }
 )";
 
 static const char* kMeshFragmentShader = R"(
-#version 330 core
+    #version 330 core
 
-in vec3 vNormal;
-in vec3 vColor;
+    in vec3 vNormal;
+    in vec3 vColor;
 
-uniform vec3 uLightDir;
-uniform float uAmbient;
+    uniform vec3 uLightDir;
+    uniform float uAmbient;
 
-out vec4 FragColor;
+    out vec4 FragColor;
 
-void main()
-{
-    vec3 N = normalize(vNormal);
-    vec3 L = normalize(-uLightDir);
+    void main()
+    {
+        vec3 N = normalize(vNormal);
+        vec3 L = normalize(-uLightDir);
 
-    float lambert = max(dot(N, L), 0.0);
-    vec3 color = vColor * (uAmbient + lambert);
+        float lambert = max(dot(N, L), 0.0);
+        vec3 color = vColor * (uAmbient + lambert);
 
-    FragColor = vec4(color, 1.0);
-}
+        FragColor = vec4(color, 1.0);
+    }
 )";
 
 namespace
@@ -101,8 +101,6 @@ qDebug() << "GLSL_VERSION ="
 
     ::glEnable(GL_DEPTH_TEST);
     ::glClearColor(0.10f, 0.12f, 0.15f, 1.0f);
-
-    qDebug() << "current context =" << QOpenGLContext::currentContext();
 
     shader_.createFromSource(kMeshVertexShader, kMeshFragmentShader);
 

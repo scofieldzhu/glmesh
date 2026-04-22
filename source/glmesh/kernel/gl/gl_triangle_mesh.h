@@ -30,10 +30,10 @@
 #ifndef __gl_triangle_mesh_h__
 #define __gl_triangle_mesh_h__
 
-#include "glmesh/kernel/gpu_vertex.h"
-#include "glmesh/kernel/vertex_array.h"
-#include "glmesh/kernel/vertex_buffer.h"
-#include "glmesh/kernel/index_buffer.h"
+#include "glmesh/kernel/gl/gpu_vertex.h"
+#include "glmesh/kernel/gl/vertex_array.h"
+#include "glmesh/kernel/gl/vertex_buffer.h"
+#include "glmesh/kernel/gl/index_buffer.h"
 
 GLMESH_NAMESPACE_BEGIN
 

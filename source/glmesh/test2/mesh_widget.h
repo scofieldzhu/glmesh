@@ -9,9 +9,9 @@
 
 #include <memory>
 
-#include "glmesh/kernel/gl_triangle_mesh.h"
+#include "glmesh/kernel/gl/gl_triangle_mesh.h"
 #include "glmesh/kernel/material.h"
-#include "glmesh/kernel/shader_program.h"
+#include "glmesh/kernel/gl/shader_program.h"
 
 class MeshWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
 {

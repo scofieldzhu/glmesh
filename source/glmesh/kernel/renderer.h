@@ -30,7 +30,7 @@
 #ifndef __renderer_h__
 #define __renderer_h__
 
-#include "glmesh/kernel/gl_triangle_mesh.h"
+#include "glmesh/kernel/gl/gl_triangle_mesh.h"
 
 GLMESH_NAMESPACE_BEGIN
 

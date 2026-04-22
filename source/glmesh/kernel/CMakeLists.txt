@@ -2,46 +2,48 @@
 set(PKG_PROJ "glmesh.kernel")
 
 set(EXPORT_HEAD_FILES
-    "glm_kernel_export.h"
-    "glm_kernel_basetype.h"
-    "vertex_array.h"
-    "gpu_vertex.h"
-    "cpu_vertex.h"
-    "cpu_point_cloud.h"
-    "cpu_polygon_mesh.h"
-    "cpu_triangle_mesh.h"
-    "vertex_buffer.h"
-    "index_buffer.h"
-    "gl_triangle_mesh.h"
-    "gl_point_cloud.h"
-    "cpu_to_gpu.h"    
-    "shader_program.h"
+    glm_kernel_export.h
+    glm_kernel_basetype.h
+    gl/vertex_array.h
+    gl/gpu_vertex.h
+    gl/vertex_buffer.h
+    gl/index_buffer.h
+    gl/gl_triangle_mesh.h
+    gl/gl_point_cloud.h
+    gl/gl_init.h
+    gl/shader_program.h
+    core/cpu_vertex.h
+    core/cpu_point_cloud.h
+    core/cpu_polygon_mesh.h
+    core/cpu_triangle_mesh.h
+    core/cpu_to_gpu.h
     "renderer.h"
     "material.h"
-    "gl_init.h"
 )
 
 set(SOURCE_FILES
-    "gl_init.cpp"
-    "khrplatform.h"
-    "cpu_to_gpu.cpp"
-    "material.cpp"
-    "renderer.cpp"
-    "shader_program.cpp"
-    "glad.h"
-    "glad.c"
-    "gl_triangle_mesh.cpp"
-    "gl_point_cloud.cpp"
-    "vertex_array.cpp"
-    "vertex_buffer.cpp"
-    "gpu_vertex.cpp"
-    "index_buffer.cpp"
+    third_party/glad/src/glad.c
+    core/cpu_to_gpu.cpp
+    gl/gl_init.cpp
+    gl/shader_program.cpp
+    gl/gl_triangle_mesh.cpp
+    gl/gl_point_cloud.cpp
+    gl/vertex_array.cpp
+    gl/vertex_buffer.cpp
+    gl/gpu_vertex.cpp
+    gl/index_buffer.cpp
+    material.cpp
+    renderer.cpp
 )
 
 add_library(${PKG_PROJ}
     SHARED
     ${EXPORT_HEAD_FILES}
     ${SOURCE_FILES}
+)
+
+target_include_directories(${PKG_PROJ} PRIVATE
+    third_party/glad/include
 )
 
 if(WIN32)

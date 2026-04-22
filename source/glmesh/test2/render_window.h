@@ -33,7 +33,7 @@
 
 #include <QOpenGLWidget>
 #include "glmesh/kernel/renderer.h"
-#include "glmesh/kernel/gl_triangle_mesh.h"
+#include "glmesh/kernel/gl/gl_triangle_mesh.h"
 
 class RenderWindow : public QOpenGLWidget//, public glmesh::WinEventHandlerPublisher
 {

@@ -4,7 +4,7 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates 
  *  coherent OpenGL.
  *  
- *  File: cpu_triangle_mesh.h 
+ *  File: cpu_vertex.h 
  *  Copyright (c) 2024-2026 scofieldzhu
  *  
  *  MIT License
@@ -27,17 +27,16 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *  SOFTWARE.
  */
-#ifndef __cpu_triangle_mesh_h__
-#define __cpu_triangle_mesh_h__
+#ifndef __cpu_point_cloud_h__
+#define __cpu_point_cloud_h__
 
-#include "glmesh/kernel/cpu_vertex.h"
+#include "glmesh/kernel/core/cpu_vertex.h"
 
 GLMESH_NAMESPACE_BEGIN
 
-struct CpuTriangleMesh
+struct CpuPointCloud
 {
-    std::vector<CpuVertex> vertices;
-    std::vector<uint32_t> indices;
+    std::vector<CpuVertex> points;
 };
 
 GLMESH_NAMESPACE_END

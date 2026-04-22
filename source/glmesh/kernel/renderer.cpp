@@ -28,10 +28,10 @@
  *  SOFTWARE.
  */
 #include "renderer.h"
-#include "gl_triangle_mesh.h"
+#include "glmesh/kernel/gl/gl_triangle_mesh.h"
 #include "material.h"
-#include "shader_program.h"
-#include "glad.h"
+#include "glmesh/kernel/gl/shader_program.h"
+#include "glad/glad.h"
 #include <spdlog/spdlog.h>
 
 GLMESH_NAMESPACE_BEGIN

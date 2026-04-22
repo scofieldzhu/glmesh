@@ -30,7 +30,7 @@
 #ifndef __cpu_polygon_mesh_h__
 #define __cpu_polygon_mesh_h__
 
-#include "glmesh/kernel/cpu_vertex.h"
+#include "glmesh/kernel/core/cpu_vertex.h"
 
 GLMESH_NAMESPACE_BEGIN
 

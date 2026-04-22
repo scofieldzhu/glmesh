@@ -4,7 +4,7 @@
 *  It reduces the amount of OpenGL code required for rendering and facilitates 
 *  coherent OpenGL.
 *  
-*  File: gl_triangle_mesh.cpp
+*  File: cpu_to_gpu.h
 *  Copyright (c) 2024-2026 scofieldzhu
 *  
 *  MIT License
@@ -27,30 +27,39 @@
 *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 *  SOFTWARE.
 */
-#include "gl_triangle_mesh.h"
-#include "glad.h"
+#ifndef __cpu_to_gpu_h__
+#define __cpu_to_gpu_h__
+
+#include "glmesh/kernel/core/cpu_vertex.h"
+#include "glmesh/kernel/core/cpu_polygon_mesh.h"
+#include "glmesh/kernel/core/cpu_triangle_mesh.h"
+#include "glmesh/kernel/gl/gpu_vertex.h"
+#include "glmesh/kernel/gl/gl_triangle_mesh.h"
 
 GLMESH_NAMESPACE_BEGIN
 
-void GLTriangleMesh::upload(const std::vector<GpuVertex>& vertices, const std::vector<uint32_t>& indices, uint32_t usage)
+inline GpuVertex toGpuVertex(const CpuVertex& v)
 {
-    index_count_ = indices.size();
-    vao_.bind();
-    vbo_.upload(vertices.data(), vertices.size() * sizeof(GpuVertex), usage);
-    ebo_.upload(indices.data(), indices.size() * sizeof(uint32_t), usage);
-    GpuVertex::SetupAttribs();
-    vao_.unbind();    
+    return {
+        .position = v.position,
+        .normal   = v.normal,
+        .color    = v.color
+    };
 }
 
-void GLTriangleMesh::draw() const noexcept
+inline std::vector<GpuVertex> toGpuVertices(const std::vector<CpuVertex>& src)
 {
-    vao_.bind();
-    glDrawElements(
-        GL_TRIANGLES,
-        static_cast<GLsizei>(index_count_),
-        GL_UNSIGNED_INT,
-        nullptr
-    );
+    std::vector<GpuVertex> dst;
+    dst.reserve(src.size());
+
+    for (const auto& v : src)
+        dst.push_back(toGpuVertex(v));
+
+    return dst;  
 }
+
+GLMESH_KERNEL_API GLTriangleMesh LoadPlyRenderableMesh(const std::string& plyPath);
 
 GLMESH_NAMESPACE_END
+
+#endif
