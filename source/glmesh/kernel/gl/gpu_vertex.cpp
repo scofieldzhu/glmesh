@@ -28,7 +28,7 @@
  *  SOFTWARE.
  */
 #include "gpu_vertex.h"
-#include "glad.h"
+#include "glad/glad.h"
 
 GLMESH_NAMESPACE_BEGIN
 

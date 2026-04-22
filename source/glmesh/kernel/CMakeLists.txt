@@ -10,8 +10,9 @@ set(EXPORT_HEAD_FILES
     gl/index_buffer.h
     gl/gl_triangle_mesh.h
     gl/gl_point_cloud.h
-    gl/gl_init.h
+    gl/gl_api_init.h
     gl/shader_program.h
+    gl/gl_debug.h
     core/cpu_vertex.h
     core/cpu_point_cloud.h
     core/cpu_polygon_mesh.h
@@ -24,7 +25,7 @@ set(EXPORT_HEAD_FILES
 set(SOURCE_FILES
     third_party/glad/src/glad.c
     core/cpu_to_gpu.cpp
-    gl/gl_init.cpp
+    gl/gl_api_init.cpp
     gl/shader_program.cpp
     gl/gl_triangle_mesh.cpp
     gl/gl_point_cloud.cpp
@@ -32,6 +33,7 @@ set(SOURCE_FILES
     gl/vertex_buffer.cpp
     gl/gpu_vertex.cpp
     gl/index_buffer.cpp
+    gl/gl_debug.cpp
     material.cpp
     renderer.cpp
 )

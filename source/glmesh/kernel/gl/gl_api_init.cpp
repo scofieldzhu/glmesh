@@ -4,7 +4,7 @@
 *  It reduces the amount of OpenGL code required for rendering and facilitates 
 *  coherent OpenGL.
 *  
-*  File: gl_init.h
+*  File: gl_init.cpp
 *  Copyright (c) 2024-2026 scofieldzhu
 *  
 *  MIT License
@@ -27,18 +27,29 @@
 *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 *  SOFTWARE.
 */
-#ifndef __gl_init_h__
-#define __gl_init_h__
-
-#include "glmesh/kernel/glm_kernel_export.h"
+#include "gl_api_init.h"
+#include "glad/glad.h"
+#include <spdlog/spdlog.h>
 
 GLMESH_NAMESPACE_BEGIN
 
-using GlProcResolver = void* (*)(const char* name);
+namespace
+{
+    bool sGLInitialized = false;
+}
 
-GLMESH_KERNEL_API bool InitializeGLProc(GlProcResolver resolver);
-GLMESH_KERNEL_API bool IsGLProcInitialized();
+bool InitGLProcResolver(GlProcResolver resolver)
+{
+    if(resolver == nullptr){
+        return false;
+    }
+    sGLInitialized = (gladLoadGLLoader(reinterpret_cast<GLADloadproc>(resolver)) != 0);
+    return sGLInitialized;
+}
+
+bool IsGLProcResolverInitialized()
+{
+    return sGLInitialized;
+}
 
 GLMESH_NAMESPACE_END
-
-#endif

@@ -28,7 +28,7 @@
  *  SOFTWARE.
  */
 #include "material.h"
-#include "shader_program.h"
+#include "gl/shader_program.h"
 #include <stdexcept>
 
 GLMESH_NAMESPACE_BEGIN

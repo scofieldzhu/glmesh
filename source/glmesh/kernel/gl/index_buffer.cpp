@@ -28,7 +28,7 @@
 *  SOFTWARE.
 */
 #include "index_buffer.h"
-#include "glad.h"
+#include "glad/glad.h"
 
 GLMESH_NAMESPACE_BEGIN
 
