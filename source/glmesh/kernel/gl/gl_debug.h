@@ -30,7 +30,7 @@
 #ifndef __gl_debug_h__
 #define __gl_debug_h__
 
-#include "glmesh/kernel/glm_kernel_export.h"
+#include "glmesh/kernel/glmesh_kernel_export.h"
 
 GLMESH_NAMESPACE_BEGIN
 

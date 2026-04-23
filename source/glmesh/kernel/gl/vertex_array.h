@@ -30,7 +30,7 @@
 #ifndef __vertex_array_h__
 #define __vertex_array_h__
 
-#include "glmesh/kernel/glm_kernel_basetype.h"
+#include "glmesh/kernel/glmesh_kernel_typedef.h"
 
 GLMESH_NAMESPACE_BEGIN
 

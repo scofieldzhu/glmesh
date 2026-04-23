@@ -2,8 +2,8 @@
 set(PKG_PROJ "glmesh.kernel")
 
 set(EXPORT_HEAD_FILES
-    glm_kernel_export.h
-    glm_kernel_basetype.h
+    glmesh_kernel_export.h
+    glmesh_kernel_typedef.h
     gl/vertex_array.h
     gl/gpu_vertex.h
     gl/vertex_buffer.h
@@ -18,13 +18,13 @@ set(EXPORT_HEAD_FILES
     core/cpu_polygon_mesh.h
     core/cpu_triangle_mesh.h
     core/cpu_to_gpu.h
-    "renderer.h"
-    "material.h"
+    io/mesh_loader.h
+    renderer.h
+    material.h
 )
 
 set(SOURCE_FILES
-    third_party/glad/src/glad.c
-    core/cpu_to_gpu.cpp
+    third_party/glad/src/glad.c    
     gl/gl_api_init.cpp
     gl/shader_program.cpp
     gl/gl_triangle_mesh.cpp
@@ -34,6 +34,8 @@ set(SOURCE_FILES
     gl/gpu_vertex.cpp
     gl/index_buffer.cpp
     gl/gl_debug.cpp
+    core/cpu_to_gpu.cpp
+    io/mesh_loader.cpp
     material.cpp
     renderer.cpp
 )

@@ -58,8 +58,6 @@ inline std::vector<GpuVertex> toGpuVertices(const std::vector<CpuVertex>& src)
     return dst;  
 }
 
-GLMESH_KERNEL_API GLTriangleMesh LoadPlyRenderableMesh(const std::string& plyPath);
-
 GLMESH_NAMESPACE_END
 
 #endif

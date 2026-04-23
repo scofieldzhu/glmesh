@@ -30,12 +30,12 @@
 #ifndef __gl_api_init_h__
 #define __gl_api_init_h__
 
-#include "glmesh/kernel/glm_kernel_export.h"
+#include "glmesh/kernel/glmesh_kernel_export.h"
 
 GLMESH_NAMESPACE_BEGIN
 
 using GlProcResolver = void* (*)(const char* name);
-GLMESH_KERNEL_API bool InitGLProcResolver(GlProcResolver resolver);
+GLMESH_KERNEL_API bool InitializeGLProcResolver(GlProcResolver resolver);
 GLMESH_KERNEL_API bool IsGLProcResolverInitialized();
 
 GLMESH_NAMESPACE_END

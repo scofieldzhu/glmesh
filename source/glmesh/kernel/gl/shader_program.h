@@ -30,8 +30,8 @@
 #ifndef __shader_program_h__
 #define __shader_program_h__
 
-#include "glmesh/kernel/glm_kernel_export.h"
-#include "glmesh/kernel/glm_kernel_basetype.h"
+#include "glmesh/kernel/glmesh_kernel_export.h"
+#include "glmesh/kernel/glmesh_kernel_typedef.h"
 #include <unordered_map>
 
 GLMESH_NAMESPACE_BEGIN

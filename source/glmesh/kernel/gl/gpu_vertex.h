@@ -30,7 +30,7 @@
 #ifndef __gpu_vertex_h__
 #define __gpu_vertex_h__
 
-#include "glmesh/kernel/glm_kernel_basetype.h"
+#include "glmesh/kernel/glmesh_kernel_typedef.h"
 
 GLMESH_NAMESPACE_BEGIN
 

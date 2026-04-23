@@ -27,9 +27,8 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *  SOFTWARE.
  */
-
-#ifndef __nsp_h__
-#define __nsp_h__
+#ifndef __glmesh_nsp_h__
+#define __glmesh_nsp_h__
 
 #define GLMESH_NAMESPACE_BEGIN namespace glmesh{
 #define GLMESH_NAMESPACE_END }

@@ -4,7 +4,7 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates 
  *  coherent OpenGL.
  *  
- *  File: glm_kernel_export.h 
+ *  File: glm_kernel_basetype.h 
  *  Copyright (c) 2024-2024 scofieldzhu
  *  
  *  MIT License
@@ -28,19 +28,22 @@
  *  SOFTWARE.
  */
 
-#ifndef __glm_kernel_export_h__
-#define __glm_kernel_export_h__
+#ifndef __glmesh_kernel_typedef_h__
+#define __glmesh_kernel_typedef_h__
 
-#include "glmesh/glm_nsp.h"
+#include <vector>
+#include <memory>
+#include <cstdint>
+#include <string>
+#include <string_view>
+#include <glm/glm.hpp>
+#include <glm/mat4x4.hpp>
+#include <glm/vec3.hpp>
+#include "glmesh/kernel/glmesh_kernel_export.h"
 
-#if defined(WIN32) || defined(_WIN32) || defined(_WINDOWS) || defined(_WINDLL)
-    #ifdef GLMESH_KERNEL_EXPORT
-        #define GLMESH_KERNEL_API __declspec(dllexport)
-    #else 
-        #define GLMESH_KERNEL_API __declspec(dllimport)
-    #endif
-#else 
-    #define GLMESH_KERNEL_API
-#endif
+GLMESH_NAMESPACE_BEGIN
+
+
+GLMESH_NAMESPACE_END
 
 #endif

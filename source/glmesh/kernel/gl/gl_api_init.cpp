@@ -38,7 +38,7 @@ namespace
     bool sGLInitialized = false;
 }
 
-bool InitGLProcResolver(GlProcResolver resolver)
+bool InitializeGLProcResolver(GlProcResolver resolver)
 {
     if(resolver == nullptr){
         return false;

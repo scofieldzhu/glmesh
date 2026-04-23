@@ -10,6 +10,7 @@
 #include "glmesh/kernel/core/cpu_to_gpu.h"
 #include "glmesh/kernel/gl/gl_api_init.h"
 #include "glmesh/kernel/gl/gl_debug.h"
+#include "glmesh/kernel/io/mesh_loader.h"
 
 #include <QOpenGLContext>
 #include <QDebug>
@@ -92,7 +93,7 @@ void MeshWidget::initializeGL()
     auto* ctx = QOpenGLContext::currentContext();
     Q_ASSERT(ctx);
 
-    const bool ok = InitGLProcResolver(&qtGetGlProcAddress);
+    const bool ok = InitializeGLProcResolver(&qtGetGlProcAddress);
     Q_ASSERT(ok);
 
     ::glmesh::gl::EnableDebugOutput();
