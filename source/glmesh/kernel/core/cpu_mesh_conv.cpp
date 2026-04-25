@@ -4,8 +4,8 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates 
  *  coherent OpenGL.
  *  
- *  File: glm_kernel_basetype.h 
- *  Copyright (c) 2024-2024 scofieldzhu
+ *  File: cpu_mesh_conv.cpp
+ *  Copyright (c) 2024-2026 scofieldzhu
  *  
  *  MIT License
  *  
@@ -27,23 +27,27 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *  SOFTWARE.
  */
-
-#ifndef __glmesh_kernel_typedef_h__
-#define __glmesh_kernel_typedef_h__
-
-#include <glm/glm.hpp>
-#include <glm/mat4x4.hpp>
-#include <glm/vec3.hpp>
-#include "glmesh/glmesh_basedef.h"
-#include "glmesh/kernel/glmesh_kernel_export.h"
+#include "cpu_mesh_conv.h"
+#include "cpu_triangle_mesh.h"
+#include "cpu_polygon_mesh.h"
 
 GLMESH_NAMESPACE_BEGIN
 
-struct CpuPolygonMesh;
-struct CpuTriangleMesh;
-
-class GLTriangleMesh;
+void PolygonToTriangleMesh(const CpuPolygonMesh& src_poly_mesh, CpuTriangleMesh& out_triangle_mesh)
+{
+    CpuTriangleMesh target_mesh;
+    target_mesh.vertices = src_poly_mesh.vertices;
+    for(const auto& poly : src_poly_mesh.polygons){
+        if(poly.size() < 3){
+            continue;
+        }
+        for(auto i = 1; i + 1 < poly.size(); ++i){
+            target_mesh.indices.push_back(poly[0]);
+            target_mesh.indices.push_back(poly[i]);
+            target_mesh.indices.push_back(poly[i + 1]);
+        }
+    }
+    out_triangle_mesh = std::move(target_mesh);
+}
 
 GLMESH_NAMESPACE_END
-
-#endif

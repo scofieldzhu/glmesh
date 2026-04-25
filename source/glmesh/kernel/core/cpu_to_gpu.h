@@ -35,24 +35,8 @@
 
 GLMESH_NAMESPACE_BEGIN
 
-inline GpuVertex ToGpuVertex(const CpuVertex& v)
-{
-    return {
-        .position = v.position,
-        .normal   = v.normal,
-        .color    = v.color
-    };
-}
-
-inline std::vector<GpuVertex> ToGpuVertices(const std::vector<CpuVertex>& src)
-{
-    std::vector<GpuVertex> dst;
-    dst.reserve(src.size());
-    for(const auto& v : src){
-        dst.push_back(ToGpuVertex(v));
-    }
-    return dst;  
-}
+GLMESH_KERNEL_API GpuVertex ToGpuVertex(const CpuVertex& v);
+GLMESH_KERNEL_API std::vector<GpuVertex> ToGpuVertices(const std::vector<CpuVertex>& src);
 
 GLMESH_NAMESPACE_END
 

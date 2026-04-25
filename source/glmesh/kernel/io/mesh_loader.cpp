@@ -36,6 +36,11 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include "glad/glad.h"
+#include "glmesh/kernel/gl/gl_triangle_mesh.h"
+#include "glmesh/kernel/core/cpu_polygon_mesh.h"
+#include "glmesh/kernel/core/cpu_triangle_mesh.h"
+#include "glmesh/kernel/core/cpu_mesh_conv.h"
+#include "glmesh/kernel/core/cpu_to_gpu.h"
 #include "glmesh/kernel/glmesh_log.h"
 
 GLMESH_NAMESPACE_BEGIN
@@ -113,23 +118,6 @@ namespace{
         float b = static_cast<float>((packed >> 0)  & 0xFF) / 255.0f;
         return {r, g, b};
     }
-
-    std::vector<GpuVertex> buildGpuVertices(const std::vector<CpuVertex>& cpuVertices)
-    {
-        std::vector<GpuVertex> gpuVertices;
-        gpuVertices.reserve(cpuVertices.size());
-
-        for (const auto& v : cpuVertices)
-        {
-            GpuVertex gv;
-            gv.position = v.position;
-            gv.normal   = v.normal;
-            gv.color    = v.color;
-            gpuVertices.push_back(gv);
-        }
-
-        return gpuVertices;
-    }
 }
 
 bool LoadPlyAsCpuPolygonMesh(const std::string& ply_filepath, CpuPolygonMesh& out_mesh, MeshLoadError* out_err)
@@ -198,29 +186,6 @@ bool LoadPlyAsCpuPolygonMesh(const std::string& ply_filepath, CpuPolygonMesh& ou
     return true;
 }
 
-CpuTriangleMesh Triangulate(const CpuPolygonMesh& polyMesh)
-{
-    CpuTriangleMesh triMesh;
-    triMesh.vertices = polyMesh.vertices;
-
-    for (const auto& poly : polyMesh.polygons)
-    {
-        if (poly.size() < 3)
-        {
-            continue;
-        }
-
-        for (std::size_t i = 1; i + 1 < poly.size(); ++i)
-        {
-            triMesh.indices.push_back(poly[0]);
-            triMesh.indices.push_back(poly[i]);
-            triMesh.indices.push_back(poly[i + 1]);
-        }
-    }
-
-    return triMesh;
-}
-
 bool LoadPlyRenderableMesh(const std::string& ply_filepath, GLTriangleMesh& out_mesh, MeshLoadError* out_err)
 {
     CpuPolygonMesh polygon_mesh;
@@ -234,11 +199,11 @@ bool LoadPlyRenderableMesh(const std::string& ply_filepath, GLTriangleMesh& out_
         GLMESH_LOG_ERROR("This PLY has no face data; Although it is a point cloud, not a renderable triangle mesh");
         return false;
     }
-    const CpuTriangleMesh triangle_mesh = Triangulate(polygon_mesh);
-    const std::vector<GpuVertex> gpuVertices = buildGpuVertices(triangle_mesh.vertices);
-
+    CpuTriangleMesh triangle_mesh;
+    PolygonToTriangleMesh(polygon_mesh, triangle_mesh);
+    auto gpu_vertices = ToGpuVertices(triangle_mesh.vertices);
     GLTriangleMesh mesh;
-    mesh.upload(gpuVertices, triangle_mesh.indices, GL_STATIC_DRAW);
+    mesh.upload(gpu_vertices, triangle_mesh.indices, GL_STATIC_DRAW);
     out_mesh = std::move(mesh);
     return true;
 }

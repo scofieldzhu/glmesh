@@ -4,8 +4,8 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates 
  *  coherent OpenGL.
  *  
- *  File: glm_kernel_basetype.h 
- *  Copyright (c) 2024-2024 scofieldzhu
+ *  File: cpu_mesh_conv.h 
+ *  Copyright (c) 2024-2026 scofieldzhu
  *  
  *  MIT License
  *  
@@ -27,22 +27,14 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *  SOFTWARE.
  */
+#ifndef __cpu_mesh_conv_h__
+#define __cpu_mesh_conv_h__
 
-#ifndef __glmesh_kernel_typedef_h__
-#define __glmesh_kernel_typedef_h__
-
-#include <glm/glm.hpp>
-#include <glm/mat4x4.hpp>
-#include <glm/vec3.hpp>
-#include "glmesh/glmesh_basedef.h"
-#include "glmesh/kernel/glmesh_kernel_export.h"
+#include "glmesh/kernel/glmesh_kernel_typedef.h"
 
 GLMESH_NAMESPACE_BEGIN
 
-struct CpuPolygonMesh;
-struct CpuTriangleMesh;
-
-class GLTriangleMesh;
+GLMESH_KERNEL_API void PolygonToTriangleMesh(const CpuPolygonMesh& src_poly_mesh, CpuTriangleMesh& out_triangle_mesh);
 
 GLMESH_NAMESPACE_END
 

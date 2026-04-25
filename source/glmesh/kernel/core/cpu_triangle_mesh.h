@@ -37,7 +37,7 @@ GLMESH_NAMESPACE_BEGIN
 struct CpuTriangleMesh
 {
     std::vector<CpuVertex> vertices;
-    std::vector<uint32_t> indices;
+    std::vector<uint32> indices;
 };
 
 GLMESH_NAMESPACE_END

@@ -30,13 +30,9 @@
 #ifndef __mesh_loader_h__
 #define __mesh_loader_h__
 
-#include "glmesh/kernel/gl/gl_triangle_mesh.h"
-#include "glmesh/kernel/core/cpu_polygon_mesh.h"
-#include "glmesh/kernel/core/cpu_triangle_mesh.h"
+#include "glmesh/kernel/glmesh_kernel_typedef.h"
 
 GLMESH_NAMESPACE_BEGIN
-
-GLMESH_KERNEL_API CpuTriangleMesh Triangulate(const CpuPolygonMesh& polyMesh);
 
 enum class MeshLoadError
 {

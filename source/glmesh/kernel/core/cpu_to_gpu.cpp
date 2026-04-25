@@ -28,3 +28,26 @@
 *  SOFTWARE.
 */
 #include "cpu_to_gpu.h"
+
+GLMESH_NAMESPACE_BEGIN
+
+GpuVertex ToGpuVertex(const CpuVertex& v)
+{
+    return {
+        .position = v.position,
+        .normal   = v.normal,
+        .color    = v.color
+    };
+}
+
+std::vector<GpuVertex> ToGpuVertices(const std::vector<CpuVertex>& src)
+{
+    std::vector<GpuVertex> dst;
+    dst.reserve(src.size());
+    for(const auto& v : src){
+        dst.push_back(ToGpuVertex(v));
+    }
+    return dst;  
+}
+
+GLMESH_NAMESPACE_END
