@@ -21,6 +21,7 @@ set(EXPORT_HEAD_FILES
     io/mesh_loader.h
     renderer.h
     material.h
+    glmesh_log.h
 )
 
 set(SOURCE_FILES
@@ -38,6 +39,7 @@ set(SOURCE_FILES
     io/mesh_loader.cpp
     material.cpp
     renderer.cpp
+    glmesh_log.cpp
 )
 
 add_library(${PKG_PROJ}

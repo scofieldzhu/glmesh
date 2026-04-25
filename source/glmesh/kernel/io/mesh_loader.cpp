@@ -36,6 +36,7 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include "glad/glad.h"
+#include "glmesh/kernel/glmesh_log.h"
 
 GLMESH_NAMESPACE_BEGIN
 
@@ -230,7 +231,7 @@ bool LoadPlyRenderableMesh(const std::string& ply_filepath, GLTriangleMesh& out_
         if(out_err){
             *out_err = MeshLoadError::InvalidTopology;
         }
-        //throw std::runtime_error("this PLY has no face data; it is a point cloud, not a renderable triangle mesh");
+        GLMESH_LOG_ERROR("This PLY has no face data; Although it is a point cloud, not a renderable triangle mesh");
         return false;
     }
     const CpuTriangleMesh triangle_mesh = Triangulate(polygon_mesh);

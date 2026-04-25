@@ -29,7 +29,6 @@
 */
 #include "gl_api_init.h"
 #include "glad/glad.h"
-#include <spdlog/spdlog.h>
 
 GLMESH_NAMESPACE_BEGIN
 
