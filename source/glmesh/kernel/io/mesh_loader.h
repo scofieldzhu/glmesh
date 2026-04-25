@@ -36,9 +36,19 @@
 
 GLMESH_NAMESPACE_BEGIN
 
-GLMESH_KERNEL_API CpuTriangleMesh triangulateFan(const CpuPolygonMesh& polyMesh);
-GLMESH_KERNEL_API CpuPolygonMesh loadPlyAsCpuPolygonMesh(const std::string& plyPath);
-GLMESH_KERNEL_API GLTriangleMesh LoadPlyRenderableMesh(const std::string& plyPath);
+GLMESH_KERNEL_API CpuTriangleMesh Triangulate(const CpuPolygonMesh& polyMesh);
+
+enum class MeshLoadError
+{
+    None,
+    FileNotFound,
+    UnsupportedFormat,
+    ParseFailed,
+    EmptyMesh,
+    InvalidTopology
+};
+GLMESH_KERNEL_API bool LoadPlyAsCpuPolygonMesh(const std::string& ply_filepath, CpuPolygonMesh& out_mesh, MeshLoadError* out_err = nullptr);
+GLMESH_KERNEL_API bool LoadPlyRenderableMesh(const std::string& ply_filepath, GLTriangleMesh& out_mesh, MeshLoadError* out_err = nullptr);
 
 GLMESH_NAMESPACE_END
 

@@ -31,14 +31,11 @@
 #define __cpu_to_gpu_h__
 
 #include "glmesh/kernel/core/cpu_vertex.h"
-#include "glmesh/kernel/core/cpu_polygon_mesh.h"
-#include "glmesh/kernel/core/cpu_triangle_mesh.h"
 #include "glmesh/kernel/gl/gpu_vertex.h"
-#include "glmesh/kernel/gl/gl_triangle_mesh.h"
 
 GLMESH_NAMESPACE_BEGIN
 
-inline GpuVertex toGpuVertex(const CpuVertex& v)
+inline GpuVertex ToGpuVertex(const CpuVertex& v)
 {
     return {
         .position = v.position,
@@ -47,14 +44,13 @@ inline GpuVertex toGpuVertex(const CpuVertex& v)
     };
 }
 
-inline std::vector<GpuVertex> toGpuVertices(const std::vector<CpuVertex>& src)
+inline std::vector<GpuVertex> ToGpuVertices(const std::vector<CpuVertex>& src)
 {
     std::vector<GpuVertex> dst;
     dst.reserve(src.size());
-
-    for (const auto& v : src)
-        dst.push_back(toGpuVertex(v));
-
+    for(const auto& v : src){
+        dst.push_back(ToGpuVertex(v));
+    }
     return dst;  
 }
 

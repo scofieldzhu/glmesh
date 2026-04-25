@@ -42,6 +42,7 @@ class GLMESH_KERNEL_API GLTriangleMesh
 public:
     void upload(const std::vector<GpuVertex>& vertices, const std::vector<uint32_t>& indices, uint32_t usage);
     void draw() const noexcept;
+    bool valid()const{ return index_count_ > 0; }
 
 private:
     VertexArray vao_;

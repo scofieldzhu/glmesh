@@ -40,12 +40,10 @@
 GLMESH_NAMESPACE_BEGIN
 
 namespace{
-    const pcl::PCLPointField* findField(const pcl::PCLPointCloud2& cloud, const std::string& name)
+    const pcl::PCLPointField* FindPointField(const pcl::PCLPointCloud2& cloud, const std::string& name)
     {
-        for (const auto& field : cloud.fields)
-        {
-            if (field.name == name)
-            {
+        for(const auto& field : cloud.fields){
+            if(field.name == name){
                 return &field;
             }
         }
@@ -53,81 +51,65 @@ namespace{
     }
 
     template <typename T>
-    T readScalar(const std::uint8_t* pointBase, std::uint32_t offset)
+    T ReadScalarValue(const std::uint8_t* data_base, std::uint32_t offset)
     {
-        T value{};
-        std::memcpy(&value, pointBase + offset, sizeof(T));
+        T value;
+        std::memcpy(&value, data_base + offset, sizeof(T));
         return value;
     }
 
-    float readFloatLike(
-        const std::uint8_t* pointBase,
-        const pcl::PCLPointField* field,
-        float defaultValue = 0.0f)
+    float ReadFloatFieldValue(const std::uint8_t* point_base, const pcl::PCLPointField* field)
     {
-        if (field == nullptr)
-        {
-            return defaultValue;
+        assert(field);
+        switch(field->datatype){
+            case pcl::PCLPointField::INT8:
+                return static_cast<float>(ReadScalarValue<std::int8_t>(point_base, field->offset));
+            case pcl::PCLPointField::UINT8:
+                return static_cast<float>(ReadScalarValue<std::uint8_t>(point_base, field->offset));
+            case pcl::PCLPointField::INT16:
+                return static_cast<float>(ReadScalarValue<std::int16_t>(point_base, field->offset));
+            case pcl::PCLPointField::UINT16:
+                return static_cast<float>(ReadScalarValue<std::uint16_t>(point_base, field->offset));
+            case pcl::PCLPointField::INT32:
+                return static_cast<float>(ReadScalarValue<std::int32_t>(point_base, field->offset));
+            case pcl::PCLPointField::UINT32:
+                return static_cast<float>(ReadScalarValue<std::uint32_t>(point_base, field->offset));
+            case pcl::PCLPointField::FLOAT32:
+                return ReadScalarValue<float>(point_base, field->offset);
+            case pcl::PCLPointField::FLOAT64:
+                return static_cast<float>(ReadScalarValue<double>(point_base, field->offset));
+            default:
+                break;
         }
-
-        switch (field->datatype)
-        {
-        case pcl::PCLPointField::INT8:
-            return static_cast<float>(readScalar<std::int8_t>(pointBase, field->offset));
-        case pcl::PCLPointField::UINT8:
-            return static_cast<float>(readScalar<std::uint8_t>(pointBase, field->offset));
-        case pcl::PCLPointField::INT16:
-            return static_cast<float>(readScalar<std::int16_t>(pointBase, field->offset));
-        case pcl::PCLPointField::UINT16:
-            return static_cast<float>(readScalar<std::uint16_t>(pointBase, field->offset));
-        case pcl::PCLPointField::INT32:
-            return static_cast<float>(readScalar<std::int32_t>(pointBase, field->offset));
-        case pcl::PCLPointField::UINT32:
-            return static_cast<float>(readScalar<std::uint32_t>(pointBase, field->offset));
-        case pcl::PCLPointField::FLOAT32:
-            return readScalar<float>(pointBase, field->offset);
-        case pcl::PCLPointField::FLOAT64:
-            return static_cast<float>(readScalar<double>(pointBase, field->offset));
-        default:
-            return defaultValue;
-        }
+        return 0.0f;
     }
 
-    glm::vec3 readColor(
-        const std::uint8_t* pointBase,
-        const pcl::PCLPointField* rgbField,
-        const pcl::PCLPointField* rgbaField)
+    glm::vec3 ReadColorFieldValue(const std::uint8_t* point_base, const pcl::PCLPointField* rgb_field, const pcl::PCLPointField* rgba_field)
     {
-        const pcl::PCLPointField* field = rgbField ? rgbField : rgbaField;
-        if (field == nullptr)
-        {
+        auto clr_field = rgb_field ? rgb_field : rgba_field;
+        if(clr_field == nullptr){
             return {1.0f, 1.0f, 1.0f};
         }
-
-        std::uint32_t packed = 0;
-
-        switch (field->datatype)
-        {
-        case pcl::PCLPointField::FLOAT32:
-        {
-            float rgbAsFloat = readScalar<float>(pointBase, field->offset);
-            std::memcpy(&packed, &rgbAsFloat, sizeof(float));
-            break;
+        uint32_t packed = 0;
+        switch(clr_field->datatype){
+            case pcl::PCLPointField::FLOAT32:
+            {
+                float float_rgb = ReadScalarValue<float>(point_base, clr_field->offset);
+                std::memcpy(&packed, &float_rgb, sizeof(float));
+                break;
+            }
+            case pcl::PCLPointField::UINT32:
+            case pcl::PCLPointField::INT32:
+            {
+                packed = ReadScalarValue<std::uint32_t>(point_base, clr_field->offset);
+                break;
+            }
+            default:
+                return {1.0f, 1.0f, 1.0f};
         }
-        case pcl::PCLPointField::UINT32:
-        case pcl::PCLPointField::INT32:
-        {
-            packed = readScalar<std::uint32_t>(pointBase, field->offset);
-            break;
-        }
-        default:
-            return {1.0f, 1.0f, 1.0f};
-        }
-
-        const float r = static_cast<float>((packed >> 16) & 0xFF) / 255.0f;
-        const float g = static_cast<float>((packed >> 8)  & 0xFF) / 255.0f;
-        const float b = static_cast<float>((packed >> 0)  & 0xFF) / 255.0f;
-
+        float r = static_cast<float>((packed >> 16) & 0xFF) / 255.0f;
+        float g = static_cast<float>((packed >> 8)  & 0xFF) / 255.0f;
+        float b = static_cast<float>((packed >> 0)  & 0xFF) / 255.0f;
         return {r, g, b};
     }
 
@@ -149,76 +131,73 @@ namespace{
     }
 }
 
-CpuPolygonMesh loadPlyAsCpuPolygonMesh(const std::string& plyPath)
+bool LoadPlyAsCpuPolygonMesh(const std::string& ply_filepath, CpuPolygonMesh& out_mesh, MeshLoadError* out_err)
 {
-    pcl::PolygonMesh pclMesh;
-    if (pcl::io::loadPLYFile(plyPath, pclMesh) < 0)
-    {
-        throw std::runtime_error("loadPLYFile() failed: " + plyPath);
+    pcl::PolygonMesh pcl_mesh;
+    if(pcl::io::loadPLYFile(ply_filepath, pcl_mesh) < 0){
+        if(out_err){
+            *out_err = MeshLoadError::FileNotFound;
+        }
+        return false;
     }
-
-    const auto& cloud = pclMesh.cloud;
-    if (cloud.point_step == 0)
-    {
-        throw std::runtime_error("invalid PLY vertex data: point_step == 0");
+    const auto& cloud = pcl_mesh.cloud;
+    if(cloud.point_step == 0){
+        if(out_err){
+            *out_err = MeshLoadError::ParseFailed;
+        }
+        return false;
     }
-
-    const auto* xField    = findField(cloud, "x");
-    const auto* yField    = findField(cloud, "y");
-    const auto* zField    = findField(cloud, "z");
-    const auto* nxField   = findField(cloud, "normal_x");
-    const auto* nyField   = findField(cloud, "normal_y");
-    const auto* nzField   = findField(cloud, "normal_z");
-    const auto* rgbField  = findField(cloud, "rgb");
-    const auto* rgbaField = findField(cloud, "rgba");
-
-    if (xField == nullptr || yField == nullptr || zField == nullptr)
-    {
-        throw std::runtime_error("PLY missing x/y/z fields");
+    auto x_field = FindPointField(cloud, "x");
+    auto y_field = FindPointField(cloud, "y");
+    auto z_field = FindPointField(cloud, "z");
+    if(x_field == nullptr || y_field == nullptr || z_field == nullptr){
+        if(out_err){
+            *out_err = MeshLoadError::ParseFailed;
+        }
+        return false;
     }
-
+    auto nx_field = FindPointField(cloud, "normal_x");
+    auto ny_field = FindPointField(cloud, "normal_y");
+    auto nz_field = FindPointField(cloud, "normal_z");
+    auto read_normal_func = [nx_field, ny_field, nz_field](const uint8* point_base){
+        if(nx_field == nullptr || ny_field == nullptr || nz_field == nullptr){
+            return glm::vec3(0.0, 0.0, 0.0);
+        }
+        glm::vec3 n;
+        n[0] = ReadFloatFieldValue(point_base, nx_field);
+        n[0] = ReadFloatFieldValue(point_base, ny_field);
+        n[0] = ReadFloatFieldValue(point_base, nz_field);
+        return n;
+    };
+    auto rgb_field = FindPointField(cloud, "rgb");
+    auto rgba_field = FindPointField(cloud, "rgba");
     CpuPolygonMesh mesh;
-
-    const std::size_t pointCount = cloud.data.size() / cloud.point_step;
-    mesh.vertices.resize(pointCount);
-
-    for (std::size_t i = 0; i < pointCount; ++i)
-    {
-        const std::uint8_t* pointBase = cloud.data.data() + i * cloud.point_step;
-
+    const auto point_cnt = cloud.data.size() / cloud.point_step;
+    mesh.vertices.resize(point_cnt);
+    for(auto i = 0; i < point_cnt; ++i){
+        auto point_base = cloud.data.data() + i * cloud.point_step;
         CpuVertex v;
         v.position = {
-            readFloatLike(pointBase, xField),
-            readFloatLike(pointBase, yField),
-            readFloatLike(pointBase, zField)
+            ReadFloatFieldValue(point_base, x_field),
+            ReadFloatFieldValue(point_base, y_field),
+            ReadFloatFieldValue(point_base, z_field)
         };
-
-        v.normal = {
-            readFloatLike(pointBase, nxField, 0.0f),
-            readFloatLike(pointBase, nyField, 0.0f),
-            readFloatLike(pointBase, nzField, 0.0f)
-        };
-
-        v.color = readColor(pointBase, rgbField, rgbaField);
-
+        v.normal = read_normal_func(point_base);
+        v.color = ReadColorFieldValue(point_base, rgb_field, rgba_field);
         mesh.vertices[i] = v;
     }
-
-    mesh.polygons.reserve(pclMesh.polygons.size());
-    for (const auto& poly : pclMesh.polygons)
-    {
-        if (poly.vertices.size() < 3)
-        {
+    mesh.polygons.reserve(pcl_mesh.polygons.size());
+    for(const auto& poly : pcl_mesh.polygons){
+        if(poly.vertices.size() < 3){
             continue;
         }
-
         mesh.polygons.emplace_back(poly.vertices.begin(), poly.vertices.end());
     }
-
-    return mesh;
+    out_mesh = std::move(mesh);
+    return true;
 }
 
-CpuTriangleMesh triangulateFan(const CpuPolygonMesh& polyMesh)
+CpuTriangleMesh Triangulate(const CpuPolygonMesh& polyMesh)
 {
     CpuTriangleMesh triMesh;
     triMesh.vertices = polyMesh.vertices;
@@ -241,21 +220,26 @@ CpuTriangleMesh triangulateFan(const CpuPolygonMesh& polyMesh)
     return triMesh;
 }
 
-GLTriangleMesh LoadPlyRenderableMesh(const std::string& plyPath)
+bool LoadPlyRenderableMesh(const std::string& ply_filepath, GLTriangleMesh& out_mesh, MeshLoadError* out_err)
 {
-    const CpuPolygonMesh polygonMesh = loadPlyAsCpuPolygonMesh(plyPath);
-
-    if (polygonMesh.polygons.empty())
-    {
-        throw std::runtime_error("this PLY has no face data; it is a point cloud, not a renderable triangle mesh");
+    CpuPolygonMesh polygon_mesh;
+    if(!LoadPlyAsCpuPolygonMesh(ply_filepath, polygon_mesh, out_err)){
+        return false;
     }
-
-    const CpuTriangleMesh triangleMesh = triangulateFan(polygonMesh);
-    const std::vector<GpuVertex> gpuVertices = buildGpuVertices(triangleMesh.vertices);
+    if(polygon_mesh.polygons.empty()){
+        if(out_err){
+            *out_err = MeshLoadError::InvalidTopology;
+        }
+        //throw std::runtime_error("this PLY has no face data; it is a point cloud, not a renderable triangle mesh");
+        return false;
+    }
+    const CpuTriangleMesh triangle_mesh = Triangulate(polygon_mesh);
+    const std::vector<GpuVertex> gpuVertices = buildGpuVertices(triangle_mesh.vertices);
 
     GLTriangleMesh mesh;
-    mesh.upload(gpuVertices, triangleMesh.indices, GL_STATIC_DRAW);
-    return mesh;
+    mesh.upload(gpuVertices, triangle_mesh.indices, GL_STATIC_DRAW);
+    out_mesh = std::move(mesh);
+    return true;
 }
 
 GLMESH_NAMESPACE_END

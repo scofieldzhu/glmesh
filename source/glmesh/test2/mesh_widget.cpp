@@ -83,9 +83,9 @@ MeshWidget::MeshWidget(QWidget* parent)
 
 MeshWidget::~MeshWidget()
 {
-    makeCurrent();
+    // makeCurrent();
     mesh_.reset();
-    doneCurrent();
+    // doneCurrent();
 }
 
 void MeshWidget::initializeGL()
@@ -112,9 +112,8 @@ qDebug() << "GLSL_VERSION ="
     material_.light_dir = glm::normalize(glm::vec3(-1.0f, -1.0f, -1.0f));
     material_.ambient = 0.2f;
 
-    mesh_ = std::make_unique<GLTriangleMesh>(
-        LoadPlyRenderableMesh("E:/Code/glmesh/CFMC-46-009.ply")
-    );
+    mesh_ = std::make_unique<glmesh::GLTriangleMesh>();
+    LoadPlyRenderableMesh("E:/Code/glmesh/CFMC-46-009.ply", *mesh_);
 
     elapsed_timer_.start();
 }
@@ -128,7 +127,7 @@ void MeshWidget::paintGL()
 {
     ::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    if (!mesh_)
+    if (!mesh_->valid())
     {
         return;
     }
