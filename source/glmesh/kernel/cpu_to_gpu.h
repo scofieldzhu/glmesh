@@ -30,13 +30,14 @@
 #ifndef __cpu_to_gpu_h__
 #define __cpu_to_gpu_h__
 
-#include "glmesh/kernel/core/cpu_vertex.h"
-#include "glmesh/kernel/gl/gpu_vertex.h"
+#include "glmesh/kernel/core/cpu_triangle_mesh.h"
+#include "glmesh/kernel/gl/gpu_triangle_mesh.h"
 
 GLMESH_NAMESPACE_BEGIN
 
 GLMESH_KERNEL_API GpuVertex ToGpuVertex(const CpuVertex& v);
 GLMESH_KERNEL_API std::vector<GpuVertex> ToGpuVertices(const std::vector<CpuVertex>& src);
+GLMESH_KERNEL_API GpuTriangleMesh ToGpuTriangleMesh(const CpuTriangleMesh& triangle_mesh);
 
 GLMESH_NAMESPACE_END
 

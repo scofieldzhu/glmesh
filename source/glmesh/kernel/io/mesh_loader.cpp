@@ -39,8 +39,7 @@
 #include "glmesh/kernel/gl/gl_triangle_mesh.h"
 #include "glmesh/kernel/core/cpu_polygon_mesh.h"
 #include "glmesh/kernel/core/cpu_triangle_mesh.h"
-#include "glmesh/kernel/core/cpu_mesh_conv.h"
-#include "glmesh/kernel/core/cpu_to_gpu.h"
+#include "glmesh/kernel/cpu_to_gpu.h"
 #include "glmesh/kernel/glmesh_log.h"
 
 GLMESH_NAMESPACE_BEGIN
@@ -186,26 +185,26 @@ bool LoadPlyAsCpuPolygonMesh(const std::string& ply_filepath, CpuPolygonMesh& ou
     return true;
 }
 
-bool LoadPlyRenderableMesh(const std::string& ply_filepath, GLTriangleMesh& out_mesh, MeshLoadError* out_err)
-{
-    CpuPolygonMesh polygon_mesh;
-    if(!LoadPlyAsCpuPolygonMesh(ply_filepath, polygon_mesh, out_err)){
-        return false;
-    }
-    if(polygon_mesh.polygons.empty()){
-        if(out_err){
-            *out_err = MeshLoadError::InvalidTopology;
-        }
-        GLMESH_LOG_ERROR("This PLY has no face data; Although it is a point cloud, not a renderable triangle mesh");
-        return false;
-    }
-    CpuTriangleMesh triangle_mesh;
-    PolygonToTriangleMesh(polygon_mesh, triangle_mesh);
-    auto gpu_vertices = ToGpuVertices(triangle_mesh.vertices);
-    GLTriangleMesh mesh;
-    mesh.upload(gpu_vertices, triangle_mesh.indices, GL_STATIC_DRAW);
-    out_mesh = std::move(mesh);
-    return true;
-}
+// bool LoadPlyRenderableMesh(const std::string& ply_filepath, GLTriangleMesh& out_mesh, MeshLoadError* out_err)
+// {
+//     CpuPolygonMesh polygon_mesh;
+//     if(!LoadPlyAsCpuPolygonMesh(ply_filepath, polygon_mesh, out_err)){
+//         return false;
+//     }
+//     if(polygon_mesh.polygons.empty()){
+//         if(out_err){
+//             *out_err = MeshLoadError::InvalidTopology;
+//         }
+//         GLMESH_LOG_ERROR("This PLY has no face data; Although it is a point cloud, not a renderable triangle mesh");
+//         return false;
+//     }
+//     CpuTriangleMesh triangle_mesh;
+//     PolygonToTriangleMesh(polygon_mesh, triangle_mesh);
+//     auto gpu_vertices = ToGpuVertices(triangle_mesh.vertices);
+//     GLTriangleMesh mesh;
+//     mesh.upload(gpu_vertices, triangle_mesh.indices, GL_STATIC_DRAW);
+//     out_mesh = std::move(mesh);
+//     return true;
+// }
 
 GLMESH_NAMESPACE_END

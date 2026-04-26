@@ -55,7 +55,6 @@ add_compile_options(
 
 include_directories(
   ${CMAKE_SOURCE_DIR}/source
-  ${INCLUDE_DIRS}
   ${PCL_INCLUDE_DIRS}
 )
 
@@ -71,4 +70,4 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/bin)
 #add_subdirectory(source/${PROJECT_NAME}/core)
 add_subdirectory(source/${PROJECT_NAME}/kernel)
 #add_subdirectory(source/${PROJECT_NAME}/test)
-add_subdirectory(source/${PROJECT_NAME}/test2)
+add_subdirectory(source/${PROJECT_NAME}/app)

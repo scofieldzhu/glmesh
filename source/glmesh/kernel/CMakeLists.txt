@@ -9,6 +9,7 @@ set(EXPORT_HEAD_FILES
     gl/vertex_buffer.h
     gl/index_buffer.h
     gl/gl_triangle_mesh.h
+    gl/gpu_triangle_mesh.h
     gl/gl_point_cloud.h
     gl/gl_api_init.h
     gl/shader_program.h
@@ -16,10 +17,9 @@ set(EXPORT_HEAD_FILES
     core/cpu_vertex.h
     core/cpu_point_cloud.h
     core/cpu_polygon_mesh.h
-    core/cpu_triangle_mesh.h
-    core/cpu_to_gpu.h
-    core/cpu_mesh_conv.h
+    core/cpu_triangle_mesh.h    
     io/mesh_loader.h
+    cpu_to_gpu.h
     renderer.h
     material.h
     glmesh_log.h
@@ -35,10 +35,10 @@ set(SOURCE_FILES
     gl/vertex_buffer.cpp
     gl/gpu_vertex.cpp
     gl/index_buffer.cpp
-    gl/gl_debug.cpp
-    core/cpu_to_gpu.cpp
-    core/cpu_mesh_conv.cpp
+    gl/gl_debug.cpp    
+    core/cpu_triangle_mesh.cpp
     io/mesh_loader.cpp
+    cpu_to_gpu.cpp
     material.cpp
     renderer.cpp
     glmesh_log.cpp
@@ -54,7 +54,7 @@ target_include_directories(${PKG_PROJ} PRIVATE
     third_party/glad/include
 )
 
-if(WIN32)
+if(MSVC)
     target_compile_definitions(${PKG_PROJ} PRIVATE
         GLMESH_KERNEL_EXPORT
     )

@@ -4,8 +4,8 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates 
  *  coherent OpenGL.
  *  
- *  File: cpu_mesh_conv.cpp
- *  Copyright (c) 2024-2026 scofieldzhu
+ *  File: main.cpp 
+ *  Copyright (c) 2024-2024 scofieldzhu
  *  
  *  MIT License
  *  
@@ -27,27 +27,24 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *  SOFTWARE.
  */
-#include "cpu_mesh_conv.h"
-#include "cpu_triangle_mesh.h"
-#include "cpu_polygon_mesh.h"
+#include <QApplication>
+#include <QSurfaceFormat>
 
-GLMESH_NAMESPACE_BEGIN
+#include "main_widget.h"
 
-void PolygonToTriangleMesh(const CpuPolygonMesh& src_poly_mesh, CpuTriangleMesh& out_triangle_mesh)
+int main(int argc, char *argv[])
 {
-    CpuTriangleMesh target_mesh;
-    target_mesh.vertices = src_poly_mesh.vertices;
-    for(const auto& poly : src_poly_mesh.polygons){
-        if(poly.size() < 3){
-            continue;
-        }
-        for(auto i = 1; i + 1 < poly.size(); ++i){
-            target_mesh.indices.push_back(poly[0]);
-            target_mesh.indices.push_back(poly[i]);
-            target_mesh.indices.push_back(poly[i + 1]);
-        }
-    }
-    out_triangle_mesh = std::move(target_mesh);
+    QApplication app(argc, argv);
+
+    QSurfaceFormat fmt;
+    fmt.setVersion(3, 3);
+    fmt.setProfile(QSurfaceFormat::CoreProfile);
+    fmt.setDepthBufferSize(24);
+    QSurfaceFormat::setDefaultFormat(fmt);
+
+    MainWidget w;    
+    w.show();
+
+    return app.exec();
 }
 
-GLMESH_NAMESPACE_END

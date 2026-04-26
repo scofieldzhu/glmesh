@@ -50,4 +50,12 @@ std::vector<GpuVertex> ToGpuVertices(const std::vector<CpuVertex>& src)
     return dst;  
 }
 
+GpuTriangleMesh ToGpuTriangleMesh(const CpuTriangleMesh& triangle_mesh)
+{
+    GpuTriangleMesh gpu_triangle_mesh;
+    gpu_triangle_mesh.vertices = ToGpuVertices(triangle_mesh.vertices);
+    gpu_triangle_mesh.indices = triangle_mesh.indices;
+    return gpu_triangle_mesh;
+}
+
 GLMESH_NAMESPACE_END

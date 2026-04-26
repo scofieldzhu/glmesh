@@ -42,6 +42,11 @@ void GLTriangleMesh::upload(const std::vector<GpuVertex>& vertices, const std::v
     vao_.unbind();    
 }
 
+void GLTriangleMesh::upload(const GpuTriangleMesh& triangle_mesh, uint32_t usage)
+{
+    upload(triangle_mesh.vertices, triangle_mesh.indices, usage);
+}
+
 void GLTriangleMesh::draw() const noexcept
 {
     vao_.bind();

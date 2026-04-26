@@ -4,7 +4,7 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates 
  *  coherent OpenGL.
  *  
- *  File: cpu_triangle_mesh.h 
+ *  File: gpu_triangle_mesh.h
  *  Copyright (c) 2024-2026 scofieldzhu
  *  
  *  MIT License
@@ -27,17 +27,16 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *  SOFTWARE.
  */
-#ifndef __cpu_triangle_mesh_h__
-#define __cpu_triangle_mesh_h__
+#ifndef __gpu_triangle_mesh_h__
+#define __gpu_triangle_mesh_h__
 
-#include "glmesh/kernel/core/cpu_vertex.h"
+#include "glmesh/kernel/gl/gpu_vertex.h"
 
 GLMESH_NAMESPACE_BEGIN
 
-struct GLMESH_KERNEL_API CpuTriangleMesh
+struct GpuTriangleMesh
 {
-    void buildFromPolygonMesh(const CpuPolygonMesh& polyon_mesh);
-    std::vector<CpuVertex> vertices;
+    std::vector<GpuVertex> vertices;
     std::vector<uint32> indices;
 };
 
