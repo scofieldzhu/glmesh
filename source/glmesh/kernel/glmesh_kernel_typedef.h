@@ -27,7 +27,6 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *  SOFTWARE.
  */
-
 #ifndef __glmesh_kernel_typedef_h__
 #define __glmesh_kernel_typedef_h__
 

@@ -21,7 +21,6 @@ set(EXPORT_HEAD_FILES
     core/cpu_triangle_mesh.h    
     io/mesh_loader.h
     cpu_to_gpu.h
-    renderer.h
     material.h
     glmesh_log.h
 )
@@ -41,7 +40,6 @@ set(SOURCE_FILES
     io/mesh_loader.cpp
     cpu_to_gpu.cpp
     material.cpp
-    renderer.cpp
     glmesh_log.cpp
 )
 

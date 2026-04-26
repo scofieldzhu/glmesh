@@ -31,6 +31,7 @@
 #define __renderable_object_h__
 
 #include "glmesh/kernel/gl/gl_drawable.h"
+#include "glmesh/kernel/material.h"
 
 struct RenderableObject 
 {
@@ -44,6 +45,8 @@ struct RenderableObject
     glm::vec4 base_color{0.8f, 0.8f, 0.8f, 1.0f}; // 换成 vec4 支持透明度更好
     float line_width{1.0f};
     float point_size{1.0f};
+
+    glmesh::Material material;
     
     // 状态控制
     bool visible{true};

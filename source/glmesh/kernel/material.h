@@ -38,15 +38,12 @@ class ShaderProgram;
 
 struct GLMESH_KERNEL_API Material
 {
+    void bind() const;
     ShaderProgram* shader = nullptr;
-
     glm::vec3 base_color {1.0f, 1.0f, 1.0f};
     glm::vec3 light_dir  {1.0f, -1.0f, -1.0f};
-
     float ambient  = 0.2f;
     float diffuse  = 1.0f;
-
-    void bind() const;
 };
 
 GLMESH_NAMESPACE_END

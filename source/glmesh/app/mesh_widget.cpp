@@ -30,12 +30,12 @@
 #include "mesh_widget.h"
 #include <QOpenGLContext>
 #include <glm/gtc/matrix_transform.hpp>
-#include <stdexcept>
-#include "glmesh/kernel/renderer.h"
 #include "glmesh/kernel/cpu_to_gpu.h"
 #include "glmesh/kernel/gl/gl_api_init.h"
 #include "glmesh/kernel/gl/gl_debug.h"
+#include "glmesh/kernel/gl/gl_triangle_mesh.h"
 #include "glmesh/kernel/io/mesh_loader.h"
+#include "glmesh/kernel/gl/gpu_triangle_mesh.h"
 
 static const char* kMeshVertexShader = R"(
     #version 330 core
@@ -102,7 +102,7 @@ MeshWidget::MeshWidget(QWidget* parent)
 MeshWidget::~MeshWidget()
 {
     makeCurrent();
-    mesh_.reset();
+    renderable_objects_.clear();
     shader_.destroy(); 
     doneCurrent();
 }
@@ -123,10 +123,6 @@ void MeshWidget::initializeGL()
 
     shader_.createFromSource(kMeshVertexShader, kMeshFragmentShader);
 
-    material_.shader = &shader_;
-    material_.light_dir = glm::normalize(glm::vec3(-1.0f, -1.0f, -1.0f));
-    material_.ambient = 0.7f;
-
     is_gl_initialized_ = true;
 }
 
@@ -141,14 +137,18 @@ bool MeshWidget::updateMesh(const glmesh::GpuTriangleMesh& mesh_data, UpdateErro
 
     makeCurrent();
     
-    if(!mesh_) {
-        mesh_ = std::make_unique<glmesh::GLTriangleMesh>();
-    }
-    mesh_->upload(mesh_data, GL_STATIC_DRAW);
+    auto gl_mesh = std::make_shared<glmesh::GLTriangleMesh>();
+    gl_mesh->upload(mesh_data, GL_STATIC_DRAW);
+
+    RenderableObject ren_obj;
+    ren_obj.drawable = gl_mesh;
+    ren_obj.material.shader = &shader_;
+    ren_obj.material.light_dir = glm::normalize(glm::vec3(-1.0f, -1.0f, -1.0f));
+    ren_obj.material.ambient = 0.7f;
+    renderable_objects_.push_back(std::move(ren_obj));
 
     doneCurrent();
     
-    // 数据更新后请求重绘一次
     update(); 
 
     if(out_err){
@@ -166,13 +166,11 @@ void MeshWidget::paintGL()
 {
     ::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    if(!mesh_ || !mesh_->valid()){
+    if(renderable_objects_.empty()){
         return;
     }
-    // 【优化】旋转逻辑由计时器改为鼠标控制
     glm::mat4 model(1.0f);
     model = glm::scale(model, glm::vec3(0.01f)); 
-    // 应用鼠标旋转
     model = glm::rotate(model, glm::radians(rotation_x_), glm::vec3(1.0f, 0.0f, 0.0f));
     model = glm::rotate(model, glm::radians(rotation_y_), glm::vec3(0.0f, 1.0f, 0.0f));
 
@@ -185,7 +183,16 @@ void MeshWidget::paintGL()
     const float aspect = height() > 0 ? static_cast<float>(width()) / static_cast<float>(height()) : 1.0f;
     glm::mat4 proj = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 100.0f);
 
-    DrawMesh(*mesh_, material_, model, view, proj);
+    for(auto ren_obj : renderable_objects_){
+        if(!ren_obj.visible || !ren_obj.drawable){
+            continue;
+        }
+        ren_obj.material.bind();
+        ren_obj.material.shader->setMat4("uModel", model);
+        ren_obj.material.shader->setMat4("uView", view);
+        ren_obj.material.shader->setMat4("uProj", proj);
+        ren_obj.drawable->draw();
+    }
 }
 
 void MeshWidget::mousePressEvent(QMouseEvent* event)

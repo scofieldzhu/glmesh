@@ -34,8 +34,7 @@
 #include <QMouseEvent>
 #include <QWheelEvent>
 #include "glmesh/kernel/gl/shader_program.h"
-#include "glmesh/kernel/gl/gpu_triangle_mesh.h"
-#include "glmesh/kernel/material.h"
+#include "renderable_object.h"
 
 class MeshWidget : public QOpenGLWidget 
 {
@@ -58,9 +57,8 @@ private:
     void mousePressEvent(QMouseEvent* event) override;
     void mouseMoveEvent(QMouseEvent* event) override;
     void wheelEvent(QWheelEvent* event) override;
-    std::unique_ptr<glmesh::GLTriangleMesh> mesh_;
+    std::vector<RenderableObject> renderable_objects_;
     glmesh::ShaderProgram shader_;
-    glmesh::Material material_;
     QPoint last_mouse_pos_;
     float camera_distance_ = 3.0f;
     float rotation_x_ = 0.0f;
