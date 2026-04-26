@@ -44,7 +44,6 @@ enum class MeshLoadError
     InvalidTopology
 };
 GLMESH_KERNEL_API bool LoadPlyAsCpuPolygonMesh(const std::string& ply_filepath, CpuPolygonMesh& out_mesh, MeshLoadError* out_err = nullptr);
-//GLMESH_KERNEL_API bool LoadPlyRenderableMesh(const std::string& ply_filepath, GLTriangleMesh& out_mesh, MeshLoadError* out_err = nullptr);
 
 GLMESH_NAMESPACE_END
 

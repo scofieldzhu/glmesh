@@ -114,11 +114,6 @@ bool MeshWidget::updateMesh(const glmesh::GpuTriangleMesh& mesh_data, UpdateErro
     if(!mesh_) {
         mesh_ = std::make_unique<glmesh::GLTriangleMesh>();
     }
-    // 此处调用你现有的 CPU -> GPU 转换逻辑
-    // 假设你底层有类似 LoadFromMemory 的函数：
-    // mesh_->load(data.positions, data.normals, data.colors, data.indices);
-    //LoadPlyRenderableMesh("E:/Code/glmesh/CFMC-46-009.ply", *mesh_);
-
     mesh_->upload(mesh_data, GL_STATIC_DRAW);
 
     doneCurrent();

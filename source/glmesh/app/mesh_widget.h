@@ -17,7 +17,6 @@ public:
         EmptyData,
         NotInitialized
     };
-    // 核心接口：主线程完成 IO 加载后，调用此接口将数据喂给 GPU
     bool updateMesh(const glmesh::GpuTriangleMesh& mesh_data, UpdateError* outError = nullptr);
     explicit MeshWidget(QWidget* parent = nullptr);
     ~MeshWidget() override;

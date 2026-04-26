@@ -17,7 +17,7 @@ MainWidget::~MainWidget()
 void MainWidget::onLoadPlyBtnClicked()
 {
     glmesh::CpuPolygonMesh polygon_mesh;
-    if(!LoadPlyAsCpuPolygonMesh("E:/Code/glmesh/CFMC-46-009.ply", polygon_mesh, nullptr)){
+    if(!glmesh::LoadPlyAsCpuPolygonMesh("E:/Code/glmesh/CFMC-46-009.ply", polygon_mesh, nullptr)){
         return;
     }
     if(polygon_mesh.polygons.empty()){
