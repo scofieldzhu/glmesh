@@ -4,6 +4,7 @@ set(PKG_PROJ "glmesh.kernel")
 set(EXPORT_HEAD_FILES
     glmesh_kernel_export.h
     glmesh_kernel_typedef.h
+    gl/gl_drawable.h
     gl/vertex_array.h
     gl/gpu_vertex.h
     gl/vertex_buffer.h

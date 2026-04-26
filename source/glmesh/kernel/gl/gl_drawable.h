@@ -4,7 +4,7 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates 
  *  coherent OpenGL.
  *  
- *  File: main_widget.h
+ *  File: gl_drawable.h
  *  Copyright (c) 2024-2026 scofieldzhu
  *  
  *  MIT License
@@ -27,25 +27,19 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *  SOFTWARE.
  */
-#ifndef __main_widget_h__
-#define __main_widget_h__
+#ifndef __gl_drawable_h__
+#define __gl_drawable_h__
 
-#include <QMainWindow>
-#include "ui_main_widget.h"
+#include "glmesh/kernel/glmesh_kernel_typedef.h"
 
-class MainWidget : public QMainWindow
+GLMESH_NAMESPACE_BEGIN
+
+struct GLDrawable 
 {
-    Q_OBJECT
-
-public:
-    MainWidget(QWidget *parent = nullptr, Qt::WindowFlags flags = Qt::WindowFlags());
-    ~MainWidget();
-
-private slots:
-    void onLoadPlyBtnClicked();
-
-private:
-    Ui::MainWidget ui_;
+    virtual void draw() const = 0;
+    virtual ~GLDrawable() = default;
 };
+
+GLMESH_NAMESPACE_END
 
 #endif

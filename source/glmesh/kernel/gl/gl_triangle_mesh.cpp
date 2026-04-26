@@ -28,26 +28,22 @@
 *  SOFTWARE.
 */
 #include "gl_triangle_mesh.h"
+#include "glmesh/kernel/gl/gpu_triangle_mesh.h"
 #include "glad/glad.h"
 
 GLMESH_NAMESPACE_BEGIN
 
-void GLTriangleMesh::upload(const std::vector<GpuVertex>& vertices, const std::vector<uint32_t>& indices, uint32_t usage)
+void GLTriangleMesh::upload(const GpuTriangleMesh& triangle_mesh, uint32 usage)
 {
-    index_count_ = indices.size();
+    index_count_ = triangle_mesh.indices.size();
     vao_.bind();
-    vbo_.upload(vertices.data(), vertices.size() * sizeof(GpuVertex), usage);
-    ebo_.upload(indices.data(), indices.size() * sizeof(uint32_t), usage);
+    vbo_.upload(triangle_mesh.vertices.data(), triangle_mesh.vertices.size() * sizeof(GpuVertex), usage);
+    ebo_.upload(triangle_mesh.indices.data(), triangle_mesh.indices.size() * sizeof(uint32), usage);
     GpuVertex::SetupAttribs();
-    vao_.unbind();    
+    vao_.unbind();  
 }
 
-void GLTriangleMesh::upload(const GpuTriangleMesh& triangle_mesh, uint32_t usage)
-{
-    upload(triangle_mesh.vertices, triangle_mesh.indices, usage);
-}
-
-void GLTriangleMesh::draw() const noexcept
+void GLTriangleMesh::draw() const
 {
     vao_.bind();
     glDrawElements(

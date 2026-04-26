@@ -30,20 +30,18 @@
 #ifndef __gl_triangle_mesh_h__
 #define __gl_triangle_mesh_h__
 
-#include "glmesh/kernel/gl/gpu_vertex.h"
 #include "glmesh/kernel/gl/vertex_array.h"
 #include "glmesh/kernel/gl/vertex_buffer.h"
 #include "glmesh/kernel/gl/index_buffer.h"
-#include "glmesh/kernel/gl/gpu_triangle_mesh.h"
+#include "glmesh/kernel/gl/gl_drawable.h"
 
 GLMESH_NAMESPACE_BEGIN
 
-class GLMESH_KERNEL_API GLTriangleMesh
+class GLMESH_KERNEL_API GLTriangleMesh : public GLDrawable
 {
 public:
-    void upload(const std::vector<GpuVertex>& vertices, const std::vector<uint32_t>& indices, uint32_t usage);
-    void upload(const GpuTriangleMesh& triangle_mesh, uint32_t usage);
-    void draw() const noexcept;
+    void draw() const override;
+    void upload(const GpuTriangleMesh& triangle_mesh, uint32 usage);    
     bool valid()const{ return index_count_ > 0; }
 
 private:

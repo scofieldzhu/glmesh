@@ -4,7 +4,7 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates 
  *  coherent OpenGL.
  *  
- *  File: main_widget.h
+ *  File: renderable_object.h
  *  Copyright (c) 2024-2026 scofieldzhu
  *  
  *  MIT License
@@ -27,25 +27,28 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *  SOFTWARE.
  */
-#ifndef __main_widget_h__
-#define __main_widget_h__
+#ifndef __renderable_object_h__
+#define __renderable_object_h__
 
-#include <QMainWindow>
-#include "ui_main_widget.h"
+#include "glmesh/kernel/gl/gl_drawable.h"
 
-class MainWidget : public QMainWindow
+struct RenderableObject 
 {
-    Q_OBJECT
-
-public:
-    MainWidget(QWidget *parent = nullptr, Qt::WindowFlags flags = Qt::WindowFlags());
-    ~MainWidget();
-
-private slots:
-    void onLoadPlyBtnClicked();
-
-private:
-    Ui::MainWidget ui_;
+    // 泛化：现在它可以容纳 Mesh、线段、点云、基本几何体
+    std::shared_ptr<glmesh::GLDrawable> drawable;
+    
+    // 空间变换
+    glm::mat4 model_matrix{1.0f};
+    
+    // 基础材质/渲染属性
+    glm::vec4 base_color{0.8f, 0.8f, 0.8f, 1.0f}; // 换成 vec4 支持透明度更好
+    float line_width{1.0f};
+    float point_size{1.0f};
+    
+    // 状态控制
+    bool visible{true};
+    // 甚至可以加一个枚举来标识要用哪个 Shader
+    // enum ShaderType { StandardLighting, UnlitColor, VertexColor } shader_type;
 };
 
 #endif

@@ -43,6 +43,8 @@ struct CpuPolygonMesh;
 struct CpuTriangleMesh;
 
 class GLTriangleMesh;
+struct GpuTriangleMesh;
+struct GLDrawable;
 
 GLMESH_NAMESPACE_END
 

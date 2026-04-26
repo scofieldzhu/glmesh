@@ -1,3 +1,32 @@
+/* 
+ *  glmesh is a mesh data render library base on QOpengl.
+ *  glmesh provides object-oriented interfaces to the OpenGL API (3.0 and higher). 
+ *  It reduces the amount of OpenGL code required for rendering and facilitates 
+ *  coherent OpenGL.
+ *  
+ *  File: mesh_widget.cpp
+ *  Copyright (c) 2024-2026 scofieldzhu
+ *  
+ *  MIT License
+ *  
+ *  Permission is hereby granted, free of charge, to any person obtaining a copy
+ *  of this software and associated documentation files (the "Software"), to deal
+ *  in the Software without restriction, including without limitation the rights
+ *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *  copies of the Software, and to permit persons to whom the Software is
+ *  furnished to do so, subject to the following conditions:
+ *  
+ *  The above copyright notice and this permission notice shall be included in all
+ *  copies or substantial portions of the Software.
+ *  
+ *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ *  SOFTWARE.
+ */
 #include "mesh_widget.h"
 #include <QOpenGLContext>
 #include <glm/gtc/matrix_transform.hpp>
@@ -90,12 +119,13 @@ void MeshWidget::initializeGL()
 
     ::glEnable(GL_DEPTH_TEST);
     ::glClearColor(0.10f, 0.12f, 0.15f, 1.0f);
+    //::glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
     shader_.createFromSource(kMeshVertexShader, kMeshFragmentShader);
 
     material_.shader = &shader_;
     material_.light_dir = glm::normalize(glm::vec3(-1.0f, -1.0f, -1.0f));
-    material_.ambient = 0.2f;
+    material_.ambient = 0.7f;
 
     is_gl_initialized_ = true;
 }

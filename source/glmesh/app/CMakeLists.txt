@@ -23,6 +23,7 @@ set(SOURCE_FILES
     "main.cpp"
     "main_widget.h"
     "main_widget.cpp"
+    "renderable_object.h"
 )
 
 # Build executable
