@@ -40,12 +40,12 @@ namespace logging{
     GLMESH_KERNEL_API std::shared_ptr<spdlog::logger> GetLogger();
 }
 
-#define GLMESH_LOG_TRACE(...) SPDLOG_LOGGER_TRACE(logging::GetLogger(), __VA_ARGS__)
-#define GLMESH_LOG_DEBUG(...) SPDLOG_LOGGER_DEBUG(logging::GetLogger(), __VA_ARGS__)
-#define GLMESH_LOG_INFO(...) SPDLOG_LOGGER_INFO(logging::GetLogger(), __VA_ARGS__)
-#define GLMESH_LOG_WARN(...) SPDLOG_LOGGER_WARN(logging::GetLogger(), __VA_ARGS__)
-#define GLMESH_LOG_ERROR(...) SPDLOG_LOGGER_ERROR(logging::GetLogger(), __VA_ARGS__)
-#define GLMESH_LOG_CRITICAL(...) SPDLOG_LOGGER_CRITICAL(logging::GetLogger(), __VA_ARGS__)
+#define GLMESH_LOG_TRACE(...) SPDLOG_LOGGER_TRACE(::glmesh::logging::GetLogger(), __VA_ARGS__)
+#define GLMESH_LOG_DEBUG(...) SPDLOG_LOGGER_DEBUG(::glmesh::logging::GetLogger(), __VA_ARGS__)
+#define GLMESH_LOG_INFO(...) SPDLOG_LOGGER_INFO(::glmesh::logging::GetLogger(), __VA_ARGS__)
+#define GLMESH_LOG_WARN(...) SPDLOG_LOGGER_WARN(::glmesh::logging::GetLogger(), __VA_ARGS__)
+#define GLMESH_LOG_ERROR(...) SPDLOG_LOGGER_ERROR(::glmesh::logging::GetLogger(), __VA_ARGS__)
+#define GLMESH_LOG_CRITICAL(...) SPDLOG_LOGGER_CRITICAL(::glmesh::logging::GetLogger(), __VA_ARGS__)
 
 #define GLMESH_ASSERT(cond, ...) \
     if(!(cond)){ \

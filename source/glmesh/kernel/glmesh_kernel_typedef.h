@@ -38,12 +38,22 @@
 
 GLMESH_NAMESPACE_BEGIN
 
+struct CpuVertex;
+struct CpuPointCloud;
 struct CpuPolygonMesh;
 struct CpuTriangleMesh;
+struct MeshBounds;
 
 class GLTriangleMesh;
 struct GpuTriangleMesh;
 struct GLDrawable;
+class GLPointCloud;
+class GLTriangleMesh;
+struct GpuVertex;
+class IndexBuffer;
+class ShaderProgram;
+class VertexArray;
+class VertexBuffer;
 
 GLMESH_NAMESPACE_END
 

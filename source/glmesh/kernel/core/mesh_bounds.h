@@ -4,7 +4,7 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates 
  *  coherent OpenGL.
  *  
- *  File: cpu_triangle_mesh.h 
+ *  File: mesh_bounds.h 
  *  Copyright (c) 2024-2026 scofieldzhu
  *  
  *  MIT License
@@ -27,20 +27,28 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *  SOFTWARE.
  */
-#ifndef __cpu_triangle_mesh_h__
-#define __cpu_triangle_mesh_h__
+#ifndef __mesh_bounds_h__
+#define __mesh_bounds_h__
 
-#include "glmesh/kernel/core/cpu_vertex.h"
-#include "glmesh/kernel/core/mesh_bounds.h"
+#include "glmesh/kernel/glmesh_kernel_typedef.h"
 
 GLMESH_NAMESPACE_BEGIN
 
-struct GLMESH_KERNEL_API CpuTriangleMesh
+struct MeshBounds
 {
-    void buildFromPolygonMesh(const CpuPolygonMesh& polyon_mesh);
-    std::optional<MeshBounds> calcBounds()const;
-    std::vector<CpuVertex> vertices;
-    std::vector<uint32> indices;
+    float min_x = 0.0f;
+    float min_y = 0.0f;
+    float min_z = 0.0f;
+
+    float max_x = 0.0f;
+    float max_y = 0.0f;
+    float max_z = 0.0f;
+
+    // 包围盒中心 (常用于模型居中显示)
+    glm::vec3 center;
+    
+    // 从中心到最远顶点的距离 (包围球半径，常用于相机自适应距离)
+    float radius = 0.0f;
 };
 
 GLMESH_NAMESPACE_END

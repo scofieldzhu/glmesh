@@ -36,6 +36,7 @@
 #include "glmesh/kernel/gl/gl_triangle_mesh.h"
 #include "glmesh/kernel/io/mesh_loader.h"
 #include "glmesh/kernel/gl/gpu_triangle_mesh.h"
+#include "glmesh/kernel/glmesh_log.h"
 
 static const char* kMeshVertexShader = R"(
     #version 330 core
@@ -119,7 +120,6 @@ void MeshWidget::initializeGL()
 
     ::glEnable(GL_DEPTH_TEST);
     ::glClearColor(0.10f, 0.12f, 0.15f, 1.0f);
-    //::glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
     shader_.createFromSource(kMeshVertexShader, kMeshFragmentShader);
 
@@ -169,19 +169,26 @@ void MeshWidget::paintGL()
     if(renderable_objects_.empty()){
         return;
     }
-    glm::mat4 model(1.0f);
-    model = glm::scale(model, glm::vec3(0.01f)); 
-    model = glm::rotate(model, glm::radians(rotation_x_), glm::vec3(1.0f, 0.0f, 0.0f));
-    model = glm::rotate(model, glm::radians(rotation_y_), glm::vec3(0.0f, 1.0f, 0.0f));
+    // glm::mat4 model(1.0f);
+    // model = glm::scale(model, glm::vec3(0.01f)); 
+    // model = glm::rotate(model, glm::radians(rotation_x_), glm::vec3(1.0f, 0.0f, 0.0f));
+    // model = glm::rotate(model, glm::radians(rotation_y_), glm::vec3(0.0f, 1.0f, 0.0f));
 
-    glm::mat4 view = glm::lookAt(
-        glm::vec3(0.0f, 0.0f, camera_distance_),  // eye 加入了滚轮缩放控制
-        glm::vec3(0.0f, 0.0f, 0.0f),              // center
-        glm::vec3(0.0f, 1.0f, 0.0f)               // up
-    );
+    // glm::mat4 view = glm::lookAt(
+    //     glm::vec3(0.0f, 0.0f, camera_distance_),  // eye 加入了滚轮缩放控制
+    //     glm::vec3(0.0f, 0.0f, 0.0f),              // center
+    //     glm::vec3(0.0f, 1.0f, 0.0f)               // up
+    // );
+
+    glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -camera_distance_));
+
+    GLMESH_LOG_TRACE("camera_distance_:{}", camera_distance_);
+
+    // 直接将四元数转换为旋转矩阵
+    glm::mat4 model = glm::mat4_cast(model_rotation_);
 
     const float aspect = height() > 0 ? static_cast<float>(width()) / static_cast<float>(height()) : 1.0f;
-    glm::mat4 proj = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 100.0f);
+    glm::mat4 proj = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 1000.0f);
 
     for(auto ren_obj : renderable_objects_){
         if(!ren_obj.visible || !ren_obj.drawable){
@@ -197,21 +204,42 @@ void MeshWidget::paintGL()
 
 void MeshWidget::mousePressEvent(QMouseEvent* event)
 {
-    last_mouse_pos_ = event->pos();
+    if (event->buttons() & Qt::LeftButton) {
+        last_arcball_vec_ = getArcballVector(event->pos());
+    }
 }
 
 void MeshWidget::mouseMoveEvent(QMouseEvent* event)
 {
-    if (event->buttons() & Qt::LeftButton){
-        int dx = event->x() - last_mouse_pos_.x();
-        int dy = event->y() - last_mouse_pos_.y();
+    if (event->buttons() & Qt::LeftButton) {
+        // 获取当前鼠标在球体上的三维向量
+        glm::vec3 current_arcball_vec = getArcballVector(event->pos());
         
-        rotation_y_ += dx * 0.5f;
-        rotation_x_ += dy * 0.5f;
+        // 计算两个向量的夹角余弦值
+        float dot_prod = glm::dot(last_arcball_vec_, current_arcball_vec);
+        // 防止浮点数精度问题导致 acos 越界返回 NaN
+        dot_prod = glm::clamp(dot_prod, -1.0f, 1.0f); 
         
-        last_mouse_pos_ = event->pos();
-        update(); // 仅在数据变化时要求重绘
-    }
+        // 计算旋转角度
+        float angle = std::acos(dot_prod);
+        
+        if (angle > 1e-5f) { // 如果确实发生了移动
+            // 通过叉乘得到旋转轴 (右手定则)
+            glm::vec3 axis = glm::cross(last_arcball_vec_, current_arcball_vec);
+            axis = glm::normalize(axis);
+            
+            // 构建这一次移动产生的旋转四元数
+            glm::quat delta_rotation = glm::angleAxis(angle, axis);
+            
+            // 将本次旋转叠加到总旋转上 (注意乘法顺序)
+            model_rotation_ = delta_rotation * model_rotation_;
+        }
+        
+        // 更新记录，用于下一帧计算
+        last_arcball_vec_ = current_arcball_vec;
+        
+        update(); // 触发重绘
+    }    
 }
 
 void MeshWidget::wheelEvent(QWheelEvent* event)
@@ -223,4 +251,27 @@ void MeshWidget::wheelEvent(QWheelEvent* event)
         camera_distance_ = 0.1f;
     }
     update(); // 仅在视角变化时要求重绘
+}
+
+glm::vec3 MeshWidget::getArcballVector(const QPoint& pt)const
+{
+    // 1. 将鼠标坐标归一化到 [-1, 1] 的 NDC 空间
+    // 注意：Qt的Y轴向下，OpenGL的Y轴向上，所以Y要做 1.0 - ... 的反转
+    float x = (2.0f * pt.x() / width()) - 1.0f;
+    float y = 1.0f - (2.0f * pt.y() / height()); 
+    
+    glm::vec3 P(x, y, 0.0f);
+    
+    // 2. 计算点到屏幕中心的距离的平方
+    float OP_squared = x * x + y * y;
+    
+    if (OP_squared <= 1.0f) {
+        // 如果点在球体内（勾股定理求 Z）
+        P.z = std::sqrt(1.0f - OP_squared); 
+    } else {
+        // 如果点在球体外，把它拉回球面上（Z = 0）
+        P = glm::normalize(P); 
+    }
+    
+    return P;
 }

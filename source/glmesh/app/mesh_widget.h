@@ -33,6 +33,8 @@
 #include <QOpenGLWidget>
 #include <QMouseEvent>
 #include <QWheelEvent>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
 #include "glmesh/kernel/gl/shader_program.h"
 #include "renderable_object.h"
 
@@ -57,13 +59,13 @@ private:
     void mousePressEvent(QMouseEvent* event) override;
     void mouseMoveEvent(QMouseEvent* event) override;
     void wheelEvent(QWheelEvent* event) override;
+    glm::vec3 getArcballVector(const QPoint& pt)const;
     std::vector<RenderableObject> renderable_objects_;
     glmesh::ShaderProgram shader_;
-    QPoint last_mouse_pos_;
-    float camera_distance_ = 3.0f;
-    float rotation_x_ = 0.0f;
-    float rotation_y_ = 0.0f;
+    float camera_distance_ = 100.0f;
     bool is_gl_initialized_ = false;
+    glm::quat model_rotation_ = glm::quat(1.0f, 0.0f, 0.0f, 0.0f); // 记录累积的旋转（四元数）
+    glm::vec3 last_arcball_vec_;   
 };
 
 #endif

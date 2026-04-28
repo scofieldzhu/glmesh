@@ -29,11 +29,17 @@
  */
 #include <QApplication>
 #include <QSurfaceFormat>
-
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include "glmesh/kernel/glmesh_log.h"
 #include "main_widget.h"
 
 int main(int argc, char *argv[])
 {
+    auto logger = spdlog::stdout_color_mt("console");
+    logger->set_level(spdlog::level::trace);
+    glmesh::logging::InitLogger(logger);
+    GLMESH_LOG_TRACE("App started...");
+
     QApplication app(argc, argv);
 
     QSurfaceFormat fmt;

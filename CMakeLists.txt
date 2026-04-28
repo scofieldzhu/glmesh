@@ -39,11 +39,12 @@ find_package(PCL REQUIRED)
 message(STATUS "Find pcl library! ${PCL_VERSION}")
 
 add_definitions(
-  -DGLM_ENABLE_EXPERIMENTAL
+  -DGLM_ENABLE_EXPERIMENTAL  
 )
 
 add_compile_definitions(
   ${PCL_DEFINITIONS}  
+  SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE
 )
 
 add_compile_options(

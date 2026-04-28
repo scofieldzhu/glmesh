@@ -19,6 +19,8 @@ set(EXPORT_HEAD_FILES
     core/cpu_point_cloud.h
     core/cpu_polygon_mesh.h
     core/cpu_triangle_mesh.h    
+    core/mesh_bounds.h
+    core/geometry_utils.h
     io/mesh_loader.h
     cpu_to_gpu.h
     material.h
@@ -37,6 +39,7 @@ set(SOURCE_FILES
     gl/index_buffer.cpp
     gl/gl_debug.cpp    
     core/cpu_triangle_mesh.cpp
+    core/geometry_utils.cpp
     io/mesh_loader.cpp
     cpu_to_gpu.cpp
     material.cpp

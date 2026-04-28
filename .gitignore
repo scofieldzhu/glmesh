@@ -32,7 +32,6 @@
 *.app
 
 # excluded directories
-third_party
 .vscode
 build
 data
