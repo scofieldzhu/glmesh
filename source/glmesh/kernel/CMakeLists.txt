@@ -12,6 +12,8 @@ set(EXPORT_HEAD_FILES
     gl/gl_triangle_mesh.h
     gl/gpu_triangle_mesh.h
     gl/gl_point_cloud.h
+    gl/gpu_rect.h
+    gl/gl_rect.h
     gl/gl_api_init.h
     gl/shader_program.h
     gl/gl_debug.h
@@ -33,6 +35,7 @@ set(SOURCE_FILES
     gl/shader_program.cpp
     gl/gl_triangle_mesh.cpp
     gl/gl_point_cloud.cpp
+    gl/gl_rect.cpp
     gl/vertex_array.cpp
     gl/vertex_buffer.cpp
     gl/gpu_vertex.cpp

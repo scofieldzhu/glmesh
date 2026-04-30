@@ -54,6 +54,7 @@ void MainWidget::onLoadPlyBtnClicked()
     }
     glmesh::CpuTriangleMesh triangle_mesh;
     triangle_mesh.buildFromPolygonMesh(polygon_mesh);
+    auto mesh_bound_opt = triangle_mesh.calcBounds();
     glmesh::GpuTriangleMesh gpu_triangle_mesh = glmesh::ToGpuTriangleMesh(triangle_mesh);
-    ui_.meshWidget->updateMesh(gpu_triangle_mesh);
+    ui_.meshWidget->updateMesh(gpu_triangle_mesh, *mesh_bound_opt);
 }

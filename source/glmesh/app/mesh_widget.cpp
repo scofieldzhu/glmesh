@@ -126,7 +126,7 @@ void MeshWidget::initializeGL()
     is_gl_initialized_ = true;
 }
 
-bool MeshWidget::updateMesh(const glmesh::GpuTriangleMesh& mesh_data, UpdateError* out_err)
+bool MeshWidget::updateMesh(const glmesh::GpuTriangleMesh& mesh_data, const glmesh::MeshBounds& bounds, UpdateError* out_err)
 {
     if(!is_gl_initialized_){
         if(out_err){
@@ -146,6 +146,25 @@ bool MeshWidget::updateMesh(const glmesh::GpuTriangleMesh& mesh_data, UpdateErro
     ren_obj.material.light_dir = glm::normalize(glm::vec3(-1.0f, -1.0f, -1.0f));
     ren_obj.material.ambient = 0.7f;
     renderable_objects_.push_back(std::move(ren_obj));
+
+        // 1. 设置模型居中偏移
+    // 渲染时，我们要把模型从它原本的中心点平移到原点 (0,0,0)
+    // 所以 model 矩阵需要加上 translate(-center_x, -center_y, -center_z)
+    mesh_center_offset_ = -bounds.center;
+    
+    // 2. 自适应相机距离
+    // 如果想要模型在视野中大小合适，可以根据它的包围球半径来设置
+    // 假设 FOV 是 45 度，相机距离通常设置为半径的 2 到 3 倍
+    camera_distance_ = bounds.radius * 2.5f;
+    
+    // 3. 设置滚轮缩放限制
+    // 防止滚轮滑得太近直接穿模，或者滑得太远看不见
+    min_camera_distance_ = bounds.radius * 0.1f;  // 至少离模型表面一点点
+    max_camera_distance_ = bounds.radius * 10.0f; // 最远不超过半径的10倍
+    
+    // 4. 重置相机的旋转状态
+    // 重置 Arcball 或者四元数等状态，保证每次换模型都是正对的
+    // ...
 
     doneCurrent();
     
@@ -169,23 +188,18 @@ void MeshWidget::paintGL()
     if(renderable_objects_.empty()){
         return;
     }
-    // glm::mat4 model(1.0f);
-    // model = glm::scale(model, glm::vec3(0.01f)); 
-    // model = glm::rotate(model, glm::radians(rotation_x_), glm::vec3(1.0f, 0.0f, 0.0f));
-    // model = glm::rotate(model, glm::radians(rotation_y_), glm::vec3(0.0f, 1.0f, 0.0f));
-
-    // glm::mat4 view = glm::lookAt(
-    //     glm::vec3(0.0f, 0.0f, camera_distance_),  // eye 加入了滚轮缩放控制
-    //     glm::vec3(0.0f, 0.0f, 0.0f),              // center
-    //     glm::vec3(0.0f, 1.0f, 0.0f)               // up
-    // );
 
     glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -camera_distance_));
+    // 加上你的旋转矩阵 (鼠标交互产生的)
+    view = view * glm::mat4_cast(model_rotation_); 
 
     GLMESH_LOG_TRACE("camera_distance_:{}", camera_distance_);
 
     // 直接将四元数转换为旋转矩阵
-    glm::mat4 model = glm::mat4_cast(model_rotation_);
+    //glm::mat4 model = glm::mat4_cast(model_rotation_);
+
+    // Model 矩阵：将模型自身平移，使其包围盒中心对准原点
+    glm::mat4 model = glm::translate(glm::mat4(1.0f), mesh_center_offset_);
 
     const float aspect = height() > 0 ? static_cast<float>(width()) / static_cast<float>(height()) : 1.0f;
     glm::mat4 proj = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 1000.0f);
@@ -244,11 +258,26 @@ void MeshWidget::mouseMoveEvent(QMouseEvent* event)
 
 void MeshWidget::wheelEvent(QWheelEvent* event)
 {
-    // 滚轮控制远近
-    float scroll = event->angleDelta().y() / 120.0f;
-    camera_distance_ -= scroll * 0.5f;
-    if (camera_distance_ < 0.1f){
-        camera_distance_ = 0.1f;
+    // // 滚轮控制远近
+    // float scroll = event->angleDelta().y() / 120.0f;
+    // camera_distance_ -= scroll * 0.5f;
+    // if (camera_distance_ < 0.1f){
+    //     camera_distance_ = 0.1f;
+    // }
+
+    float scroll_amount = event->angleDelta().y() / 120.0f;
+    
+    // 缩放步长也可以跟模型尺寸挂钩，大模型缩放快，小模型缩放慢
+    float step = (max_camera_distance_ - min_camera_distance_) * 0.05f; 
+    
+    camera_distance_ -= scroll_amount * step;
+    
+    // 应用最小和最大距离限制，防止穿模和丢失
+    if (camera_distance_ < min_camera_distance_) {
+        camera_distance_ = min_camera_distance_;
+    }
+    if (camera_distance_ > max_camera_distance_) {
+        camera_distance_ = max_camera_distance_;
     }
     update(); // 仅在视角变化时要求重绘
 }

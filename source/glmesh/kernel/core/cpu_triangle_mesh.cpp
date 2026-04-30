@@ -92,14 +92,14 @@ std::optional<MeshBounds> CpuTriangleMesh::calcBounds() const
     bounds.center.y = (min_y + max_y) / 2.0;
     bounds.center.z = (min_z + max_z) / 2.0;
     // 再次遍历，计算从中心点到所有顶点的最大距离作为半径 (包围球), 这样可以使得计算出来的半径更准确.
-    float max_sq_dist = 0.0f;
+    float max_dist = 0.0f;
     for(const auto& v : vertices) {
         auto dist = glm::length(v.position - bounds.center);
-        if(dist > max_sq_dist){
-            max_sq_dist = dist;
+        if(dist > max_dist){
+            max_dist = dist;
         }
     }
-    bounds.radius = max_sq_dist;
+    bounds.radius = max_dist;
     return bounds;
 }
 

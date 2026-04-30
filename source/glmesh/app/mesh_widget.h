@@ -48,7 +48,7 @@ public:
         EmptyData,
         NotInitialized
     };
-    bool updateMesh(const glmesh::GpuTriangleMesh& mesh_data, UpdateError* outError = nullptr);
+    bool updateMesh(const glmesh::GpuTriangleMesh& mesh_data, const glmesh::MeshBounds& mb, UpdateError* outError = nullptr);
     explicit MeshWidget(QWidget* parent = nullptr);
     ~MeshWidget() override;
 
@@ -66,6 +66,9 @@ private:
     bool is_gl_initialized_ = false;
     glm::quat model_rotation_ = glm::quat(1.0f, 0.0f, 0.0f, 0.0f); // 记录累积的旋转（四元数）
     glm::vec3 last_arcball_vec_;   
+    glm::vec3 mesh_center_offset_;
+    float min_camera_distance_ = 0.0;
+    float max_camera_distance_ = 0.0;
 };
 
 #endif
