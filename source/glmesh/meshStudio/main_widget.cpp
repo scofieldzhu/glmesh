@@ -28,25 +28,32 @@
  *  SOFTWARE.
  */
 #include "main_widget.h"
+#include <QFileDialog>
 #include "glmesh/kernel/io/mesh_loader.h"
 #include "glmesh/kernel/core/cpu_polygon_mesh.h"
 #include "glmesh/kernel/cpu_to_gpu.h"
+#include "app_log.h"
 
 MainWidget::MainWidget(QWidget *parent, Qt::WindowFlags flags)
     :QMainWindow(parent, flags)
 {
     ui_.setupUi(this);
-    connect(ui_.loadPlyBtn, &QAbstractButton::clicked, this, &MainWidget::onLoadPlyBtnClicked);
+    connect(ui_.actionOpenMesh, &QAction::triggered, this, &MainWidget::onOpenMeshActionTriggered);
 }
 
 MainWidget::~MainWidget()
 {
 }
 
-void MainWidget::onLoadPlyBtnClicked()
+void MainWidget::onOpenMeshActionTriggered()
 {
+    QString filepath = QFileDialog::getOpenFileName(this, tr("Open PLY File"), QString(), tr("PLY Files (*.ply)"));
+    if(filepath.isEmpty()){
+        return;
+    }     
     glmesh::CpuPolygonMesh polygon_mesh;
-    if(!glmesh::LoadPlyAsCpuPolygonMesh("E:/Code/glmesh/CFMC-46-009.ply", polygon_mesh, nullptr)){
+    if(!glmesh::LoadPlyAsCpuPolygonMesh(filepath.toLocal8Bit().data(), polygon_mesh, nullptr)){
+        APP_LOG_ERROR("Load mesh from ply file:\"{}\" failed!", filepath.toStdString());
         return;
     }
     if(polygon_mesh.polygons.empty()){
@@ -56,5 +63,5 @@ void MainWidget::onLoadPlyBtnClicked()
     triangle_mesh.buildFromPolygonMesh(polygon_mesh);
     auto mesh_bound_opt = triangle_mesh.calcBounds();
     glmesh::GpuTriangleMesh gpu_triangle_mesh = glmesh::ToGpuTriangleMesh(triangle_mesh);
-    ui_.meshWidget->updateMesh(gpu_triangle_mesh, *mesh_bound_opt);
+    ui_.meshRenderWidget->updateMesh(gpu_triangle_mesh, *mesh_bound_opt);
 }

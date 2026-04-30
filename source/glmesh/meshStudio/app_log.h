@@ -4,7 +4,7 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates 
  *  coherent OpenGL.
  *  
- *  File: main_widget.h
+ *  File: log.h
  *  Copyright (c) 2024-2026 scofieldzhu
  *  
  *  MIT License
@@ -27,25 +27,24 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *  SOFTWARE.
  */
-#ifndef __main_widget_h__
-#define __main_widget_h__
+#ifndef __app_log_h__
+#define __app_log_h__
 
-#include <QMainWindow>
-#include "ui_main_widget.h"
+#include <spdlog/spdlog.h>
 
-class MainWidget : public QMainWindow
-{
-    Q_OBJECT
+void InitLogger();
+std::shared_ptr<spdlog::logger> GetAppLogger();
 
-public:
-    MainWidget(QWidget *parent = nullptr, Qt::WindowFlags flags = Qt::WindowFlags());
-    ~MainWidget();
+#define APP_LOG_TRACE(...) SPDLOG_LOGGER_TRACE(GetAppLogger(), __VA_ARGS__)
+#define APP_LOG_DEBUG(...) SPDLOG_LOGGER_DEBUG(GetAppLogger(), __VA_ARGS__)
+#define APP_LOG_INFO(...) SPDLOG_LOGGER_INFO(GetAppLogger(), __VA_ARGS__)
+#define APP_LOG_WARN(...) SPDLOG_LOGGER_WARN(GetAppLogger(), __VA_ARGS__)
+#define APP_LOG_ERROR(...) SPDLOG_LOGGER_ERROR(GetAppLogger(), __VA_ARGS__)
+#define APP_LOG_CRITICAL(...) SPDLOG_LOGGER_CRITICAL(GetAppLogger(), __VA_ARGS__)
 
-private slots:
-    void onOpenMeshActionTriggered();
-
-private:
-    Ui::MainWidget ui_;
-};
+#define APP_ASSERT(cond, ...) \
+    if(!(cond)){ \
+        APP_LOG_CRITICAL(__VA_ARGS__) \
+    }
 
 #endif

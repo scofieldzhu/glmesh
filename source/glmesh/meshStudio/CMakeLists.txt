@@ -11,6 +11,8 @@ qt5_wrap_ui(NP_UI_HEADERS ${QT_UI_FILES})
 set(target "MeshStudio")
 
 set(SOURCE_FILES
+    "app_log.h"
+    "app_log.cpp"
     "mesh_widget.h"
     "mesh_widget.cpp"
     "main.cpp"

@@ -36,7 +36,7 @@
 #include "glmesh/kernel/gl/gl_triangle_mesh.h"
 #include "glmesh/kernel/io/mesh_loader.h"
 #include "glmesh/kernel/gl/gpu_triangle_mesh.h"
-#include "glmesh/kernel/glmesh_log.h"
+#include "app_log.h"
 
 static const char* kMeshVertexShader = R"(
     #version 330 core
@@ -193,7 +193,7 @@ void MeshWidget::paintGL()
     // 加上你的旋转矩阵 (鼠标交互产生的)
     view = view * glm::mat4_cast(model_rotation_); 
 
-    GLMESH_LOG_TRACE("camera_distance_:{}", camera_distance_);
+    //APP_LOG_TRACE("camera_distance_:{}", camera_distance_);
 
     // 直接将四元数转换为旋转矩阵
     //glm::mat4 model = glm::mat4_cast(model_rotation_);

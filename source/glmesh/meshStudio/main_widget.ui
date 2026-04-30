@@ -6,75 +6,852 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>946</width>
-    <height>668</height>
+    <width>1250</width>
+    <height>752</height>
    </rect>
   </property>
-  <property name="windowTitle">
-   <string>MainWindow</string>
+  <property name="font">
+   <font>
+    <pointsize>9</pointsize>
+    <weight>50</weight>
+    <bold>false</bold>
+   </font>
   </property>
-  <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout">
+  <property name="windowTitle">
+   <string>Mesh Studio</string>
+  </property>
+  <property name="dockOptions">
+   <set>QMainWindow::AllowNestedDocks|QMainWindow::AllowTabbedDocks|QMainWindow::AnimatedDocks</set>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <layout class="QVBoxLayout" name="centralLayout">
+    <property name="spacing">
+     <number>11</number>
+    </property>
+    <property name="leftMargin">
+     <number>11</number>
+    </property>
+    <property name="topMargin">
+     <number>11</number>
+    </property>
+    <property name="rightMargin">
+     <number>11</number>
+    </property>
+    <property name="bottomMargin">
+     <number>11</number>
+    </property>
     <item>
-     <widget class="MeshWidget" name="meshWidget"/>
-    </item>
-    <item>
-     <widget class="QWidget" name="controlPanel" native="true">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
+     <widget class="MeshWidget" name="meshRenderWidget">
       <property name="minimumSize">
        <size>
-        <width>300</width>
-        <height>0</height>
+        <width>640</width>
+        <height>480</height>
        </size>
       </property>
-      <property name="maximumSize">
-       <size>
-        <width>300</width>
-        <height>16777215</height>
-       </size>
-      </property>
-      <layout class="QVBoxLayout" name="verticalLayout">
-       <item>
-        <widget class="QPushButton" name="loadPlyBtn">
+      <layout class="QGridLayout" name="viewportOverlayLayout">
+       <property name="leftMargin">
+        <number>14</number>
+       </property>
+       <property name="topMargin">
+        <number>14</number>
+       </property>
+       <property name="rightMargin">
+        <number>14</number>
+       </property>
+       <property name="bottomMargin">
+        <number>10</number>
+       </property>
+       <property name="spacing">
+        <number>8</number>
+       </property>
+       <item row="0" column="0" alignment="Qt::AlignLeft|Qt::AlignTop">
+        <widget class="QLabel" name="viewportOverlayLabel">
          <property name="text">
-          <string>Load Ply</string>
+          <string>Perspective | Solid + Wireframe | FPS 60</string>
          </property>
         </widget>
        </item>
-       <item>
-        <spacer name="verticalSpacer">
+       <item row="0" column="1" alignment="Qt::AlignRight|Qt::AlignTop">
+        <widget class="QLabel" name="viewportHelpLabel">
+         <property name="text">
+          <string>Left: Rotate   Middle: Pan   Wheel: Zoom</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0" colspan="2">
+        <spacer name="viewportCenterSpacer">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
            <width>20</width>
-           <height>430</height>
+           <height>560</height>
           </size>
          </property>
         </spacer>
+       </item>
+       <item row="2" column="0" alignment="Qt::AlignLeft|Qt::AlignBottom">
+        <widget class="QLabel" name="viewportCoordinateLabel">
+         <property name="text">
+          <string>X: 12.438   Y: -3.205   Z: 8.762   Unit: mm</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>
     </item>
    </layout>
   </widget>
-  <widget class="QMenuBar" name="menubar">
+  <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>946</width>
+     <width>1250</width>
      <height>23</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>文件</string>
+    </property>
+    <addaction name="actionOpenMesh"/>
+    <addaction name="actionImportPointCloud"/>
+    <addaction name="actionSaveProject"/>
+    <addaction name="separator"/>
+    <addaction name="actionExit"/>
+   </widget>
+   <widget class="QMenu" name="menuEdit">
+    <property name="title">
+     <string>编辑</string>
+    </property>
+    <addaction name="actionUndo"/>
+    <addaction name="actionRedo"/>
+    <addaction name="separator"/>
+    <addaction name="actionPreferences"/>
+   </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>视图</string>
+    </property>
+    <addaction name="actionResetView"/>
+    <addaction name="actionFitToScreen"/>
+    <addaction name="actionToggleWireframe"/>
+    <addaction name="actionToggleGrid"/>
+   </widget>
+   <widget class="QMenu" name="menuProcess">
+    <property name="title">
+     <string>处理</string>
+    </property>
+    <addaction name="actionCleanMesh"/>
+    <addaction name="actionSimplifyMesh"/>
+    <addaction name="actionRemesh"/>
+    <addaction name="actionSmooth"/>
+   </widget>
+   <widget class="QMenu" name="menuMeasure">
+    <property name="title">
+     <string>测量</string>
+    </property>
+    <addaction name="actionDistanceMeasure"/>
+    <addaction name="actionSectionAnalysis"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>帮助</string>
+    </property>
+    <addaction name="actionAbout"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuEdit"/>
+   <addaction name="menuView"/>
+   <addaction name="menuProcess"/>
+   <addaction name="menuMeasure"/>
+   <addaction name="menuHelp"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QToolBar" name="mainToolBar">
+   <property name="windowTitle">
+    <string>主工具栏</string>
+   </property>
+   <property name="movable">
+    <bool>false</bool>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>20</width>
+     <height>20</height>
+    </size>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionOpenMesh"/>
+   <addaction name="actionSaveProject"/>
+   <addaction name="separator"/>
+   <addaction name="actionSelect"/>
+   <addaction name="actionPan"/>
+   <addaction name="actionRotate"/>
+   <addaction name="actionZoom"/>
+   <addaction name="separator"/>
+   <addaction name="actionFitToScreen"/>
+   <addaction name="actionResetView"/>
+   <addaction name="separator"/>
+   <addaction name="actionToggleWireframe"/>
+   <addaction name="actionToggleGrid"/>
+  </widget>
+  <widget class="QDockWidget" name="leftDockWidget">
+   <property name="minimumSize">
+    <size>
+     <width>280</width>
+     <height>500</height>
+    </size>
+   </property>
+   <property name="windowTitle">
+    <string>模型与显示</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="leftDockContent">
+    <layout class="QVBoxLayout" name="leftDockLayout">
+     <property name="spacing">
+      <number>8</number>
+     </property>
+     <property name="leftMargin">
+      <number>8</number>
+     </property>
+     <property name="topMargin">
+      <number>8</number>
+     </property>
+     <property name="rightMargin">
+      <number>8</number>
+     </property>
+     <property name="bottomMargin">
+      <number>8</number>
+     </property>
+     <item>
+      <widget class="QGroupBox" name="layerPanel">
+       <property name="title">
+        <string>模型 / 图层树</string>
+       </property>
+       <layout class="QVBoxLayout" name="layerPanelLayout">
+        <item>
+         <widget class="QTreeWidget" name="layerTreeWidget">
+          <property name="alternatingRowColors">
+           <bool>true</bool>
+          </property>
+          <column>
+           <property name="text">
+            <string>对象</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>显示</string>
+           </property>
+          </column>
+          <item>
+           <property name="text">
+            <string>project_sample.obj</string>
+           </property>
+           <property name="text">
+            <string>ON</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>scan_points.ply</string>
+           </property>
+           <property name="text">
+            <string>ON</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <widget class="QGroupBox" name="objectInfoPanel">
+       <property name="title">
+        <string>对象信息</string>
+       </property>
+       <layout class="QFormLayout" name="objectInfoLayout">
+        <property name="labelAlignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+        <item row="0" column="0">
+         <widget class="QLabel" name="labelObjectName">
+          <property name="text">
+           <string>名称</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QLabel" name="objectNameValue">
+          <property name="text">
+           <string>project_sample.obj</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="labelVertexCount">
+          <property name="text">
+           <string>顶点数</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QLabel" name="vertexCountValue">
+          <property name="text">
+           <string>128,430</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="labelFaceCount">
+          <property name="text">
+           <string>面片数</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QLabel" name="faceCountValue">
+          <property name="text">
+           <string>256,812</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <widget class="QLabel" name="labelEdgeCount">
+          <property name="text">
+           <string>边数量</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QLabel" name="edgeCountValue">
+          <property name="text">
+           <string>385,204</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <widget class="QGroupBox" name="displayControlPanel">
+       <property name="title">
+        <string>显示控制</string>
+       </property>
+       <layout class="QFormLayout" name="displayControlLayout">
+        <item row="0" column="0">
+         <widget class="QLabel" name="labelDisplayMode">
+          <property name="text">
+           <string>显示模式</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QComboBox" name="displayModeComboBox">
+          <item>
+           <property name="text">
+            <string>实体 + 边线</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>实体</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>线框</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>点云</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="labelFps">
+          <property name="text">
+           <string>FPS</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QLabel" name="fpsValue">
+          <property name="text">
+           <string>60</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QCheckBox" name="showGridCheckBox">
+          <property name="text">
+           <string>显示网格</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QCheckBox" name="showAxisCheckBox">
+          <property name="text">
+           <string>显示坐标轴</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <widget class="QCheckBox" name="showNormalCheckBox">
+          <property name="text">
+           <string>显示法线</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QCheckBox" name="showVertexCheckBox">
+          <property name="text">
+           <string>显示顶点</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <spacer name="leftDockBottomSpacer">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="rightDockWidget">
+   <property name="minimumSize">
+    <size>
+     <width>300</width>
+     <height>500</height>
+    </size>
+   </property>
+   <property name="windowTitle">
+    <string>属性与处理</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="rightDockContent">
+    <layout class="QVBoxLayout" name="rightDockLayout">
+     <property name="spacing">
+      <number>8</number>
+     </property>
+     <property name="leftMargin">
+      <number>8</number>
+     </property>
+     <property name="topMargin">
+      <number>8</number>
+     </property>
+     <property name="rightMargin">
+      <number>8</number>
+     </property>
+     <property name="bottomMargin">
+      <number>8</number>
+     </property>
+     <item>
+      <widget class="QGroupBox" name="propertyPanel">
+       <property name="title">
+        <string>属性面板</string>
+       </property>
+       <layout class="QFormLayout" name="propertyLayout">
+        <item row="0" column="0">
+         <widget class="QLabel" name="labelMaterial">
+          <property name="text">
+           <string>材质</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QComboBox" name="materialComboBox">
+          <item>
+           <property name="text">
+            <string>Matte Gray</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Clay</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Vertex Color</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="labelOpacity">
+          <property name="text">
+           <string>透明度</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QSlider" name="opacitySlider">
+          <property name="minimum">
+           <number>0</number>
+          </property>
+          <property name="maximum">
+           <number>100</number>
+          </property>
+          <property name="value">
+           <number>100</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="labelShading">
+          <property name="text">
+           <string>着色</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QComboBox" name="shadingComboBox">
+          <item>
+           <property name="text">
+            <string>Phong</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Flat</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Smooth</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <widget class="QGroupBox" name="filterPanel">
+       <property name="title">
+        <string>处理 / 滤波参数</string>
+       </property>
+       <layout class="QVBoxLayout" name="filterPanelLayout">
+        <item>
+         <widget class="QComboBox" name="filterComboBox">
+          <item>
+           <property name="text">
+            <string>选择处理算法...</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>网格清理</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>简化抽稀</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>法线重计算</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>曲率分析</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="parameterGroupBox">
+          <property name="title">
+           <string>参数</string>
+          </property>
+          <layout class="QFormLayout" name="parameterLayout">
+           <item row="0" column="0">
+            <widget class="QLabel" name="labelTargetFaces">
+             <property name="text">
+              <string>目标面片数</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QSpinBox" name="targetFacesSpinBox">
+             <property name="maximum">
+              <number>99999999</number>
+             </property>
+             <property name="value">
+              <number>100000</number>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="labelTolerance">
+             <property name="text">
+              <string>误差容差</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QDoubleSpinBox" name="toleranceDoubleSpinBox">
+             <property name="decimals">
+              <number>4</number>
+             </property>
+             <property name="singleStep">
+              <double>0.010000000000000</double>
+             </property>
+             <property name="value">
+              <double>0.050000000000000</double>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="labelPreserveBoundary">
+             <property name="text">
+              <string>保留边界</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QCheckBox" name="preserveBoundaryCheckBox">
+             <property name="text">
+              <string>启用</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="filterButtonLayout">
+          <item>
+           <widget class="QPushButton" name="previewFilterButton">
+            <property name="text">
+             <string>预览</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="applyFilterButton">
+            <property name="text">
+             <string>应用</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <spacer name="rightDockBottomSpacer">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QStatusBar" name="statusBar">
+   <property name="sizeGripEnabled">
+    <bool>true</bool>
+   </property>
+  </widget>
+  <action name="actionOpenMesh">
+   <property name="text">
+    <string>打开网格</string>
+   </property>
+   <property name="toolTip">
+    <string>打开网格文件</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="actionImportPointCloud">
+   <property name="text">
+    <string>导入点云</string>
+   </property>
+  </action>
+  <action name="actionSaveProject">
+   <property name="text">
+    <string>保存工程</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="text">
+    <string>退出</string>
+   </property>
+  </action>
+  <action name="actionUndo">
+   <property name="text">
+    <string>撤销</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Z</string>
+   </property>
+  </action>
+  <action name="actionRedo">
+   <property name="text">
+    <string>重做</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Y</string>
+   </property>
+  </action>
+  <action name="actionPreferences">
+   <property name="text">
+    <string>首选项</string>
+   </property>
+  </action>
+  <action name="actionResetView">
+   <property name="text">
+    <string>重置视图</string>
+   </property>
+  </action>
+  <action name="actionFitToScreen">
+   <property name="text">
+    <string>适配窗口</string>
+   </property>
+  </action>
+  <action name="actionToggleWireframe">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>线框</string>
+   </property>
+  </action>
+  <action name="actionToggleGrid">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>网格</string>
+   </property>
+  </action>
+  <action name="actionCleanMesh">
+   <property name="text">
+    <string>网格清理</string>
+   </property>
+  </action>
+  <action name="actionSimplifyMesh">
+   <property name="text">
+    <string>简化抽稀</string>
+   </property>
+  </action>
+  <action name="actionRemesh">
+   <property name="text">
+    <string>重网格化</string>
+   </property>
+  </action>
+  <action name="actionSmooth">
+   <property name="text">
+    <string>平滑</string>
+   </property>
+  </action>
+  <action name="actionDistanceMeasure">
+   <property name="text">
+    <string>距离测量</string>
+   </property>
+  </action>
+  <action name="actionSectionAnalysis">
+   <property name="text">
+    <string>截面分析</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>关于</string>
+   </property>
+  </action>
+  <action name="actionSelect">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>选择</string>
+   </property>
+  </action>
+  <action name="actionPan">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>平移</string>
+   </property>
+  </action>
+  <action name="actionRotate">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>旋转</string>
+   </property>
+  </action>
+  <action name="actionZoom">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>缩放</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
