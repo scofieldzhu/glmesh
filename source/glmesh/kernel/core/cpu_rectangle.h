@@ -4,8 +4,8 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates 
  *  coherent OpenGL.
  *  
- *  File: glm_kernel_basetype.h 
- *  Copyright (c) 2024-2024 scofieldzhu
+ *  File: cpu_rectangle.h 
+ *  Copyright (c) 2024-2026 scofieldzhu
  *  
  *  MIT License
  *  
@@ -27,39 +27,20 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *  SOFTWARE.
  */
-#ifndef __glmesh_kernel_typedef_h__
-#define __glmesh_kernel_typedef_h__
+#ifndef __cpu_rectangle_h__
+#define __cpu_rectangle_h__
 
-#include <glm/glm.hpp>
-#include <glm/mat4x4.hpp>
-#include <glm/vec3.hpp>
-#include "glmesh/glmesh_basedef.h"
-#include "glmesh/kernel/glmesh_kernel_export.h"
+#include "glmesh/kernel/core/cpu_vertex.h"
 
 GLMESH_NAMESPACE_BEGIN
 
-struct CpuVertex;
-struct GpuVertex;
-
-struct CpuPointCloud;
-class GLPointCloud;
-
-struct CpuPolygonMesh;
-struct CpuTriangleMesh;
-class GLTriangleMesh;
-struct GpuTriangleMesh;
-struct MeshBounds;
-
-struct CpuRectangle;
-struct GpuRectangle;
-class GLRectangle;
-
-struct GLDrawable;
-
-class IndexBuffer;
-class ShaderProgram;
-class VertexArray;
-class VertexBuffer;
+struct CpuRectangle
+{
+    CpuVertex left_bottom_point;
+    CpuVertex right_bottom_point;
+    CpuVertex right_top_point;
+    CpuVertex left_top_point;
+};
 
 GLMESH_NAMESPACE_END
 

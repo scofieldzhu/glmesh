@@ -4,7 +4,7 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates
  *  coherent OpenGL.
  *
- *  File: gl_rect.h
+ *  File: gl_rectangle.h
  *  Copyright (c) 2024-2026 scofieldzhu
  *
  *  MIT License
@@ -27,10 +27,9 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *  SOFTWARE.
  */
-#ifndef __gl_rect_h__
-#define __gl_rect_h__
+#ifndef __gl_rectangle_h__
+#define __gl_rectangle_h__
 
-#include "glmesh/kernel/gl/gpu_rect.h"
 #include "glmesh/kernel/gl/vertex_array.h"
 #include "glmesh/kernel/gl/vertex_buffer.h"
 #include "glmesh/kernel/gl/index_buffer.h"
@@ -38,11 +37,11 @@
 
 GLMESH_NAMESPACE_BEGIN
 
-class GLMESH_KERNEL_API GLRect : public GLDrawable
+class GLMESH_KERNEL_API GLRectangle : public GLDrawable
 {
 public:
     void draw() const override;
-    void upload(const GpuRect& rect, uint32 usage);
+    void upload(const GpuRectangle& rect, uint32 usage);
     bool valid() const { return uploaded_; }
 
 private:

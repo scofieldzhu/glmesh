@@ -4,7 +4,7 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates
  *  coherent OpenGL.
  *
- *  File: gl_rect.cpp
+ *  File: gpu_rect.h
  *  Copyright (c) 2024-2026 scofieldzhu
  *
  *  MIT License
@@ -27,28 +27,20 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *  SOFTWARE.
  */
-#include "gl_rect.h"
-#include "glad/glad.h"
+#ifndef __gpu_rectangle_h__
+#define __gpu_rectangle_h__
+
+#include <array>
+#include "glmesh/kernel/gl/gpu_vertex.h"
 
 GLMESH_NAMESPACE_BEGIN
 
-// Split the quad into two CCW triangles: (0,1,2) and (0,2,3).
-static constexpr uint32 kRectIndices[6] = {0, 1, 2, 0, 2, 3};
-
-void GLRect::upload(const GpuRect& rect, uint32 usage)
+// Vertices are ordered: bottom-left, bottom-right, top-right, top-left (CCW).
+struct GpuRectangle
 {
-    vao_.bind();
-    vbo_.upload(rect.vertices.data(), rect.vertices.size() * sizeof(GpuVertex), usage);
-    ebo_.upload(kRectIndices, sizeof(kRectIndices), usage);
-    GpuVertex::SetupAttribs();
-    vao_.unbind();
-    uploaded_ = true;
-}
-
-void GLRect::draw() const
-{
-    vao_.bind();
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
-}
+    std::array<GpuVertex, 4> vertices;
+};
 
 GLMESH_NAMESPACE_END
+
+#endif

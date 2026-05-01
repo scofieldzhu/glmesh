@@ -28,6 +28,7 @@
 *  SOFTWARE.
 */
 #include "cpu_to_gpu.h"
+#include "glmesh/kernel/core/cpu_rectangle.h"
 
 GLMESH_NAMESPACE_BEGIN
 
@@ -56,6 +57,16 @@ GpuTriangleMesh ToGpuTriangleMesh(const CpuTriangleMesh& triangle_mesh)
     gpu_triangle_mesh.vertices = ToGpuVertices(triangle_mesh.vertices);
     gpu_triangle_mesh.indices = triangle_mesh.indices;
     return gpu_triangle_mesh;
+}
+
+GpuRectangle ToGpuRectangle(const CpuRectangle& rt)
+{
+    GpuRectangle gpu_rt;
+    gpu_rt.vertices[0] = ToGpuVertex(rt.left_bottom_point);
+    gpu_rt.vertices[1] = ToGpuVertex(rt.right_bottom_point);
+    gpu_rt.vertices[2] = ToGpuVertex(rt.right_top_point);
+    gpu_rt.vertices[3] = ToGpuVertex(rt.left_top_point);
+    return gpu_rt;
 }
 
 GLMESH_NAMESPACE_END

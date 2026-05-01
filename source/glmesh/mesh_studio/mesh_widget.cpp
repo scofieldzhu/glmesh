@@ -31,11 +31,14 @@
 #include <QOpenGLContext>
 #include <glm/gtc/matrix_transform.hpp>
 #include "glmesh/kernel/cpu_to_gpu.h"
+#include "glmesh/kernel/core/cpu_rectangle.h"
 #include "glmesh/kernel/gl/gl_api_init.h"
 #include "glmesh/kernel/gl/gl_debug.h"
 #include "glmesh/kernel/gl/gl_triangle_mesh.h"
 #include "glmesh/kernel/io/mesh_loader.h"
 #include "glmesh/kernel/gl/gpu_triangle_mesh.h"
+#include "glmesh/kernel/gl/gpu_rectangle.h"
+#include "glmesh/kernel/gl/gl_rectangle.h"
 #include "app_log.h"
 
 static const char* kMeshVertexShader = R"(
@@ -137,15 +140,40 @@ bool MeshWidget::updateMesh(const glmesh::GpuTriangleMesh& mesh_data, const glme
 
     makeCurrent();
     
-    auto gl_mesh = std::make_shared<glmesh::GLTriangleMesh>();
-    gl_mesh->upload(mesh_data, GL_STATIC_DRAW);
+    glmesh::CpuRectangle cpu_rt;
+    cpu_rt.right_bottom_point.position = {-1.0, -1.0, 0.0};
+    cpu_rt.right_bottom_point.normal = {1.0, 0.0, 0.0};
+    cpu_rt.right_bottom_point.color = {1.0, 0.0, 0.0};
+    cpu_rt.left_bottom_point.position = {1.0, -1.0, 0.0};
+    cpu_rt.left_bottom_point.normal = {1.0, 0.0, 0.0};
+    cpu_rt.left_bottom_point.color = {1.0, 0.0, 0.0};
+    cpu_rt.left_top_point.position = {1.0, 1.0, 0.0};
+    cpu_rt.left_top_point.normal = {1.0, 0.0, 0.0};
+    cpu_rt.left_top_point.color = {1.0, 0.0, 0.0};
+    cpu_rt.right_top_point.position = {-1.0, 1.0, 0.0};
+    cpu_rt.right_top_point.normal = {1.0, 0.0, 0.0};
+    cpu_rt.right_top_point.color = {1.0, 0.0, 0.0};
+    glmesh::GpuRectangle gpu_rt = glmesh::ToGpuRectangle(cpu_rt);
+
+    auto gl_rt = std::make_shared<glmesh::GLRectangle>();
+    gl_rt->upload(gpu_rt, GL_STATIC_DRAW);
 
     RenderableObject ren_obj;
-    ren_obj.drawable = gl_mesh;
+    ren_obj.drawable = gl_rt;
     ren_obj.material.shader = &shader_;
     ren_obj.material.light_dir = glm::normalize(glm::vec3(-1.0f, -1.0f, -1.0f));
     ren_obj.material.ambient = 0.7f;
     renderable_objects_.push_back(std::move(ren_obj));
+    
+    auto gl_mesh = std::make_shared<glmesh::GLTriangleMesh>();
+    gl_mesh->upload(mesh_data, GL_STATIC_DRAW);
+    
+    RenderableObject mesh_ren_obj;
+    mesh_ren_obj.drawable = gl_mesh;
+    mesh_ren_obj.material.shader = &shader_;
+    mesh_ren_obj.material.light_dir = glm::normalize(glm::vec3(-1.0f, -1.0f, -1.0f));
+    mesh_ren_obj.material.ambient = 0.7f;
+    renderable_objects_.push_back(std::move(mesh_ren_obj));
 
         // 1. 设置模型居中偏移
     // 渲染时，我们要把模型从它原本的中心点平移到原点 (0,0,0)

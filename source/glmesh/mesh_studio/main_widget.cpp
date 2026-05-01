@@ -40,6 +40,7 @@ MainWidget::MainWidget(QWidget *parent, Qt::WindowFlags flags)
 {
     ApplyWidgetStyleSheet(this, ":/qss/main_widget.css");
     ui_.setupUi(this);
+    ui_.meshRenderWidget->setObjectName("renderViewport");
     connect(ui_.actionOpenMesh, &QAction::triggered, this, &MainWidget::onOpenMeshActionTriggered);
 }
 

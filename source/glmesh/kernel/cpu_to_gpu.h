@@ -32,12 +32,14 @@
 
 #include "glmesh/kernel/core/cpu_triangle_mesh.h"
 #include "glmesh/kernel/gl/gpu_triangle_mesh.h"
+#include "glmesh/kernel/gl/gpu_rectangle.h"
 
 GLMESH_NAMESPACE_BEGIN
 
 GLMESH_KERNEL_API GpuVertex ToGpuVertex(const CpuVertex& v);
 GLMESH_KERNEL_API std::vector<GpuVertex> ToGpuVertices(const std::vector<CpuVertex>& src);
 GLMESH_KERNEL_API GpuTriangleMesh ToGpuTriangleMesh(const CpuTriangleMesh& triangle_mesh);
+GLMESH_KERNEL_API GpuRectangle ToGpuRectangle(const CpuRectangle& rt);
 
 GLMESH_NAMESPACE_END
 
