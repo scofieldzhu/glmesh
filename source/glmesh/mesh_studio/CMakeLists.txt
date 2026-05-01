@@ -19,6 +19,9 @@ set(SOURCE_FILES
     "main_widget.h"
     "main_widget.cpp"
     "renderable_object.h"
+    "resource_util.h"
+    "resource_util.cpp"
+    ${CMAKE_SOURCE_DIR}/res/resource.qrc
 )
 
 add_executable(${target}

@@ -1,0 +1,149 @@
+SceneToolbar > QPushButton
+{
+	min-width: 32px;
+	max-width: 32px;
+	min-height: 32px;
+	max-height: 32px;
+}
+
+SceneToolbar#Axial{
+  background: #28282800;
+}
+
+SceneToolbar#Coronal{
+  background: #28282800;  
+}
+
+SceneToolbar#Sagittal{
+  background: #28282800;  
+}
+
+SceneToolbar#Ortho{
+  background: #28282800;  
+}
+
+SceneToolbar#Axial QLabel#title{
+  color:rgb(231, 229, 39);
+  font-family: "Microsoft YaHei";
+  font-weight: 400;  
+  font-size: 16px;
+  font-style: bold;
+}
+
+SceneToolbar#Coronal QLabel#title{
+  color:rgb(207, 55, 45);
+  font-family: "Microsoft YaHei";
+  font-weight: 400;  
+  font-size: 16px;
+  font-style: bold;
+}
+
+SceneToolbar#Sagittal QLabel#title{
+  color:rgb(136, 203, 90);
+  font-family: "Microsoft YaHei";
+  font-weight: 400;  
+  font-size: 16px;
+  font-style: bold;
+}
+
+SceneToolbar#Ortho QLabel#title{
+  color:white;
+  font-family: "Microsoft YaHei";
+  font-weight: 400;  
+  font-size: 16px;
+  font-style: bold;
+}
+
+QPushButton#Minmaximized{
+  border-image: url(:/image/body/scene/minmaximize_unchecked.png);
+}
+
+QPushButton#Minmaximized:checked{  
+  border-image: url(:/image/body/scene/minmaximize_checked.png);
+}
+
+
+SceneToolbar QSlider::groove:horizontal {
+    border-image: url(":/image/body/scene/slider_bg.png") 0 6 3 6;
+    border-width: 0px 6px 3px 6px;
+    height:10px;
+}
+
+SceneToolbar QSlider::handle:horizontal {
+  width: 16px;
+  height: 16px;
+  margin: -3px -7px -3px -7px;
+  border-image: url(":/image/body/scene/slider_handle_normal.png") 0px;
+}
+
+SceneToolbar QSlider::handle:horizontal:hover {
+  border-image: url(":/image/body/scene/slider_handle_hover.png") 0px;
+}
+
+SceneToolbar QSlider::handle:horizontal:pressed {
+  border-image: url(":/image/body/scene/slider_handle_click.png") 0px;
+}
+
+QScrollBar:horizontal {
+  height: 10px;  
+  margin: 0px 40px 0px 40px;
+  border-image: url(":/image/body/scene/scroll_bg.png") 0;
+}
+
+QScrollBar::add-page:horizontal,
+QScrollBar::sub-page:horizontal {
+  background: transparent;
+}
+
+QScrollBar::handle:horizontal {
+  min-width: 23px;
+  max-width: 23px;
+  min-height: 10px;
+  max-height: 10px;
+  border-image: url(":/image/body/scene/scroll_item_normal.png") 6;
+  border-width: 6px;
+}
+
+QScrollBar::handle:horizontal:hover {
+  border-image: url(":/image/body/scene/scroll_item_hover.png") 6;
+  border-width: 6px;
+}
+
+QScrollBar::handle:horizontal:pressed {
+  border-image: url(":/image/body/scene/scroll_item_click.png") 6;
+  border-width: 6px;
+}
+
+QScrollBar::add-line:horizontal {
+  width: 14px;
+  height: 10px;  
+  subcontrol-origin: content;
+  subcontrol-position: right;
+  background: url(":/image/body/scene/scroll_up_normal.png") center no-repeat;
+  margin: 0px;
+}
+
+QScrollBar::add-line:horizontal:hover {
+  background: url(":/image/body/scene/scroll_up_hover.png");
+}
+
+QScrollBar::add-line:horizontal:pressed {
+  background: url(":/image/body/scene/scroll_up_normal.png");
+}
+
+QScrollBar::sub-line:horizontal {
+  width: 14px;
+  height: 10px;
+  subcontrol-origin: border;
+  subcontrol-position: left;
+  background: url(":/image/body/scene/scroll_down_normal.png") center no-repeat;
+  margin: 0px;
+}
+
+QScrollBar::sub-line:horizontal:hover {
+  background: url(":/image/body/scene/scroll_down_hover.png");
+}
+
+QScrollBar::sub-line:horizontal:pressed {
+  background: url(":/image/body/scene/scroll_down_normal.png");
+}

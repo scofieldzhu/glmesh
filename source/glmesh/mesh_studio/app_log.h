@@ -4,7 +4,7 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates 
  *  coherent OpenGL.
  *  
- *  File: main_widget.cpp
+ *  File: log.h
  *  Copyright (c) 2024-2026 scofieldzhu
  *  
  *  MIT License
@@ -27,41 +27,29 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *  SOFTWARE.
  */
-#include "main_widget.h"
-#include <QFileDialog>
-#include "glmesh/kernel/io/mesh_loader.h"
-#include "glmesh/kernel/core/cpu_polygon_mesh.h"
-#include "glmesh/kernel/cpu_to_gpu.h"
-#include "app_log.h"
+#ifndef __app_log_h__
+#define __app_log_h__
 
-MainWidget::MainWidget(QWidget *parent, Qt::WindowFlags flags)
-    :QMainWindow(parent, flags)
-{
-    ui_.setupUi(this);
-    connect(ui_.actionOpenMesh, &QAction::triggered, this, &MainWidget::onOpenMeshActionTriggered);
+#include <QString>
+#include <spdlog/spdlog.h>
+
+namespace details{
+    void InitLogger();
+    std::shared_ptr<spdlog::logger> GetAppLogger();
 }
 
-MainWidget::~MainWidget()
-{
-}
+#define APP_LOG_TRACE(...) SPDLOG_LOGGER_TRACE(::details::GetAppLogger(), __VA_ARGS__)
+#define APP_LOG_DEBUG(...) SPDLOG_LOGGER_DEBUG(::details::GetAppLogger(), __VA_ARGS__)
+#define APP_LOG_INFO(...) SPDLOG_LOGGER_INFO(::details::GetAppLogger(), __VA_ARGS__)
+#define APP_LOG_WARN(...) SPDLOG_LOGGER_WARN(::details::GetAppLogger(), __VA_ARGS__)
+#define APP_LOG_ERROR(...) SPDLOG_LOGGER_ERROR(::details::GetAppLogger(), __VA_ARGS__)
+#define APP_LOG_CRITICAL(...) SPDLOG_LOGGER_CRITICAL(::details::GetAppLogger(), __VA_ARGS__)
 
-void MainWidget::onOpenMeshActionTriggered()
-{
-    QString filepath = QFileDialog::getOpenFileName(this, tr("Open PLY File"), QString(), tr("PLY Files (*.ply)"));
-    if(filepath.isEmpty()){
-        return;
-    }     
-    glmesh::CpuPolygonMesh polygon_mesh;
-    if(!glmesh::LoadPlyAsCpuPolygonMesh(filepath.toLocal8Bit().data(), polygon_mesh, nullptr)){
-        APP_LOG_ERROR("Load mesh from ply file:\"{}\" failed!", filepath.toStdString());
-        return;
+#define APP_ASSERT(cond, ...) \
+    if(!(cond)){ \
+        APP_LOG_CRITICAL(__VA_ARGS__) \
     }
-    if(polygon_mesh.polygons.empty()){
-        return;        
-    }
-    glmesh::CpuTriangleMesh triangle_mesh;
-    triangle_mesh.buildFromPolygonMesh(polygon_mesh);
-    auto mesh_bound_opt = triangle_mesh.calcBounds();
-    glmesh::GpuTriangleMesh gpu_triangle_mesh = glmesh::ToGpuTriangleMesh(triangle_mesh);
-    ui_.meshRenderWidget->updateMesh(gpu_triangle_mesh, *mesh_bound_opt);
-}
+
+std::string QStrToLogStr(const QString& qstr);
+
+#endif

@@ -69,4 +69,4 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/bin)
 
 add_subdirectory(source/${PROJECT_NAME}/kernel)
-add_subdirectory(source/${PROJECT_NAME}/meshStudio)
+add_subdirectory(source/${PROJECT_NAME}/mesh_studio)

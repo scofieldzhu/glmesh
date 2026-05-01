@@ -4,8 +4,8 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates 
  *  coherent OpenGL.
  *  
- *  File: main.cpp 
- *  Copyright (c) 2024-2024 scofieldzhu
+ *  File: resource_util.cpp
+ *  Copyright (c) 2024-2026 scofieldzhu
  *  
  *  MIT License
  *  
@@ -27,23 +27,36 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *  SOFTWARE.
  */
-#include <QApplication>
-#include <QSurfaceFormat>
-#include "main_widget.h"
+#include "resource_util.h"
+#include <QFile>
+#include <QWidget>
 #include "app_log.h"
 
-int main(int argc, char *argv[])
-{
-    InitLogger();
-    APP_LOG_TRACE("App started...");
-    QApplication app(argc, argv);
-    QSurfaceFormat fmt;
-    fmt.setVersion(3, 3);
-    fmt.setProfile(QSurfaceFormat::CoreProfile);
-    fmt.setDepthBufferSize(24);
-    QSurfaceFormat::setDefaultFormat(fmt);
-    MainWidget w;    
-    w.show();
-    return app.exec();
+namespace{
+	QString ReadSingleStyleSheetFile(const QString& filepath)
+	{
+		QFile file(filepath);
+		file.open(QFile::ReadOnly);
+		QString stylesheet_str = QLatin1String(file.readAll());
+		file.close();
+		return stylesheet_str;
+	}
 }
 
+void ApplyWidgetStyleSheet(QWidget* w, const QString& filepath)
+{
+	QString stylesheet_str = ReadSingleStyleSheetFile(filepath);
+	if(w && !stylesheet_str.isEmpty()){
+		w->setStyleSheet(stylesheet_str);
+		//APP_LOG_DEBUG("filepath:{} str:{}", helios::QStrToLogStr(filepath), helios::QStrToLogStr(stylesheet_str));
+	}	
+}
+
+QString ReadStyleSheetFiles(const QStringList& files)
+{
+	QStringList ss_strs;
+	for(const auto& fp : files){
+		ss_strs.push_back(ReadSingleStyleSheetFile(fp));
+	}
+	return ss_strs.join(" ");
+}
