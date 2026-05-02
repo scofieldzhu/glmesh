@@ -23,6 +23,7 @@ set(SOURCE_FILES
     "resource_util.cpp"
     "shader_program_manager.h"
     "shader_program_manager.cpp"
+    "common.h"
     ${CMAKE_SOURCE_DIR}/res/resource.qrc
 )
 
@@ -30,6 +31,7 @@ add_executable(${target}
     ${SOURCE_FILES}
     ${QT_UI_FILES}
     shader_program_manager.h
+    common.h
 )
 
 target_include_directories(${target} PRIVATE

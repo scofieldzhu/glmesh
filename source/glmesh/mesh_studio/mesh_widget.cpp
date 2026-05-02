@@ -42,6 +42,7 @@
 #include "glmesh/kernel/core/cpu_bkg.h"
 #include "glmesh/kernel/gl/gpu_bkg.h"
 #include "glmesh/kernel/gl/gl_bkg.h"
+#include "common.h"
 #include "app_log.h"
 
 namespace
@@ -122,7 +123,7 @@ MeshWidget::~MeshWidget()
 {
     makeCurrent();
     renderable_objects_.clear();
-    mesh_shader_program_.destroy(); 
+    program_mgr_.destory();
     doneCurrent();
 }
 
@@ -136,7 +137,9 @@ void MeshWidget::initializeGL()
 
     glmesh::gl::EnableDebugOutput();
 
-    mesh_shader_program_.createFromSource(kMeshVertexShader, kMeshFragmentShader);
+    auto mesh_shader_program = std::make_unique<glmesh::ShaderProgram>();
+    mesh_shader_program->createFromSource(kMeshVertexShader, kMeshFragmentShader);
+    program_mgr_.addProgram(SPT_MESH, std::move(mesh_shader_program));
 
     initGradientBackground();
 
@@ -159,7 +162,7 @@ bool MeshWidget::updateMesh(const glmesh::GpuTriangleMesh& mesh_data, const glme
     
     RenderableObject mesh_ren_obj;
     mesh_ren_obj.drawable = gl_mesh;
-    mesh_ren_obj.material.shader = &mesh_shader_program_;
+    mesh_ren_obj.material.shader = program_mgr_.getProgram(SPT_MESH);
     mesh_ren_obj.material.light_dir = glm::normalize(glm::vec3(-1.0f, -1.0f, -1.0f));
     mesh_ren_obj.material.ambient = 0.7f;
     renderable_objects_.push_back(std::move(mesh_ren_obj));
@@ -277,13 +280,9 @@ void MeshWidget::drawGradientBackground()
 {
     glDisable(GL_DEPTH_TEST);
     glDepthMask(GL_FALSE);
-
-    bg_shader_program_.use();
-
+    program_mgr_.getProgram(SPT_BACKGROUND)->use();
     gl_bkg_->draw();
-
     glmesh::ShaderProgram::UnuseAny();
-
     glDepthMask(GL_TRUE);
     glEnable(GL_DEPTH_TEST);
 }
@@ -334,8 +333,9 @@ void MeshWidget::initGradientBackground()
     auto gpu_bkg = glmesh::ToGpuBkg(cpu_bkg);
     gl_bkg_ = std::make_unique<glmesh::GLBkg>();
     gl_bkg_->upload(gpu_bkg, GL_STATIC_DRAW);
-
-    bg_shader_program_.createFromSource(kBgVertexShader, kBgFrameShader);
+    auto bkg_shader_prog = std::make_unique<glmesh::ShaderProgram>();
+    bkg_shader_prog->createFromSource(kBgVertexShader, kBgFrameShader);
+    program_mgr_.addProgram(SPT_BACKGROUND, std::move(bkg_shader_prog));
 }
 
 glm::vec3 MeshWidget::getArcballVector(const QPoint& pt)const

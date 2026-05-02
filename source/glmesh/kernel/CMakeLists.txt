@@ -14,6 +14,9 @@ set(EXPORT_HEAD_FILES
     gl/gl_point_cloud.h
     gl/gpu_rectangle.h
     gl/gl_rectangle.h
+    gl/gl_bkg.h
+    gl/gpu_bkg.h
+    gl/gpu_bkg_vertex.h
     gl/gl_api_init.h
     gl/shader_program.h
     gl/gl_debug.h
@@ -22,6 +25,8 @@ set(EXPORT_HEAD_FILES
     core/cpu_polygon_mesh.h
     core/cpu_triangle_mesh.h    
     core/cpu_rectangle.h
+    core/cpu_bkg.h
+    core/cpu_bkg_vertex.h
     core/mesh_bounds.h
     core/geometry_utils.h
     io/mesh_loader.h
@@ -42,6 +47,8 @@ set(SOURCE_FILES
     gl/gpu_vertex.cpp
     gl/index_buffer.cpp
     gl/gl_debug.cpp    
+    gl/gpu_bkg_vertex.cpp
+    gl/gl_bkg.cpp
     core/cpu_triangle_mesh.cpp
     core/geometry_utils.cpp
     io/mesh_loader.cpp

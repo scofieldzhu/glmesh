@@ -28,3 +28,29 @@
  *  SOFTWARE.
  */
 #include "shader_program_manager.h"
+#include "app_log.h"
+
+void ShaderProgramManager::addProgram(ProgramTypeId type_id, std::unique_ptr<glmesh::ShaderProgram> pro)
+{
+    if(getProgram(type_id)){
+        APP_LOG_WARN("type_id:{} already exists!", type_id);
+        return;
+    }
+    program_dict_.insert({type_id, std::move(pro)});
+}
+
+glmesh::ShaderProgram* ShaderProgramManager::getProgram(ProgramTypeId type_id) const
+{
+    if(!program_dict_.contains(type_id)){
+        return nullptr;
+    }
+    return program_dict_.at(type_id).get();
+}
+
+void ShaderProgramManager::destory()
+{
+    for(const auto& kv : program_dict_){
+        kv.second->destroy();
+    }
+    program_dict_.clear();
+}

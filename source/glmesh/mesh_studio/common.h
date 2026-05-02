@@ -4,7 +4,7 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates 
  *  coherent OpenGL.
  *  
- *  File: shader_program_manager.h
+ *  File: common.h
  *  Copyright (c) 2024-2026 scofieldzhu
  *  
  *  MIT License
@@ -27,25 +27,13 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *  SOFTWARE.
  */
-#ifndef __shader_program_manager_h__
-#define __shader_program_manager_h__
+#ifndef __common_h__
+#define __common_h__
 
-#include <map>
-#include "glmesh/kernel/gl/shader_program.h"
-
-using ProgramTypeId = glmesh::uint32;
-
-class ShaderProgramManager
+enum ShaderProgramType
 {
-public:
-    void addProgram(ProgramTypeId type_id, std::unique_ptr<glmesh::ShaderProgram> pro);
-    glmesh::ShaderProgram* getProgram(ProgramTypeId type_id)const;
-    void destory();
-    ShaderProgramManager() = default;
-    ~ShaderProgramManager() = default;
-
-private:
-    std::map<ProgramTypeId, std::unique_ptr<glmesh::ShaderProgram>> program_dict_;
+    SPT_BACKGROUND,
+    SPT_MESH    
 };
 
 #endif
