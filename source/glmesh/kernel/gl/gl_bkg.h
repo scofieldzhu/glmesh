@@ -4,7 +4,7 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates 
  *  coherent OpenGL.
  *  
- *  File: log.h
+ *  File: gl_bkg.h 
  *  Copyright (c) 2024-2026 scofieldzhu
  *  
  *  MIT License
@@ -27,36 +27,31 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *  SOFTWARE.
  */
-#ifndef __app_log_h__
-#define __app_log_h__
+#ifndef __gl_bkg_h__
+#define __gl_bkg_h__
 
-#include <QString>
-#include <format>
-#include <glm/glm.hpp>
-#include <spdlog/spdlog.h>
+#include "glmesh/kernel/gl/gpu_bkg.h"
+#include "glmesh/kernel/gl/gl_drawable.h"
+#include "glmesh/kernel/gl/vertex_array.h"
+#include "glmesh/kernel/gl/vertex_buffer.h"
+#include "glmesh/kernel/gl/index_buffer.h"
 
-namespace details{
-    void InitLogger();
-    std::shared_ptr<spdlog::logger> GetAppLogger();
-}
+GLMESH_NAMESPACE_BEGIN
 
-#define APP_LOG_TRACE(...) SPDLOG_LOGGER_TRACE(::details::GetAppLogger(), __VA_ARGS__)
-#define APP_LOG_DEBUG(...) SPDLOG_LOGGER_DEBUG(::details::GetAppLogger(), __VA_ARGS__)
-#define APP_LOG_INFO(...) SPDLOG_LOGGER_INFO(::details::GetAppLogger(), __VA_ARGS__)
-#define APP_LOG_WARN(...) SPDLOG_LOGGER_WARN(::details::GetAppLogger(), __VA_ARGS__)
-#define APP_LOG_ERROR(...) SPDLOG_LOGGER_ERROR(::details::GetAppLogger(), __VA_ARGS__)
-#define APP_LOG_CRITICAL(...) SPDLOG_LOGGER_CRITICAL(::details::GetAppLogger(), __VA_ARGS__)
-
-#define APP_ASSERT(cond, ...) \
-    if(!(cond)){ \
-        APP_LOG_CRITICAL(__VA_ARGS__) \
-    }
-
-std::string QStrToLogStr(const QString& qstr);
-
-inline std::string GlmVec3ToStr(const glm::vec3& v)
+class GLMESH_KERNEL_API GLBkg : public GLDrawable
 {
-    return std::format("({:.3}, {:.3}, {:.3})", v.x, v.y, v.z);
-}
+public:
+    void draw() const override;
+    void upload(const GpuBkg& bkg, uint32 usage);
+    bool valid() const { return uploaded_; }
+
+private:
+    VertexArray vao_;
+    VertexBuffer vbo_;
+    IndexBuffer ebo_;
+    bool uploaded_ = false;
+};
+
+GLMESH_NAMESPACE_END
 
 #endif

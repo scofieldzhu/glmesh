@@ -30,6 +30,7 @@
 #ifndef __glmesh_basedef_h__
 #define __glmesh_basedef_h__
 
+#include <array>
 #include <vector>
 #include <memory>
 #include <string>

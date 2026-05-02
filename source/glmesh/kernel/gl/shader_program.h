@@ -39,9 +39,11 @@ GLMESH_NAMESPACE_BEGIN
 class GLMESH_KERNEL_API ShaderProgram
 {
 public:
+    static void UnuseAny();
     void createFromSource(std::string_view vertex_shader_source, std::string_view frag_shader_source);
     void createFromFiles(const std::string& vertex_shader_file_path, const std::string& frag_shader_file_path);
     void use() const noexcept;
+    void unuse() const noexcept;
     uint32_t id() const noexcept { return program_id_; }
     void destroy() noexcept;
     int32_t uniformLocation(std::string_view name) const;

@@ -54,6 +54,9 @@ struct CpuRectangle;
 struct GpuRectangle;
 class GLRectangle;
 
+struct CpuBkgVertex;
+struct CpuBkg;
+
 struct GLDrawable;
 
 class IndexBuffer;

@@ -39,52 +39,10 @@
 #include "glmesh/kernel/gl/gpu_triangle_mesh.h"
 #include "glmesh/kernel/gl/gpu_rectangle.h"
 #include "glmesh/kernel/gl/gl_rectangle.h"
+#include "glmesh/kernel/core/cpu_bkg.h"
+#include "glmesh/kernel/gl/gpu_bkg.h"
+#include "glmesh/kernel/gl/gl_bkg.h"
 #include "app_log.h"
-
-static const char* kMeshVertexShader = R"(
-    #version 330 core
-
-    layout (location = 0) in vec3 aPosition;
-    layout (location = 1) in vec3 aNormal;
-    layout (location = 2) in vec3 aColor;
-
-    uniform mat4 uModel;
-    uniform mat4 uView;
-    uniform mat4 uProj;
-
-    out vec3 vNormal;
-    out vec3 vColor;
-
-    void main()
-    {
-        gl_Position = uProj * uView * uModel * vec4(aPosition, 1.0);
-        vNormal = mat3(transpose(inverse(uModel))) * aNormal;
-        vColor = aColor;
-    }
-)";
-
-static const char* kMeshFragmentShader = R"(
-    #version 330 core
-
-    in vec3 vNormal;
-    in vec3 vColor;
-
-    uniform vec3 uLightDir;
-    uniform float uAmbient;
-
-    out vec4 FragColor;
-
-    void main()
-    {
-        vec3 N = normalize(vNormal);
-        vec3 L = normalize(-uLightDir);
-
-        float lambert = max(dot(N, L), 0.0);
-        vec3 color = vColor * (uAmbient + lambert);
-
-        FragColor = vec4(color, 1.0);
-    }
-)";
 
 namespace
 {
@@ -96,6 +54,63 @@ namespace
         }
         return reinterpret_cast<void*>(ctx->getProcAddress(name));
     }
+
+    const char* kMeshVertexShader = R"(
+        #version 330 core
+        layout (location = 0) in vec3 aPosition;
+        layout (location = 1) in vec3 aNormal;
+        layout (location = 2) in vec3 aColor;
+        uniform mat4 uModel;
+        uniform mat4 uView;
+        uniform mat4 uProj;
+        out vec3 vNormal;
+        out vec3 vColor;
+        void main()
+        {
+            gl_Position = uProj * uView * uModel * vec4(aPosition, 1.0);
+            vNormal = mat3(transpose(inverse(uModel))) * aNormal;
+            vColor = aColor;
+        }
+    )";
+
+    const char* kMeshFragmentShader = R"(
+        #version 330 core
+        in vec3 vNormal;
+        in vec3 vColor;
+        uniform vec3 uLightDir;
+        uniform float uAmbient;
+        out vec4 FragColor;
+        void main()
+        {
+            vec3 N = normalize(vNormal);
+            vec3 L = normalize(-uLightDir);
+            float lambert = max(dot(N, L), 0.0);
+            vec3 color = vColor * (uAmbient + lambert);
+            FragColor = vec4(color, 1.0);
+        }
+    )";
+
+    const char* kBgVertexShader = R"(
+        #version 330 core
+        layout(location = 0) in vec2 a_position;
+        layout(location = 1) in vec3 a_color;
+        out vec3 v_color;
+        void main()
+        {
+            v_color = a_color;
+            gl_Position = vec4(a_position, 0.0, 1.0);
+        }
+    )";
+
+    const char* kBgFrameShader = R"(
+        #version 330 core
+        in vec3 v_color;
+        out vec4 frag_color;
+        void main()
+        {
+            frag_color = vec4(v_color, 1.0);
+        }
+    )";
 }
 
 MeshWidget::MeshWidget(QWidget* parent)
@@ -107,7 +122,7 @@ MeshWidget::~MeshWidget()
 {
     makeCurrent();
     renderable_objects_.clear();
-    shader_.destroy(); 
+    mesh_shader_program_.destroy(); 
     doneCurrent();
 }
 
@@ -121,10 +136,9 @@ void MeshWidget::initializeGL()
 
     glmesh::gl::EnableDebugOutput();
 
-    ::glEnable(GL_DEPTH_TEST);
-    ::glClearColor(0.10f, 0.12f, 0.15f, 1.0f);
+    mesh_shader_program_.createFromSource(kMeshVertexShader, kMeshFragmentShader);
 
-    shader_.createFromSource(kMeshVertexShader, kMeshFragmentShader);
+    initGradientBackground();
 
     is_gl_initialized_ = true;
 }
@@ -140,37 +154,12 @@ bool MeshWidget::updateMesh(const glmesh::GpuTriangleMesh& mesh_data, const glme
 
     makeCurrent();
     
-    glmesh::CpuRectangle cpu_rt;
-    cpu_rt.right_bottom_point.position = {-1.0, -1.0, 0.0};
-    cpu_rt.right_bottom_point.normal = {1.0, 0.0, 0.0};
-    cpu_rt.right_bottom_point.color = {1.0, 0.0, 0.0};
-    cpu_rt.left_bottom_point.position = {1.0, -1.0, 0.0};
-    cpu_rt.left_bottom_point.normal = {1.0, 0.0, 0.0};
-    cpu_rt.left_bottom_point.color = {1.0, 0.0, 0.0};
-    cpu_rt.left_top_point.position = {1.0, 1.0, 0.0};
-    cpu_rt.left_top_point.normal = {1.0, 0.0, 0.0};
-    cpu_rt.left_top_point.color = {1.0, 0.0, 0.0};
-    cpu_rt.right_top_point.position = {-1.0, 1.0, 0.0};
-    cpu_rt.right_top_point.normal = {1.0, 0.0, 0.0};
-    cpu_rt.right_top_point.color = {1.0, 0.0, 0.0};
-    glmesh::GpuRectangle gpu_rt = glmesh::ToGpuRectangle(cpu_rt);
-
-    auto gl_rt = std::make_shared<glmesh::GLRectangle>();
-    gl_rt->upload(gpu_rt, GL_STATIC_DRAW);
-
-    RenderableObject ren_obj;
-    ren_obj.drawable = gl_rt;
-    ren_obj.material.shader = &shader_;
-    ren_obj.material.light_dir = glm::normalize(glm::vec3(-1.0f, -1.0f, -1.0f));
-    ren_obj.material.ambient = 0.7f;
-    renderable_objects_.push_back(std::move(ren_obj));
-    
     auto gl_mesh = std::make_shared<glmesh::GLTriangleMesh>();
     gl_mesh->upload(mesh_data, GL_STATIC_DRAW);
     
     RenderableObject mesh_ren_obj;
     mesh_ren_obj.drawable = gl_mesh;
-    mesh_ren_obj.material.shader = &shader_;
+    mesh_ren_obj.material.shader = &mesh_shader_program_;
     mesh_ren_obj.material.light_dir = glm::normalize(glm::vec3(-1.0f, -1.0f, -1.0f));
     mesh_ren_obj.material.ambient = 0.7f;
     renderable_objects_.push_back(std::move(mesh_ren_obj));
@@ -183,11 +172,11 @@ bool MeshWidget::updateMesh(const glmesh::GpuTriangleMesh& mesh_data, const glme
     // 2. 自适应相机距离
     // 如果想要模型在视野中大小合适，可以根据它的包围球半径来设置
     // 假设 FOV 是 45 度，相机距离通常设置为半径的 2 到 3 倍
-    camera_distance_ = bounds.radius * 2.5f;
+    camera_distance_ = bounds.radius * 2.0f;
     
     // 3. 设置滚轮缩放限制
     // 防止滚轮滑得太近直接穿模，或者滑得太远看不见
-    min_camera_distance_ = bounds.radius * 0.1f;  // 至少离模型表面一点点
+    min_camera_distance_ = bounds.radius * 1.2f;  // 至少离模型表面一点点
     max_camera_distance_ = bounds.radius * 10.0f; // 最远不超过半径的10倍
     
     // 4. 重置相机的旋转状态
@@ -211,37 +200,11 @@ void MeshWidget::resizeGL(int w, int h)
 
 void MeshWidget::paintGL()
 {
+    ::glEnable(GL_DEPTH_TEST);
+    ::glClearColor(0.10f, 0.12f, 0.15f, 1.0f);
     ::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    if(renderable_objects_.empty()){
-        return;
-    }
-
-    glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -camera_distance_));
-    // 加上你的旋转矩阵 (鼠标交互产生的)
-    view = view * glm::mat4_cast(model_rotation_); 
-
-    //APP_LOG_TRACE("camera_distance_:{}", camera_distance_);
-
-    // 直接将四元数转换为旋转矩阵
-    //glm::mat4 model = glm::mat4_cast(model_rotation_);
-
-    // Model 矩阵：将模型自身平移，使其包围盒中心对准原点
-    glm::mat4 model = glm::translate(glm::mat4(1.0f), mesh_center_offset_);
-
-    const float aspect = height() > 0 ? static_cast<float>(width()) / static_cast<float>(height()) : 1.0f;
-    glm::mat4 proj = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 1000.0f);
-
-    for(auto ren_obj : renderable_objects_){
-        if(!ren_obj.visible || !ren_obj.drawable){
-            continue;
-        }
-        ren_obj.material.bind();
-        ren_obj.material.shader->setMat4("uModel", model);
-        ren_obj.material.shader->setMat4("uView", view);
-        ren_obj.material.shader->setMat4("uProj", proj);
-        ren_obj.drawable->draw();
-    }
+    drawGradientBackground();
+    drawRenderableObjects();
 }
 
 void MeshWidget::mousePressEvent(QMouseEvent* event)
@@ -308,6 +271,71 @@ void MeshWidget::wheelEvent(QWheelEvent* event)
         camera_distance_ = max_camera_distance_;
     }
     update(); // 仅在视角变化时要求重绘
+}
+
+void MeshWidget::drawGradientBackground()
+{
+    glDisable(GL_DEPTH_TEST);
+    glDepthMask(GL_FALSE);
+
+    bg_shader_program_.use();
+
+    gl_bkg_->draw();
+
+    glmesh::ShaderProgram::UnuseAny();
+
+    glDepthMask(GL_TRUE);
+    glEnable(GL_DEPTH_TEST);
+}
+
+void MeshWidget::drawRenderableObjects()
+{
+    if(renderable_objects_.empty()){
+        return;
+    }
+    glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -camera_distance_));
+    // 加上你的旋转矩阵 (鼠标交互产生的)
+    view = view * glm::mat4_cast(model_rotation_); 
+
+    //APP_LOG_TRACE("camera_distance_:{}", camera_distance_);
+
+    // 直接将四元数转换为旋转矩阵
+    //glm::mat4 model = glm::mat4_cast(model_rotation_);
+
+    // Model 矩阵：将模型自身平移，使其包围盒中心对准原点
+    glm::mat4 model = glm::translate(glm::mat4(1.0f), mesh_center_offset_);
+
+    const float aspect = height() > 0 ? static_cast<float>(width()) / static_cast<float>(height()) : 1.0f;
+    glm::mat4 proj = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 1000.0f);
+
+    for(auto ren_obj : renderable_objects_){
+        if(!ren_obj.visible || !ren_obj.drawable){
+            continue;
+        }
+        ren_obj.material.bind();
+        ren_obj.material.shader->setMat4("uModel", model);
+        ren_obj.material.shader->setMat4("uView", view);
+        ren_obj.material.shader->setMat4("uProj", proj);
+        ren_obj.drawable->draw();
+    }
+}
+
+void MeshWidget::initGradientBackground()
+{
+    glmesh::CpuBkg cpu_bkg;
+    cpu_bkg.left_top_vertex.position = {-1.0f,  1.0f};
+    cpu_bkg.left_top_vertex.color = {0.015f, 0.018f, 0.055f};
+    cpu_bkg.right_top_vertex.position = {1.0f,  1.0f};
+    cpu_bkg.right_top_vertex.color = {0.015f, 0.018f, 0.055f};
+    cpu_bkg.right_bottom_vertex.position = {1.0f,  -1.0f};
+    cpu_bkg.right_bottom_vertex.color = {0.42f, 0.43f, 0.95f};
+    cpu_bkg.left_bottom_vertex.position = {-1.0f,  -1.0f};
+    cpu_bkg.left_bottom_vertex.color = {0.42f, 0.43f, 0.95f};
+    auto gpu_bkg = glmesh::ToGpuBkg(cpu_bkg);
+    gl_bkg_ = std::make_unique<glmesh::GLBkg>();
+    gl_bkg_->upload(gpu_bkg, GL_STATIC_DRAW);
+
+    bg_shader_program_.createFromSource(kBgVertexShader, kBgFrameShader);
 }
 
 glm::vec3 MeshWidget::getArcballVector(const QPoint& pt)const

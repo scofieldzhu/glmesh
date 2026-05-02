@@ -29,6 +29,7 @@
 */
 #include "cpu_to_gpu.h"
 #include "glmesh/kernel/core/cpu_rectangle.h"
+#include "glmesh/kernel/core/cpu_bkg.h"
 
 GLMESH_NAMESPACE_BEGIN
 
@@ -67,6 +68,24 @@ GpuRectangle ToGpuRectangle(const CpuRectangle& rt)
     gpu_rt.vertices[2] = ToGpuVertex(rt.right_top_point);
     gpu_rt.vertices[3] = ToGpuVertex(rt.left_top_point);
     return gpu_rt;
+}
+
+GpuBkg ToGpuBkg(const CpuBkg &bkg)
+{
+    GpuBkg gpu_bkg;
+    gpu_bkg.vertices[0] = ToGpuBkgVertex(bkg.left_bottom_vertex);
+    gpu_bkg.vertices[1] = ToGpuBkgVertex(bkg.right_bottom_vertex);
+    gpu_bkg.vertices[2] = ToGpuBkgVertex(bkg.right_top_vertex);
+    gpu_bkg.vertices[3] = ToGpuBkgVertex(bkg.left_top_vertex);    
+    return gpu_bkg;
+}
+
+GpuBkgVertex ToGpuBkgVertex(const CpuBkgVertex &v)
+{
+    return {
+        .position = v.position,
+        .color    = v.color
+    };
 }
 
 GLMESH_NAMESPACE_END

@@ -4,7 +4,7 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates 
  *  coherent OpenGL.
  *  
- *  File: log.h
+ *  File: shader_program_manager.h
  *  Copyright (c) 2024-2026 scofieldzhu
  *  
  *  MIT License
@@ -27,36 +27,17 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *  SOFTWARE.
  */
-#ifndef __app_log_h__
-#define __app_log_h__
+#ifndef __shader_program_manager_h__
+#define __shader_program_manager_h__
 
-#include <QString>
-#include <format>
-#include <glm/glm.hpp>
-#include <spdlog/spdlog.h>
+#include "glmesh/kernel/gl/shader_program.h"
 
-namespace details{
-    void InitLogger();
-    std::shared_ptr<spdlog::logger> GetAppLogger();
-}
-
-#define APP_LOG_TRACE(...) SPDLOG_LOGGER_TRACE(::details::GetAppLogger(), __VA_ARGS__)
-#define APP_LOG_DEBUG(...) SPDLOG_LOGGER_DEBUG(::details::GetAppLogger(), __VA_ARGS__)
-#define APP_LOG_INFO(...) SPDLOG_LOGGER_INFO(::details::GetAppLogger(), __VA_ARGS__)
-#define APP_LOG_WARN(...) SPDLOG_LOGGER_WARN(::details::GetAppLogger(), __VA_ARGS__)
-#define APP_LOG_ERROR(...) SPDLOG_LOGGER_ERROR(::details::GetAppLogger(), __VA_ARGS__)
-#define APP_LOG_CRITICAL(...) SPDLOG_LOGGER_CRITICAL(::details::GetAppLogger(), __VA_ARGS__)
-
-#define APP_ASSERT(cond, ...) \
-    if(!(cond)){ \
-        APP_LOG_CRITICAL(__VA_ARGS__) \
-    }
-
-std::string QStrToLogStr(const QString& qstr);
-
-inline std::string GlmVec3ToStr(const glm::vec3& v)
+class ShaderProgramManager
 {
-    return std::format("({:.3}, {:.3}, {:.3})", v.x, v.y, v.z);
-}
+public:
+    void addProgram(const std::string& key, std::unique_ptr<glmesh::ShaderProgram> pro);
+    ShaderProgramManager();
+    ~ShaderProgramManager();
+};
 
 #endif

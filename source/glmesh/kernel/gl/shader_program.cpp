@@ -173,6 +173,11 @@ void ShaderProgram::use() const noexcept
     glUseProgram(program_id_);
 }
 
+void ShaderProgram::UnuseAny()
+{
+    glUseProgram(0);
+}
+
 void ShaderProgram::destroy() noexcept
 {
     if(program_id_ != 0){

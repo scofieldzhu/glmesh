@@ -54,6 +54,13 @@ add_library(${PKG_PROJ}
     SHARED
     ${EXPORT_HEAD_FILES}
     ${SOURCE_FILES}
+    gl/gpu_bkg_vertex.h
+    core/cpu_bkg_vertex.h
+    core/cpu_bkg.h
+    gl/gpu_bkg.h
+    gl/gpu_bkg_vertex.cpp
+    gl/gl_bkg.h
+    gl/gl_bkg.cpp
 )
 
 target_include_directories(${PKG_PROJ} PRIVATE
