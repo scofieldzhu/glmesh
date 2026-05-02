@@ -33,6 +33,7 @@
 #include <QOpenGLWidget>
 #include <QMouseEvent>
 #include <QWheelEvent>
+#include <mutex>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include "glmesh/kernel/gl/gl_bkg.h"
@@ -64,9 +65,10 @@ private:
     void drawGradientBackground();
     void drawRenderableObjects();
     glm::vec3 getArcballVector(const QPoint& pt)const;
+    std::mutex renderable_objects_mutex_;
     std::vector<RenderableObject> renderable_objects_;    
     float camera_distance_ = 100.0f;
-    bool is_gl_initialized_ = false;
+    bool gl_initialized_ = false;
     glm::quat model_rotation_ = glm::quat(1.0f, 0.0f, 0.0f, 0.0f); // 记录累积的旋转（四元数）
     glm::vec3 last_arcball_vec_;   
     glm::vec3 mesh_center_offset_;

@@ -1,5 +1,6 @@
 <RCC>      
     <qresource prefix="/qss">        
+        <file alias="control.css">qss/control.css</file>
         <file alias="main_widget.css">qss/main_widget.css</file>
     </qresource> 
 </RCC>

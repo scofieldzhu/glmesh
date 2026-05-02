@@ -50,6 +50,7 @@ public:
     void setInt(std::string_view name, int value) const;
     void setFloat(std::string_view name, float value) const;
     void setVec3(std::string_view name, const glm::vec3& value) const;
+    void setMat3(std::string_view name, const glm::mat3& value) const;
     void setMat4(std::string_view name, const glm::mat4& value) const;
     ShaderProgram& operator=(const ShaderProgram&) = delete;
     ShaderProgram() = default;

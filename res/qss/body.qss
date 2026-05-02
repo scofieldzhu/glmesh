@@ -1,4 +1,0 @@
-QWidget#body{
-	border-image: url(:/image/body/bkg.png) 3;
-	border-width: 3px;
-}

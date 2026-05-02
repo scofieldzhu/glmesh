@@ -223,6 +223,14 @@ void ShaderProgram::setVec3(std::string_view name, const glm::vec3& value) const
     }
 }
 
+void ShaderProgram::setMat3(std::string_view name, const glm::mat3 &value) const
+{
+    const GLint loc = uniformLocation(name);
+    if(loc != -1){
+        glUniformMatrix3fv(loc, 1, GL_FALSE, glm::value_ptr(value));
+    }
+}
+
 void ShaderProgram::setMat4(std::string_view name, const glm::mat4& value) const
 {
     const GLint loc = uniformLocation(name);

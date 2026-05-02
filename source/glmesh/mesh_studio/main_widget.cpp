@@ -38,7 +38,10 @@
 MainWidget::MainWidget(QWidget *parent, Qt::WindowFlags flags)
     :QMainWindow(parent, flags)
 {
-    ApplyWidgetStyleSheet(this, ":/qss/main_widget.css");
+    auto style_sheets = ReadStyleSheetFiles({":/qss/control.css", ":/qss/main_widget.css"});
+    if(!style_sheets.isEmpty()){
+        setStyleSheet(style_sheets);
+    }
     ui_.setupUi(this);
     ui_.meshRenderWidget->setObjectName("renderViewport");
     connect(ui_.actionOpenMesh, &QAction::triggered, this, &MainWidget::onOpenMeshActionTriggered);

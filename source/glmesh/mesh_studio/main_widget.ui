@@ -114,7 +114,7 @@
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
-     <string>文件</string>
+     <string>&amp;File</string>
     </property>
     <addaction name="actionOpenMesh"/>
     <addaction name="actionImportPointCloud"/>
@@ -124,7 +124,7 @@
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
-     <string>编辑</string>
+     <string>Edit</string>
     </property>
     <addaction name="actionUndo"/>
     <addaction name="actionRedo"/>
@@ -133,7 +133,7 @@
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
-     <string>视图</string>
+     <string>View</string>
     </property>
     <addaction name="actionResetView"/>
     <addaction name="actionFitToScreen"/>
@@ -142,23 +142,19 @@
    </widget>
    <widget class="QMenu" name="menuProcess">
     <property name="title">
-     <string>处理</string>
+     <string>Process</string>
     </property>
     <addaction name="actionCleanMesh"/>
-    <addaction name="actionSimplifyMesh"/>
-    <addaction name="actionRemesh"/>
-    <addaction name="actionSmooth"/>
    </widget>
    <widget class="QMenu" name="menuMeasure">
     <property name="title">
-     <string>测量</string>
+     <string>Measure</string>
     </property>
     <addaction name="actionDistanceMeasure"/>
-    <addaction name="actionSectionAnalysis"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
-     <string>帮助</string>
+     <string>Help</string>
     </property>
     <addaction name="actionAbout"/>
    </widget>
@@ -191,26 +187,18 @@
    <addaction name="actionOpenMesh"/>
    <addaction name="actionSaveProject"/>
    <addaction name="separator"/>
-   <addaction name="actionSelect"/>
-   <addaction name="actionPan"/>
-   <addaction name="actionRotate"/>
-   <addaction name="actionZoom"/>
    <addaction name="separator"/>
-   <addaction name="actionFitToScreen"/>
-   <addaction name="actionResetView"/>
    <addaction name="separator"/>
-   <addaction name="actionToggleWireframe"/>
-   <addaction name="actionToggleGrid"/>
   </widget>
   <widget class="QDockWidget" name="leftDockWidget">
    <property name="minimumSize">
     <size>
-     <width>280</width>
-     <height>500</height>
+     <width>341</width>
+     <height>506</height>
     </size>
    </property>
    <property name="windowTitle">
-    <string>模型与显示</string>
+    <string>Model And Display</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>1</number>
@@ -235,9 +223,24 @@
      <item>
       <widget class="QGroupBox" name="layerPanel">
        <property name="title">
-        <string>模型 / 图层树</string>
+        <string>Models</string>
        </property>
        <layout class="QVBoxLayout" name="layerPanelLayout">
+        <property name="spacing">
+         <number>4</number>
+        </property>
+        <property name="leftMargin">
+         <number>4</number>
+        </property>
+        <property name="topMargin">
+         <number>4</number>
+        </property>
+        <property name="rightMargin">
+         <number>4</number>
+        </property>
+        <property name="bottomMargin">
+         <number>4</number>
+        </property>
         <item>
          <widget class="QTreeWidget" name="layerTreeWidget">
           <property name="alternatingRowColors">
@@ -277,67 +280,140 @@
      <item>
       <widget class="QGroupBox" name="objectInfoPanel">
        <property name="title">
-        <string>对象信息</string>
+        <string>Object Inforamtion</string>
        </property>
-       <layout class="QFormLayout" name="objectInfoLayout">
-        <property name="labelAlignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-        <item row="0" column="0">
-         <widget class="QLabel" name="labelObjectName">
-          <property name="text">
-           <string>名称</string>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <property name="spacing">
+           <number>4</number>
           </property>
-         </widget>
+          <property name="leftMargin">
+           <number>4</number>
+          </property>
+          <property name="topMargin">
+           <number>4</number>
+          </property>
+          <property name="rightMargin">
+           <number>4</number>
+          </property>
+          <property name="bottomMargin">
+           <number>4</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="labelObjectName">
+            <property name="text">
+             <string>Name:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="objectNameValue">
+            <property name="text">
+             <string>project_sample.obj</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
-        <item row="0" column="1">
-         <widget class="QLabel" name="objectNameValue">
-          <property name="text">
-           <string>project_sample.obj</string>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <property name="spacing">
+           <number>4</number>
           </property>
-         </widget>
+          <property name="leftMargin">
+           <number>2</number>
+          </property>
+          <property name="topMargin">
+           <number>2</number>
+          </property>
+          <property name="rightMargin">
+           <number>2</number>
+          </property>
+          <property name="bottomMargin">
+           <number>2</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="labelVertexCount">
+            <property name="text">
+             <string>Vertex Number:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="vertexCountValue">
+            <property name="text">
+             <string>128,430</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="labelVertexCount">
-          <property name="text">
-           <string>顶点数</string>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <property name="spacing">
+           <number>4</number>
           </property>
-         </widget>
+          <property name="leftMargin">
+           <number>4</number>
+          </property>
+          <property name="topMargin">
+           <number>4</number>
+          </property>
+          <property name="rightMargin">
+           <number>4</number>
+          </property>
+          <property name="bottomMargin">
+           <number>4</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="labelFaceCount">
+            <property name="text">
+             <string>Facet Number:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="edgeCountValue">
+            <property name="text">
+             <string>385,204</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
-        <item row="1" column="1">
-         <widget class="QLabel" name="vertexCountValue">
-          <property name="text">
-           <string>128,430</string>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <property name="spacing">
+           <number>4</number>
           </property>
-         </widget>
-        </item>
-        <item row="2" column="0">
-         <widget class="QLabel" name="labelFaceCount">
-          <property name="text">
-           <string>面片数</string>
+          <property name="leftMargin">
+           <number>4</number>
           </property>
-         </widget>
-        </item>
-        <item row="2" column="1">
-         <widget class="QLabel" name="faceCountValue">
-          <property name="text">
-           <string>256,812</string>
+          <property name="topMargin">
+           <number>4</number>
           </property>
-         </widget>
-        </item>
-        <item row="3" column="0">
-         <widget class="QLabel" name="labelEdgeCount">
-          <property name="text">
-           <string>边数量</string>
+          <property name="rightMargin">
+           <number>4</number>
           </property>
-         </widget>
-        </item>
-        <item row="3" column="1">
-         <widget class="QLabel" name="edgeCountValue">
-          <property name="text">
-           <string>385,204</string>
+          <property name="bottomMargin">
+           <number>4</number>
           </property>
-         </widget>
+          <item>
+           <widget class="QLabel" name="labelEdgeCount">
+            <property name="text">
+             <string>Edge Number:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="faceCountValue">
+            <property name="text">
+             <string>256,812</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
        </layout>
       </widget>
@@ -345,13 +421,13 @@
      <item>
       <widget class="QGroupBox" name="displayControlPanel">
        <property name="title">
-        <string>显示控制</string>
+        <string>Display Control</string>
        </property>
        <layout class="QFormLayout" name="displayControlLayout">
         <item row="0" column="0">
          <widget class="QLabel" name="labelDisplayMode">
           <property name="text">
-           <string>显示模式</string>
+           <string>Display Mode:</string>
           </property>
          </widget>
         </item>
@@ -446,255 +522,6 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QDockWidget" name="rightDockWidget">
-   <property name="minimumSize">
-    <size>
-     <width>300</width>
-     <height>500</height>
-    </size>
-   </property>
-   <property name="windowTitle">
-    <string>属性与处理</string>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>2</number>
-   </attribute>
-   <widget class="QWidget" name="rightDockContent">
-    <layout class="QVBoxLayout" name="rightDockLayout">
-     <property name="spacing">
-      <number>8</number>
-     </property>
-     <property name="leftMargin">
-      <number>8</number>
-     </property>
-     <property name="topMargin">
-      <number>8</number>
-     </property>
-     <property name="rightMargin">
-      <number>8</number>
-     </property>
-     <property name="bottomMargin">
-      <number>8</number>
-     </property>
-     <item>
-      <widget class="QGroupBox" name="propertyPanel">
-       <property name="title">
-        <string>属性面板</string>
-       </property>
-       <layout class="QFormLayout" name="propertyLayout">
-        <item row="0" column="0">
-         <widget class="QLabel" name="labelMaterial">
-          <property name="text">
-           <string>材质</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QComboBox" name="materialComboBox">
-          <item>
-           <property name="text">
-            <string>Matte Gray</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Clay</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Vertex Color</string>
-           </property>
-          </item>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="labelOpacity">
-          <property name="text">
-           <string>透明度</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QSlider" name="opacitySlider">
-          <property name="minimum">
-           <number>0</number>
-          </property>
-          <property name="maximum">
-           <number>100</number>
-          </property>
-          <property name="value">
-           <number>100</number>
-          </property>
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="0">
-         <widget class="QLabel" name="labelShading">
-          <property name="text">
-           <string>着色</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="1">
-         <widget class="QComboBox" name="shadingComboBox">
-          <item>
-           <property name="text">
-            <string>Phong</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Flat</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Smooth</string>
-           </property>
-          </item>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-     </item>
-     <item>
-      <widget class="QGroupBox" name="filterPanel">
-       <property name="title">
-        <string>处理 / 滤波参数</string>
-       </property>
-       <layout class="QVBoxLayout" name="filterPanelLayout">
-        <item>
-         <widget class="QComboBox" name="filterComboBox">
-          <item>
-           <property name="text">
-            <string>选择处理算法...</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>网格清理</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>简化抽稀</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>法线重计算</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>曲率分析</string>
-           </property>
-          </item>
-         </widget>
-        </item>
-        <item>
-         <widget class="QGroupBox" name="parameterGroupBox">
-          <property name="title">
-           <string>参数</string>
-          </property>
-          <layout class="QFormLayout" name="parameterLayout">
-           <item row="0" column="0">
-            <widget class="QLabel" name="labelTargetFaces">
-             <property name="text">
-              <string>目标面片数</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1">
-            <widget class="QSpinBox" name="targetFacesSpinBox">
-             <property name="maximum">
-              <number>99999999</number>
-             </property>
-             <property name="value">
-              <number>100000</number>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0">
-            <widget class="QLabel" name="labelTolerance">
-             <property name="text">
-              <string>误差容差</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1">
-            <widget class="QDoubleSpinBox" name="toleranceDoubleSpinBox">
-             <property name="decimals">
-              <number>4</number>
-             </property>
-             <property name="singleStep">
-              <double>0.010000000000000</double>
-             </property>
-             <property name="value">
-              <double>0.050000000000000</double>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0">
-            <widget class="QLabel" name="labelPreserveBoundary">
-             <property name="text">
-              <string>保留边界</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="1">
-            <widget class="QCheckBox" name="preserveBoundaryCheckBox">
-             <property name="text">
-              <string>启用</string>
-             </property>
-             <property name="checked">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="filterButtonLayout">
-          <item>
-           <widget class="QPushButton" name="previewFilterButton">
-            <property name="text">
-             <string>预览</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="applyFilterButton">
-            <property name="text">
-             <string>应用</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-       </layout>
-      </widget>
-     </item>
-     <item>
-      <spacer name="rightDockBottomSpacer">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>20</width>
-         <height>40</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-    </layout>
-   </widget>
-  </widget>
   <widget class="QStatusBar" name="statusBar">
    <property name="sizeGripEnabled">
     <bool>true</bool>
@@ -702,7 +529,7 @@
   </widget>
   <action name="actionOpenMesh">
    <property name="text">
-    <string>打开网格</string>
+    <string>Open project</string>
    </property>
    <property name="toolTip">
     <string>打开网格文件</string>
@@ -713,12 +540,12 @@
   </action>
   <action name="actionImportPointCloud">
    <property name="text">
-    <string>导入点云</string>
+    <string>Import Mesh</string>
    </property>
   </action>
   <action name="actionSaveProject">
    <property name="text">
-    <string>保存工程</string>
+    <string>Save project</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
@@ -726,12 +553,12 @@
   </action>
   <action name="actionExit">
    <property name="text">
-    <string>退出</string>
+    <string>Exit</string>
    </property>
   </action>
   <action name="actionUndo">
    <property name="text">
-    <string>撤销</string>
+    <string>Undo</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Z</string>
@@ -739,7 +566,7 @@
   </action>
   <action name="actionRedo">
    <property name="text">
-    <string>重做</string>
+    <string>Redo</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Y</string>
@@ -747,17 +574,17 @@
   </action>
   <action name="actionPreferences">
    <property name="text">
-    <string>首选项</string>
+    <string>Preferences</string>
    </property>
   </action>
   <action name="actionResetView">
    <property name="text">
-    <string>重置视图</string>
+    <string>Reset View</string>
    </property>
   </action>
   <action name="actionFitToScreen">
    <property name="text">
-    <string>适配窗口</string>
+    <string>Fit Window</string>
    </property>
   </action>
   <action name="actionToggleWireframe">
@@ -768,7 +595,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>线框</string>
+    <string>Wire Frane</string>
    </property>
   </action>
   <action name="actionToggleGrid">
@@ -779,12 +606,12 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>网格</string>
+    <string>Mesh</string>
    </property>
   </action>
   <action name="actionCleanMesh">
    <property name="text">
-    <string>网格清理</string>
+    <string>Mesh Clean</string>
    </property>
   </action>
   <action name="actionSimplifyMesh">
@@ -804,7 +631,7 @@
   </action>
   <action name="actionDistanceMeasure">
    <property name="text">
-    <string>距离测量</string>
+    <string>Distance Measure</string>
    </property>
   </action>
   <action name="actionSectionAnalysis">
@@ -814,7 +641,7 @@
   </action>
   <action name="actionAbout">
    <property name="text">
-    <string>关于</string>
+    <string>About</string>
    </property>
   </action>
   <action name="actionSelect">
