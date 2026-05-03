@@ -44,14 +44,19 @@ MainWidget::MainWidget(QWidget *parent, Qt::WindowFlags flags)
     }
     ui_.setupUi(this);
     ui_.meshRenderWidget->setObjectName("renderViewport");
-    connect(ui_.actionOpenMesh, &QAction::triggered, this, &MainWidget::onOpenMeshActionTriggered);
+    QStringList header_labels;
+    header_labels << tr("Model File Name") << tr("Visibility");
+    ui_.modelTreeWidget->setHeaderLabels(header_labels);
+    ui_.modelTreeWidget->clear();
+
+    connect(ui_.actionImportMesh, &QAction::triggered, this, &MainWidget::onImportMeshActionTriggered);
 }
 
 MainWidget::~MainWidget()
 {
 }
 
-void MainWidget::onOpenMeshActionTriggered()
+void MainWidget::onImportMeshActionTriggered()
 {
     QString filepath = QFileDialog::getOpenFileName(this, tr("Open PLY File"), QString(), tr("PLY Files (*.ply)"));
     if(filepath.isEmpty()){
@@ -71,4 +76,12 @@ void MainWidget::onOpenMeshActionTriggered()
     APP_LOG_TRACE("Center:{} radius:{}", GlmVec3ToStr(mesh_bound_opt->center), mesh_bound_opt->radius);
     glmesh::GpuTriangleMesh gpu_triangle_mesh = glmesh::ToGpuTriangleMesh(triangle_mesh);
     ui_.meshRenderWidget->updateMesh(gpu_triangle_mesh, *mesh_bound_opt);
+
+    QFileInfo fi(filepath);
+    QString mesh_filename = fi.fileName();
+    QTreeWidgetItem *new_mesh_item = new QTreeWidgetItem(ui_.modelTreeWidget);
+    new_mesh_item->setText(0, mesh_filename);
+    new_mesh_item->setToolTip(0, filepath);
+    new_mesh_item->setCheckState(1, Qt::Checked);    
+    ui_.modelTreeWidget->setCurrentItem(new_mesh_item);
 }

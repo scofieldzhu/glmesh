@@ -28,7 +28,7 @@
 *  SOFTWARE.
 */
 #include "gl_point_cloud.h"
-#include "glad.h"
+#include "glad/glad.h"
 
 GLMESH_NAMESPACE_BEGIN
 

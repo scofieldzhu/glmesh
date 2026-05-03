@@ -42,7 +42,7 @@ public:
     ~MainWidget();
 
 private slots:
-    void onOpenMeshActionTriggered();
+    void onImportMeshActionTriggered();
 
 private:
     Ui::MainWidget ui_;

@@ -30,9 +30,9 @@
 #ifndef __gl_point_cloud_h__
 #define __gl_point_cloud_h__
 
-#include "glmesh/kernel/gpu_vertex.h"
-#include "glmesh/kernel/vertex_array.h"
-#include "glmesh/kernel/vertex_buffer.h"
+#include "glmesh/kernel/gl/gpu_vertex.h"
+#include "glmesh/kernel/gl/vertex_array.h"
+#include "glmesh/kernel/gl/vertex_buffer.h"
 
 GLMESH_NAMESPACE_BEGIN
 
