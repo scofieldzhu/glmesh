@@ -48,7 +48,7 @@ struct CpuPolygonMesh;
 struct CpuTriangleMesh;
 class GLTriangleMesh;
 struct GpuTriangleMesh;
-struct MeshBounds;
+struct Bounds3D;
 
 struct CpuRectangle;
 struct GpuRectangle;

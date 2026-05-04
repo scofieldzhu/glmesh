@@ -34,7 +34,7 @@
 
 GLMESH_NAMESPACE_BEGIN
 
-struct MeshBounds
+struct Bounds3D
 {
     float min_x = 0.0f;
     float min_y = 0.0f;

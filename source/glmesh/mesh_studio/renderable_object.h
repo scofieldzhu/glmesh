@@ -31,19 +31,22 @@
 #define __renderable_object_h__
 
 #include "glmesh/kernel/gl/gl_drawable.h"
+#include "glmesh/kernel/core/bounds_3d.h"
 #include "material.h"
 
 struct RenderableObject 
 {
     QString uid; //unique identifier
+    bool visible{true};
+
     std::shared_ptr<glmesh::GLDrawable> drawable;
     glm::mat4 model_matrix{1.0f};
-    glm::vec4 base_color{0.8f, 0.8f, 0.8f, 1.0f}; 
-    float line_width{1.0f};
-    float point_size{1.0f};
-    Material material;
-    bool visible{true};
+    glmesh::Bounds3D bounds;
+
+    Material material;    
     int shader_type_id = -1;
+    
+    bool is_selected = false;
 };
 
 #endif

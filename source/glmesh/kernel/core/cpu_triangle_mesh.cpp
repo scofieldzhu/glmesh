@@ -50,12 +50,12 @@ void CpuTriangleMesh::buildFromPolygonMesh(const CpuPolygonMesh& polyon_mesh)
     }
 }
 
-std::optional<MeshBounds> CpuTriangleMesh::calcBounds() const
+std::optional<Bounds3D> CpuTriangleMesh::calcBounds() const
 {
     if(vertices.empty()){
         return std::nullopt;
     }
-    MeshBounds bounds;
+    Bounds3D bounds;
     float min_x = std::numeric_limits<float>::max();
     float max_x = std::numeric_limits<float>::lowest();
     float min_y = min_x;

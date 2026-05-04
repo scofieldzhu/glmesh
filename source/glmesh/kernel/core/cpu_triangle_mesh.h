@@ -31,14 +31,14 @@
 #define __cpu_triangle_mesh_h__
 
 #include "glmesh/kernel/core/cpu_vertex.h"
-#include "glmesh/kernel/core/mesh_bounds.h"
+#include "glmesh/kernel/core/bounds_3d.h"
 
 GLMESH_NAMESPACE_BEGIN
 
 struct GLMESH_KERNEL_API CpuTriangleMesh
 {
     void buildFromPolygonMesh(const CpuPolygonMesh& polyon_mesh);
-    std::optional<MeshBounds> calcBounds()const;
+    std::optional<Bounds3D> calcBounds()const;
     std::vector<CpuVertex> vertices;
     std::vector<uint32> indices;
 };

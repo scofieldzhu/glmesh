@@ -156,7 +156,7 @@ void MeshWidget::initializeGL()
     gl_initialized_ = true;
 }
 
-QString MeshWidget::updateMesh(const glmesh::GpuTriangleMesh& mesh_data, const glmesh::MeshBounds& bounds, UpdateError* out_err)
+QString MeshWidget::updateMesh(const glmesh::GpuTriangleMesh& mesh_data, const glmesh::Bounds3D& bounds, UpdateError* out_err)
 {
     if(!gl_initialized_){
         if(out_err){
@@ -177,6 +177,7 @@ QString MeshWidget::updateMesh(const glmesh::GpuTriangleMesh& mesh_data, const g
         RenderableObject mesh_ren_obj;
         mesh_ren_obj.uid = mesh_uid;
         mesh_ren_obj.drawable = gl_mesh;
+        mesh_ren_obj.bounds = bounds;
         mesh_ren_obj.shader_type_id = SPT_MESH;
         mesh_ren_obj.material.shader = program_mgr_.getProgram(mesh_ren_obj.shader_type_id);
         mesh_ren_obj.material.light_dir = glm::normalize(glm::vec3(-0.0f, -0.0f, -1.0f));

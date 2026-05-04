@@ -27,7 +27,7 @@ set(EXPORT_HEAD_FILES
     core/cpu_rectangle.h
     core/cpu_bkg.h
     core/cpu_bkg_vertex.h
-    core/mesh_bounds.h
+    core/bounds_3d.h
     core/geometry_utils.h
     io/mesh_loader.h
     cpu_to_gpu.h    
