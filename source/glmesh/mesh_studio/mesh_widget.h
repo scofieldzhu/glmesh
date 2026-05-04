@@ -50,7 +50,8 @@ public:
         EmptyData,
         NotInitialized
     };
-    bool updateMesh(const glmesh::GpuTriangleMesh& mesh_data, const glmesh::MeshBounds& mb, UpdateError* outError = nullptr);
+    QString updateMesh(const glmesh::GpuTriangleMesh& mesh_data, const glmesh::MeshBounds& mb, UpdateError* outError = nullptr);
+    void setMeshVisible(const QString& uid, bool visible);
     explicit MeshWidget(QWidget* parent = nullptr);
     ~MeshWidget() override;
 

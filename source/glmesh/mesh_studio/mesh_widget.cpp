@@ -29,6 +29,7 @@
  */
 #include "mesh_widget.h"
 #include <QOpenGLContext>
+#include <QUuid>
 #include <glm/gtc/matrix_transform.hpp>
 #include "glmesh/kernel/cpu_to_gpu.h"
 #include "glmesh/kernel/core/cpu_rectangle.h"
@@ -155,13 +156,13 @@ void MeshWidget::initializeGL()
     gl_initialized_ = true;
 }
 
-bool MeshWidget::updateMesh(const glmesh::GpuTriangleMesh& mesh_data, const glmesh::MeshBounds& bounds, UpdateError* out_err)
+QString MeshWidget::updateMesh(const glmesh::GpuTriangleMesh& mesh_data, const glmesh::MeshBounds& bounds, UpdateError* out_err)
 {
     if(!gl_initialized_){
         if(out_err){
             *out_err = UpdateError::NotInitialized;
         }
-        return false;
+        return "";
     }
 
     makeCurrent();
@@ -169,35 +170,38 @@ bool MeshWidget::updateMesh(const glmesh::GpuTriangleMesh& mesh_data, const glme
     auto gl_mesh = std::make_shared<glmesh::GLTriangleMesh>();
     gl_mesh->upload(mesh_data, GL_STATIC_DRAW);
 
+    QString mesh_uid = QUuid::createUuid().toString();
+
     {
         std::lock_guard lock(renderable_objects_mutex_);
-        
         RenderableObject mesh_ren_obj;
+        mesh_ren_obj.uid = mesh_uid;
         mesh_ren_obj.drawable = gl_mesh;
-        mesh_ren_obj.material.shader = program_mgr_.getProgram(SPT_MESH);
+        mesh_ren_obj.shader_type_id = SPT_MESH;
+        mesh_ren_obj.material.shader = program_mgr_.getProgram(mesh_ren_obj.shader_type_id);
         mesh_ren_obj.material.light_dir = glm::normalize(glm::vec3(-0.0f, -0.0f, -1.0f));
         mesh_ren_obj.material.ambient = 0.7f;
         renderable_objects_.push_back(std::move(mesh_ren_obj));
-
-        // 1. 设置模型居中偏移
-        // 渲染时，我们要把模型从它原本的中心点平移到原点 (0,0,0)
-        // 所以 model 矩阵需要加上 translate(-center_x, -center_y, -center_z)
-        mesh_center_offset_ = -bounds.center;
-        
-        // 2. 自适应相机距离
-        // 如果想要模型在视野中大小合适，可以根据它的包围球半径来设置
-        // 假设 FOV 是 45 度，相机距离通常设置为半径的 2 到 3 倍
-        camera_distance_ = bounds.radius * 2.0f;
-        
-        // 3. 设置滚轮缩放限制
-        // 防止滚轮滑得太近直接穿模，或者滑得太远看不见
-        min_camera_distance_ = bounds.radius * 1.2f;  // 至少离模型表面一点点
-        max_camera_distance_ = bounds.radius * 10.0f; // 最远不超过半径的10倍
-        
-        // 4. 重置相机的旋转状态
-        // 重置 Arcball 或者四元数等状态，保证每次换模型都是正对的
-        // ...
     }
+
+    // 1. 设置模型居中偏移
+    // 渲染时，我们要把模型从它原本的中心点平移到原点 (0,0,0)
+    // 所以 model 矩阵需要加上 translate(-center_x, -center_y, -center_z)
+    mesh_center_offset_ = -bounds.center;
+    
+    // 2. 自适应相机距离
+    // 如果想要模型在视野中大小合适，可以根据它的包围球半径来设置
+    // 假设 FOV 是 45 度，相机距离通常设置为半径的 2 到 3 倍
+    camera_distance_ = bounds.radius * 2.0f;
+    
+    // 3. 设置滚轮缩放限制
+    // 防止滚轮滑得太近直接穿模，或者滑得太远看不见
+    min_camera_distance_ = bounds.radius * 1.2f;  // 至少离模型表面一点点
+    max_camera_distance_ = bounds.radius * 10.0f; // 最远不超过半径的10倍
+    
+    // 4. 重置相机的旋转状态
+    // 重置 Arcball 或者四元数等状态，保证每次换模型都是正对的
+    // ...
 
     doneCurrent();
     
@@ -206,7 +210,21 @@ bool MeshWidget::updateMesh(const glmesh::GpuTriangleMesh& mesh_data, const glme
     if(out_err){
         *out_err = UpdateError::None;
     }
-    return true;
+    return mesh_uid;
+}
+
+void MeshWidget::setMeshVisible(const QString &uid, bool visible)
+{
+    {
+        std::lock_guard lock(renderable_objects_mutex_);
+        for(auto& obj : renderable_objects_){
+            if(obj.uid != uid){
+                continue;
+            }
+            obj.visible = visible;
+        }
+    }
+    update();    
 }
 
 void MeshWidget::resizeGL(int w, int h)

@@ -49,6 +49,14 @@ MainWidget::MainWidget(QWidget *parent, Qt::WindowFlags flags)
     ui_.modelTreeWidget->setHeaderLabels(header_labels);
     ui_.modelTreeWidget->clear();
 
+    connect(ui_.modelTreeWidget, &QTreeWidget::itemChanged, this, [this](QTreeWidgetItem*item,int column) {
+        if(column == 1) { 
+            bool visible = (item->checkState(1) == Qt::Checked);
+            auto mesh_uid = item->data(0, Qt::UserRole).toString();
+            ui_.meshRenderWidget->setMeshVisible(mesh_uid, visible);
+        }
+    });
+
     connect(ui_.actionImportMesh, &QAction::triggered, this, &MainWidget::onImportMeshActionTriggered);
 }
 
@@ -75,11 +83,16 @@ void MainWidget::onImportMeshActionTriggered()
     auto mesh_bound_opt = triangle_mesh.calcBounds();
     APP_LOG_TRACE("Center:{} radius:{}", GlmVec3ToStr(mesh_bound_opt->center), mesh_bound_opt->radius);
     glmesh::GpuTriangleMesh gpu_triangle_mesh = glmesh::ToGpuTriangleMesh(triangle_mesh);
-    ui_.meshRenderWidget->updateMesh(gpu_triangle_mesh, *mesh_bound_opt);
-
+    MeshWidget::UpdateError err;
+    QString mesh_uid = ui_.meshRenderWidget->updateMesh(gpu_triangle_mesh, *mesh_bound_opt, &err);
+    if(mesh_uid.isEmpty()){
+        APP_LOG_ERROR("updateMesh failed! err code:{}", (int)err);
+        return;
+    }
     QFileInfo fi(filepath);
     QString mesh_filename = fi.fileName();
     QTreeWidgetItem *new_mesh_item = new QTreeWidgetItem(ui_.modelTreeWidget);
+    new_mesh_item->setData(0, Qt::UserRole, mesh_uid);
     new_mesh_item->setText(0, mesh_filename);
     new_mesh_item->setToolTip(0, filepath);
     new_mesh_item->setCheckState(1, Qt::Checked);    

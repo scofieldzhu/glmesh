@@ -24,6 +24,8 @@ set(SOURCE_FILES
     "shader_program_manager.h"
     "shader_program_manager.cpp"
     "common.h"
+    "material.h"
+    "material.cpp"
     ${CMAKE_SOURCE_DIR}/res/resource.qrc
 )
 

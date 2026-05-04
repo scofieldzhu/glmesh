@@ -4,7 +4,7 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates 
  *  coherent OpenGL.
  *  
- *  File: material.h
+ *  File: material.cpp
  *  Copyright (c) 2024-2026 scofieldzhu
  *  
  *  MIT License
@@ -27,25 +27,18 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *  SOFTWARE.
  */
-#ifndef __material_h__
-#define __material_h__
+#include "material.h"
+#include "glmesh/kernel/gl/shader_program.h"
+#include <stdexcept>
 
-#include "glmesh/kernel/glmesh_kernel_typedef.h"
-
-GLMESH_NAMESPACE_BEGIN
-
-class ShaderProgram;
-
-struct GLMESH_KERNEL_API Material
+void Material::bind() const
 {
-    void bind() const;
-    ShaderProgram* shader = nullptr;
-    glm::vec3 base_color {1.0f, 1.0f, 1.0f};
-    glm::vec3 light_dir  {1.0f, -1.0f, -1.0f};
-    float ambient  = 0.2f;
-    float diffuse  = 1.0f;
-};
-
-GLMESH_NAMESPACE_END
-
-#endif
+    if(shader == nullptr){
+        throw std::runtime_error("Material::bind(): shader is null");
+    }
+    shader->use();
+    shader->setVec3("uBaseColor", base_color);
+    shader->setVec3("uLightDir", light_dir);
+    shader->setFloat("uAmbient", ambient);
+    shader->setFloat("uDiffuse", diffuse);
+}

@@ -31,27 +31,19 @@
 #define __renderable_object_h__
 
 #include "glmesh/kernel/gl/gl_drawable.h"
-#include "glmesh/kernel/material.h"
+#include "material.h"
 
 struct RenderableObject 
 {
-    // 泛化：现在它可以容纳 Mesh、线段、点云、基本几何体
+    QString uid; //unique identifier
     std::shared_ptr<glmesh::GLDrawable> drawable;
-    
-    // 空间变换
     glm::mat4 model_matrix{1.0f};
-    
-    // 基础材质/渲染属性
-    glm::vec4 base_color{0.8f, 0.8f, 0.8f, 1.0f}; // 换成 vec4 支持透明度更好
+    glm::vec4 base_color{0.8f, 0.8f, 0.8f, 1.0f}; 
     float line_width{1.0f};
     float point_size{1.0f};
-
-    glmesh::Material material;
-    
-    // 状态控制
+    Material material;
     bool visible{true};
-    // 甚至可以加一个枚举来标识要用哪个 Shader
-    // enum ShaderType { StandardLighting, UnlitColor, VertexColor } shader_type;
+    int shader_type_id = -1;
 };
 
 #endif

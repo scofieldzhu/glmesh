@@ -30,8 +30,7 @@ set(EXPORT_HEAD_FILES
     core/mesh_bounds.h
     core/geometry_utils.h
     io/mesh_loader.h
-    cpu_to_gpu.h
-    material.h
+    cpu_to_gpu.h    
     glmesh_log.h
 )
 
@@ -53,7 +52,6 @@ set(SOURCE_FILES
     core/geometry_utils.cpp
     io/mesh_loader.cpp
     cpu_to_gpu.cpp
-    material.cpp
     glmesh_log.cpp
 )
 
