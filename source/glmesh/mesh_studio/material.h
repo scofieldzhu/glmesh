@@ -31,6 +31,7 @@
 #define __material_h__
 
 #include "glmesh/kernel/glmesh_kernel_typedef.h"
+#include "common.h"
 
 struct Material
 {
@@ -40,6 +41,9 @@ struct Material
     glm::vec3 light_dir  {1.0f, -1.0f, -1.0f};
     float ambient  = 0.2f;
     float diffuse  = 1.0f;
+    float point_size = 1.0f;
+    float line_width = 1.0f;
+    MeshRenderMode render_mode = MeshRenderMode::Facet;
 };
 
 #endif

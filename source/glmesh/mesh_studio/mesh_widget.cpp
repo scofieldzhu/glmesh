@@ -205,9 +205,22 @@ void MeshWidget::removeMesh(const QString &mesh_uid)
             renderable_objects_.erase(mesh_uid);
         }else{
             APP_LOG_WARN("No such mesh with uid:{}", QStrToLogStr(mesh_uid));
-        }
-        update();
+        }        
     }
+    update();
+}
+
+void MeshWidget::setMeshLight(const QString &uid, float ambient)
+{
+    {
+        std::lock_guard lock(renderable_objects_mutex_);
+        if(renderable_objects_.contains(uid)){
+            renderable_objects_[uid].material.ambient = ambient;
+        }else{
+            APP_LOG_WARN("No such mesh with uid:{}", QStrToLogStr(uid));
+        }
+    }
+    update();
 }
 
 void MeshWidget::setMeshVisible(const QString &uid, bool visible)
@@ -221,6 +234,19 @@ void MeshWidget::setMeshVisible(const QString &uid, bool visible)
         }
     }
     update();    
+}
+
+void MeshWidget::setMeshRenderMode(const QString &uid, MeshRenderMode mode)
+{
+    {
+        std::lock_guard lock(renderable_objects_mutex_);
+        if(renderable_objects_.contains(uid)){
+            renderable_objects_[uid].material.render_mode = mode;
+        }else{
+            APP_LOG_WARN("No such mesh with uid:{}", QStrToLogStr(uid));
+        }
+    }
+    update();  
 }
 
 void MeshWidget::setActiveMesh(const QString &mesh_uid)
@@ -330,8 +356,30 @@ void MeshWidget::drawRenderableObjects()
         ren_obj.material.shader->setMat4("uView", view);
         ren_obj.material.shader->setMat4("uProj", proj);
         ren_obj.material.shader->setMat3("uNormalMatrix", normal_matrix);
+        switch(ren_obj.material.render_mode){
+            case MeshRenderMode::Facet:
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                break;
+
+            case MeshRenderMode::Wireframe:
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                glLineWidth(ren_obj.material.line_width);
+                break;
+
+            case MeshRenderMode::Points:
+                glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+                glPointSize(ren_obj.material.point_size);
+                break;
+            
+            default:
+                break;
+        }
         ren_obj.drawable->draw();
     }
+
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glLineWidth(1.0f);
+    glPointSize(1.0f);
 }
 
 void MeshWidget::handleMeshBoundsChanged(const glmesh::Bounds3D& bounds)

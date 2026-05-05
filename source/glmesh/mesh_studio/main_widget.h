@@ -45,6 +45,8 @@ private slots:
     void onImportMeshActionTriggered();
     void onCustomContextMenuRequested(const QPoint &pos);
     void onCurrentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous);
+    void onAmbientIntensitySliderValueChanged(int value);
+    void onDisplayModeChanged(int mode_index);
 
 private:
     QString treeItemToMeshUid(QTreeWidgetItem* item)const;

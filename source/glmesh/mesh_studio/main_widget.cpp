@@ -47,11 +47,12 @@ MainWidget::MainWidget(QWidget *parent, Qt::WindowFlags flags)
     }
     ui_.setupUi(this);
     ui_.meshRenderWidget->setObjectName("renderViewport");
+    connect(ui_.actionImportMesh, &QAction::triggered, this, &MainWidget::onImportMeshActionTriggered);
+
     QStringList header_labels;
     header_labels << tr("Model File Name") << tr("Visibility");
     ui_.modelTreeWidget->setHeaderLabels(header_labels);
     ui_.modelTreeWidget->clear();
-
     connect(ui_.modelTreeWidget, &QTreeWidget::itemChanged, this, [this](QTreeWidgetItem* item, int column) {
         if(column == 1) { 
             bool visible = (item->checkState(1) == Qt::Checked);
@@ -61,8 +62,15 @@ MainWidget::MainWidget(QWidget *parent, Qt::WindowFlags flags)
     });
     ui_.modelTreeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui_.modelTreeWidget, &QTreeWidget::customContextMenuRequested, this, &MainWidget::onCustomContextMenuRequested);
-    connect(ui_.modelTreeWidget, &QTreeWidget::currentItemChanged, this, &MainWidget::onCurrentItemChanged);
-    connect(ui_.actionImportMesh, &QAction::triggered, this, &MainWidget::onImportMeshActionTriggered);
+    connect(ui_.modelTreeWidget, &QTreeWidget::currentItemChanged, this, &MainWidget::onCurrentItemChanged);    
+
+    ui_.displayModeComboBox->clear();
+    ui_.displayModeComboBox->addItem(tr("Facet"), static_cast<int>(MeshRenderMode::Facet));
+    ui_.displayModeComboBox->addItem(tr("Wireframe"), static_cast<int>(MeshRenderMode::Wireframe));
+    ui_.displayModeComboBox->addItem(tr("Points"), static_cast<int>(MeshRenderMode::Points));
+    ui_.displayModeComboBox->setCurrentIndex(0);
+    connect(ui_.displayModeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onDisplayModeChanged(int)));
+    connect(ui_.ambientIntensitySlider, &QSlider::valueChanged, this, &MainWidget::onAmbientIntensitySliderValueChanged);
 }
 
 MainWidget::~MainWidget()
@@ -94,6 +102,18 @@ void MainWidget::onCurrentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem 
         auto mesh_uid = treeItemToMeshUid(current);
         ui_.meshRenderWidget->setActiveMesh(mesh_uid);
     }
+}
+
+void MainWidget::onAmbientIntensitySliderValueChanged(int value)
+{
+    float ambient_intensity_value = (float)value / (ui_.ambientIntensitySlider->maximum() - ui_.ambientIntensitySlider->minimum());
+    ui_.meshRenderWidget->setMeshLight(ui_.meshRenderWidget->activeMesh(), ambient_intensity_value);
+}
+
+void MainWidget::onDisplayModeChanged(int mode_index)
+{
+    auto render_mode = static_cast<MeshRenderMode>(ui_.displayModeComboBox->itemData(mode_index, Qt::UserRole).toInt());
+    ui_.meshRenderWidget->setMeshRenderMode(ui_.meshRenderWidget->activeMesh(), render_mode);
 }
 
 QString MainWidget::treeItemToMeshUid(QTreeWidgetItem *item) const

@@ -36,4 +36,10 @@ enum ShaderProgramType
     SPT_MESH    
 };
 
+enum class MeshRenderMode {
+    Facet,      // 面片
+    Wireframe,  // 线框
+    Points      // 点
+};
+
 #endif

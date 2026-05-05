@@ -53,8 +53,11 @@ public:
     };
     QString addMesh(const glmesh::GpuTriangleMesh& mesh_data, const glmesh::Bounds3D& mb, UpdateError* outError = nullptr);
     void removeMesh(const QString& mesh_uid);
+    void setMeshLight(const QString& uid, float ambient);
     void setMeshVisible(const QString& uid, bool visible);
+    void setMeshRenderMode(const QString& uid, MeshRenderMode mode);
     void setActiveMesh(const QString& mesh_uid);
+    QString activeMesh()const{ return current_active_mesh_uid_; }
     bool isValidMesh(const QString& uid)const;
     explicit MeshWidget(QWidget* parent = nullptr);
     ~MeshWidget() override;
