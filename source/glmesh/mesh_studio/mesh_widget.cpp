@@ -185,24 +185,7 @@ QString MeshWidget::addMesh(const glmesh::GpuTriangleMesh& mesh_data, const glme
         renderable_objects_.insert({mesh_uid, std::move(mesh_ren_obj)});
     }
 
-    // 1. 设置模型居中偏移
-    // 渲染时，我们要把模型从它原本的中心点平移到原点 (0,0,0)
-    // 所以 model 矩阵需要加上 translate(-center_x, -center_y, -center_z)
-    mesh_center_offset_ = -bounds.center;
-    
-    // 2. 自适应相机距离
-    // 如果想要模型在视野中大小合适，可以根据它的包围球半径来设置
-    // 假设 FOV 是 45 度，相机距离通常设置为半径的 2 到 3 倍
-    camera_distance_ = bounds.radius * 2.0f;
-    
-    // 3. 设置滚轮缩放限制
-    // 防止滚轮滑得太近直接穿模，或者滑得太远看不见
-    min_camera_distance_ = bounds.radius * 1.2f;  // 至少离模型表面一点点
-    max_camera_distance_ = bounds.radius * 10.0f; // 最远不超过半径的10倍
-    
-    // 4. 重置相机的旋转状态
-    // 重置 Arcball 或者四元数等状态，保证每次换模型都是正对的
-    // ...
+    handleMeshBoundsChanged(bounds);
 
     doneCurrent();
     
@@ -242,8 +225,21 @@ void MeshWidget::setMeshVisible(const QString &uid, bool visible)
 
 void MeshWidget::setActiveMesh(const QString &mesh_uid)
 {
+    if(!isValidMesh(mesh_uid)){
+        APP_LOG_WARN("No such mesh with uid:{}", QStrToLogStr(mesh_uid));
+        return;
+    }
+    current_active_mesh_uid_ = mesh_uid;
+    {
+        std::lock_guard lock(renderable_objects_mutex_);
+        handleMeshBoundsChanged(renderable_objects_[mesh_uid].bounds);
+    }
+    APP_LOG_TRACE("Active mesh uid:{} updated!", QStrToLogStr(mesh_uid));
+}
 
-    update();
+bool MeshWidget::isValidMesh(const QString &uid) const
+{
+    return renderable_objects_.contains(uid);
 }
 
 void MeshWidget::resizeGL(int w, int h)
@@ -336,6 +332,28 @@ void MeshWidget::drawRenderableObjects()
         ren_obj.material.shader->setMat3("uNormalMatrix", normal_matrix);
         ren_obj.drawable->draw();
     }
+}
+
+void MeshWidget::handleMeshBoundsChanged(const glmesh::Bounds3D& bounds)
+{
+    // 1. 设置模型居中偏移
+    // 渲染时，我们要把模型从它原本的中心点平移到原点 (0,0,0)
+    // 所以 model 矩阵需要加上 translate(-center_x, -center_y, -center_z)
+    mesh_center_offset_ = -bounds.center;
+    
+    // 2. 自适应相机距离
+    // 如果想要模型在视野中大小合适，可以根据它的包围球半径来设置
+    // 假设 FOV 是 45 度，相机距离通常设置为半径的 2 到 3 倍
+    camera_distance_ = bounds.radius * 2.0f;
+    
+    // 3. 设置滚轮缩放限制
+    // 防止滚轮滑得太近直接穿模，或者滑得太远看不见
+    min_camera_distance_ = bounds.radius * 1.2f;  // 至少离模型表面一点点
+    max_camera_distance_ = bounds.radius * 10.0f; // 最远不超过半径的10倍
+    
+    // 4. 重置相机的旋转状态
+    // 重置 Arcball 或者四元数等状态，保证每次换模型都是正对的
+    // ...
 }
 
 void MeshWidget::initGradientBackground()

@@ -55,6 +55,7 @@ public:
     void removeMesh(const QString& mesh_uid);
     void setMeshVisible(const QString& uid, bool visible);
     void setActiveMesh(const QString& mesh_uid);
+    bool isValidMesh(const QString& uid)const;
     explicit MeshWidget(QWidget* parent = nullptr);
     ~MeshWidget() override;
 
@@ -68,7 +69,7 @@ private:
     void initGradientBackground();
     void drawGradientBackground();
     void drawRenderableObjects();
-    glm::vec3 getArcballVector(const QPoint& pt)const;
+    void handleMeshBoundsChanged(const glmesh::Bounds3D& bounds);
     std::mutex renderable_objects_mutex_;
     std::unordered_map<QString, RenderableObject> renderable_objects_;
     float camera_distance_ = 100.0f;
@@ -79,6 +80,7 @@ private:
     float max_camera_distance_ = 0.0;
     std::unique_ptr<glmesh::GLBkg> gl_bkg_;
     ShaderProgramManager program_mgr_;
+    QString current_active_mesh_uid_;
 };
 
 #endif
