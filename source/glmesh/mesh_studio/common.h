@@ -30,6 +30,8 @@
 #ifndef __common_h__
 #define __common_h__
 
+#include "glmesh/glmesh_basedef.h"
+
 enum ShaderProgramType
 {
     SPT_BACKGROUND,
@@ -41,5 +43,7 @@ enum class MeshRenderMode {
     Wireframe,  // 线框
     Points      // 点
 };
+
+using ProgramTypeId = glmesh::uint32;
 
 #endif

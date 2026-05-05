@@ -31,20 +31,22 @@
 #define __shader_program_manager_h__
 
 #include <map>
+#include "common.h"
 #include "glmesh/kernel/gl/shader_program.h"
-
-using ProgramTypeId = glmesh::uint32;
 
 class ShaderProgramManager
 {
 public:
+    static ShaderProgramManager& Inst();
     void addProgram(ProgramTypeId type_id, std::unique_ptr<glmesh::ShaderProgram> pro);
     glmesh::ShaderProgram* getProgram(ProgramTypeId type_id)const;
     void destory();
-    ShaderProgramManager() = default;
-    ~ShaderProgramManager() = default;
+    ShaderProgramManager& operator=(const ShaderProgramManager&) = delete;
+    ShaderProgramManager(const ShaderProgramManager&) = delete;
 
 private:
+    ShaderProgramManager() = default;
+    ~ShaderProgramManager() = default;
     std::map<ProgramTypeId, std::unique_ptr<glmesh::ShaderProgram>> program_dict_;
 };
 

@@ -36,7 +36,7 @@
 struct Material
 {
     void bind() const;
-    glmesh::ShaderProgram* shader = nullptr;    
+    ProgramTypeId shader_prog_id = -1;    
     glm::vec3 base_color {1.0f, 1.0f, 1.0f};
     glm::vec3 light_dir  {1.0f, -1.0f, -1.0f};
     float ambient  = 0.2f;

@@ -37,7 +37,6 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include "glmesh/kernel/gl/gl_bkg.h"
-#include "shader_program_manager.h"
 #include "renderable_object.h"
 #include "arcball_rotator.h"
 
@@ -82,7 +81,6 @@ private:
     float min_camera_distance_ = 0.0;
     float max_camera_distance_ = 0.0;
     std::unique_ptr<glmesh::GLBkg> gl_bkg_;
-    ShaderProgramManager program_mgr_;
     QString current_active_mesh_uid_;
 };
 

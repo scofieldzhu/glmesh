@@ -30,6 +30,12 @@
 #include "shader_program_manager.h"
 #include "app_log.h"
 
+ShaderProgramManager &ShaderProgramManager::Inst()
+{
+    static ShaderProgramManager inst;
+    return inst;
+}
+
 void ShaderProgramManager::addProgram(ProgramTypeId type_id, std::unique_ptr<glmesh::ShaderProgram> pro)
 {
     if(getProgram(type_id)){

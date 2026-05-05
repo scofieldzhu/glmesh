@@ -29,16 +29,23 @@
  */
 #include "material.h"
 #include "glmesh/kernel/gl/shader_program.h"
-#include <stdexcept>
+#include "shader_program_manager.h"
+#include "app_log.h"
 
 void Material::bind() const
 {
-    if(shader == nullptr){
-        throw std::runtime_error("Material::bind(): shader is null");
+    if(shader_prog_id < 0){
+        APP_LOG_ERROR("Invalid shader program id:{}", shader_prog_id);
+        return;
     }
-    shader->use();
-    shader->setVec3("uBaseColor", base_color);
-    shader->setVec3("uLightDir", light_dir);
-    shader->setFloat("uAmbient", ambient);
-    shader->setFloat("uDiffuse", diffuse);
+    auto shader_prog = ShaderProgramManager::Inst().getProgram(shader_prog_id);
+    if(shader_prog == nullptr){
+        APP_LOG_ERROR("No such program with id:{}", shader_prog_id);
+        return;
+    }
+    shader_prog->use();
+    shader_prog->setVec3("uBaseColor", base_color);
+    shader_prog->setVec3("uLightDir", light_dir);
+    shader_prog->setFloat("uAmbient", ambient);
+    shader_prog->setFloat("uDiffuse", diffuse);
 }

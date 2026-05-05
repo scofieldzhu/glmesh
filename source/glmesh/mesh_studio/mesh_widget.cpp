@@ -44,6 +44,7 @@
 #include "glmesh/kernel/gl/gpu_bkg.h"
 #include "glmesh/kernel/gl/gl_bkg.h"
 #include "common.h"
+#include "shader_program_manager.h"
 #include "app_log.h"
 
 namespace
@@ -133,7 +134,7 @@ MeshWidget::~MeshWidget()
 {
     makeCurrent();
     renderable_objects_.clear();
-    program_mgr_.destory();
+    ShaderProgramManager::Inst().destory();
     doneCurrent();
 }
 
@@ -149,7 +150,7 @@ void MeshWidget::initializeGL()
 
     auto mesh_shader_program = std::make_unique<glmesh::ShaderProgram>();
     mesh_shader_program->createFromSource(kMeshVertexShader, kMeshFragmentShader);
-    program_mgr_.addProgram(SPT_MESH, std::move(mesh_shader_program));
+    ShaderProgramManager::Inst().addProgram(SPT_MESH, std::move(mesh_shader_program));
 
     initGradientBackground();
 
@@ -178,8 +179,7 @@ QString MeshWidget::addMesh(const glmesh::GpuTriangleMesh& mesh_data, const glme
         mesh_ren_obj.uid = mesh_uid;
         mesh_ren_obj.drawable = gl_mesh;
         mesh_ren_obj.bounds = bounds;
-        mesh_ren_obj.shader_type_id = SPT_MESH;
-        mesh_ren_obj.material.shader = program_mgr_.getProgram(mesh_ren_obj.shader_type_id);
+        mesh_ren_obj.material.shader_prog_id = SPT_MESH;
         mesh_ren_obj.material.light_dir = glm::normalize(glm::vec3(-0.0f, -0.0f, -1.0f));
         mesh_ren_obj.material.ambient = 0.7f;
         renderable_objects_.insert({mesh_uid, std::move(mesh_ren_obj)});
@@ -321,7 +321,7 @@ void MeshWidget::drawGradientBackground()
     glDisable(GL_DEPTH_TEST);
     glDepthMask(GL_FALSE);
 
-    program_mgr_.getProgram(SPT_BACKGROUND)->use();
+    ShaderProgramManager::Inst().getProgram(SPT_BACKGROUND)->use();
     gl_bkg_->draw();
 
     glmesh::ShaderProgram::UnuseAny();
@@ -348,14 +348,18 @@ void MeshWidget::drawRenderableObjects()
 
     for(auto& kv : renderable_objects_){
         auto& ren_obj = kv.second;
-        if(!ren_obj.visible || !ren_obj.drawable){
+        if(!ren_obj.visible || !ren_obj.drawable || ren_obj.material.shader_prog_id < 0){
             continue;
         }
         ren_obj.material.bind();
-        ren_obj.material.shader->setMat4("uModel", model);
-        ren_obj.material.shader->setMat4("uView", view);
-        ren_obj.material.shader->setMat4("uProj", proj);
-        ren_obj.material.shader->setMat3("uNormalMatrix", normal_matrix);
+        auto shader_prog = ShaderProgramManager::Inst().getProgram(ren_obj.material.shader_prog_id);
+        if(shader_prog == nullptr){
+            continue;
+        }
+        shader_prog->setMat4("uModel", model);
+        shader_prog->setMat4("uView", view);
+        shader_prog->setMat4("uProj", proj);
+        shader_prog->setMat3("uNormalMatrix", normal_matrix);
         switch(ren_obj.material.render_mode){
             case MeshRenderMode::Facet:
                 glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -421,5 +425,5 @@ void MeshWidget::initGradientBackground()
 
     auto bkg_shader_prog = std::make_unique<glmesh::ShaderProgram>();
     bkg_shader_prog->createFromSource(kBgVertexShader, kBgFrameShader);
-    program_mgr_.addProgram(SPT_BACKGROUND, std::move(bkg_shader_prog));
+    ShaderProgramManager::Inst().addProgram(SPT_BACKGROUND, std::move(bkg_shader_prog));
 }
