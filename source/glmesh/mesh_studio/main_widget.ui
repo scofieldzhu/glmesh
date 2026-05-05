@@ -803,6 +803,31 @@
               </widget>
              </item>
              <item>
+              <widget class="ColorButton" name="ambientClrBtn">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>50</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>50</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+              </widget>
+             </item>
+             <item>
               <widget class="QSlider" name="ambientIntensitySlider">
                <property name="value">
                 <number>75</number>
@@ -835,6 +860,31 @@
               <widget class="QCheckBox" name="diffuseOnCb">
                <property name="text">
                 <string>Diffuse</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="diffuseClrBtn">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>50</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>50</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="text">
+                <string/>
                </property>
               </widget>
              </item>
@@ -1068,6 +1118,11 @@
    <class>MeshWidget</class>
    <extends>QOpenGLWidget</extends>
    <header location="global">mesh_widget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ColorButton</class>
+   <extends>QLabel</extends>
+   <header>color_button.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

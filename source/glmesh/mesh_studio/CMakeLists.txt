@@ -28,6 +28,8 @@ set(SOURCE_FILES
     "material.cpp"
     "arcball_rotator.h"
     "arcball_rotator.cpp"
+    "color_button.h"
+    "color_button.cpp"
     ${CMAKE_SOURCE_DIR}/res/resource.qrc
 )
 
