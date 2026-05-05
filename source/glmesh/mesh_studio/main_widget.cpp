@@ -35,6 +35,9 @@
 #include "app_log.h"
 #include "resource_util.h"
 
+namespace{
+}
+
 MainWidget::MainWidget(QWidget *parent, Qt::WindowFlags flags)
     :QMainWindow(parent, flags)
 {
@@ -49,19 +52,53 @@ MainWidget::MainWidget(QWidget *parent, Qt::WindowFlags flags)
     ui_.modelTreeWidget->setHeaderLabels(header_labels);
     ui_.modelTreeWidget->clear();
 
-    connect(ui_.modelTreeWidget, &QTreeWidget::itemChanged, this, [this](QTreeWidgetItem*item,int column) {
+    connect(ui_.modelTreeWidget, &QTreeWidget::itemChanged, this, [this](QTreeWidgetItem* item, int column) {
         if(column == 1) { 
             bool visible = (item->checkState(1) == Qt::Checked);
-            auto mesh_uid = item->data(0, Qt::UserRole).toString();
+            auto mesh_uid = this->treeItemToMeshUid(item);
             ui_.meshRenderWidget->setMeshVisible(mesh_uid, visible);
         }
     });
-
+    ui_.modelTreeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui_.modelTreeWidget, &QTreeWidget::customContextMenuRequested, this, &MainWidget::onCustomContextMenuRequested);
+    connect(ui_.modelTreeWidget, &QTreeWidget::currentItemChanged, this, &MainWidget::onCurrentItemChanged);
     connect(ui_.actionImportMesh, &QAction::triggered, this, &MainWidget::onImportMeshActionTriggered);
 }
 
 MainWidget::~MainWidget()
 {
+}
+
+void MainWidget::onCustomContextMenuRequested(const QPoint &pos)
+{
+    QTreeWidgetItem* target_item = ui_.modelTreeWidget->itemAt(pos);
+    if(target_item == nullptr){
+        return;
+    }
+    QString mesh_uid = treeItemToMeshUid(target_item);
+    QMenu menu(ui_.modelTreeWidget);
+    QAction* delete_action = menu.addAction(tr("Delete"));
+    QAction* selected_action = menu.exec(ui_.modelTreeWidget->viewport()->mapToGlobal(pos));
+    if(selected_action == delete_action){
+        delete target_item;
+        ui_.meshRenderWidget->removeMesh(mesh_uid);
+        if(ui_.modelTreeWidget->topLevelItemCount()){
+            ui_.modelTreeWidget->setCurrentItem(ui_.modelTreeWidget->topLevelItem(0));
+        }
+    } 
+}
+
+void MainWidget::onCurrentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous)
+{
+    if(current){
+        auto mesh_uid = treeItemToMeshUid(current);
+        ui_.meshRenderWidget->setActiveMesh(mesh_uid);
+    }
+}
+
+QString MainWidget::treeItemToMeshUid(QTreeWidgetItem *item) const
+{
+    return item->data(0, Qt::UserRole).toString();
 }
 
 void MainWidget::onImportMeshActionTriggered()
@@ -84,7 +121,7 @@ void MainWidget::onImportMeshActionTriggered()
     APP_LOG_TRACE("Center:{} radius:{}", GlmVec3ToStr(mesh_bound_opt->center), mesh_bound_opt->radius);
     glmesh::GpuTriangleMesh gpu_triangle_mesh = glmesh::ToGpuTriangleMesh(triangle_mesh);
     MeshWidget::UpdateError err;
-    QString mesh_uid = ui_.meshRenderWidget->updateMesh(gpu_triangle_mesh, *mesh_bound_opt, &err);
+    QString mesh_uid = ui_.meshRenderWidget->addMesh(gpu_triangle_mesh, *mesh_bound_opt, &err);
     if(mesh_uid.isEmpty()){
         APP_LOG_ERROR("updateMesh failed! err code:{}", (int)err);
         return;

@@ -156,7 +156,7 @@ void MeshWidget::initializeGL()
     gl_initialized_ = true;
 }
 
-QString MeshWidget::updateMesh(const glmesh::GpuTriangleMesh& mesh_data, const glmesh::Bounds3D& bounds, UpdateError* out_err)
+QString MeshWidget::addMesh(const glmesh::GpuTriangleMesh& mesh_data, const glmesh::Bounds3D& bounds, UpdateError* out_err)
 {
     if(!gl_initialized_){
         if(out_err){
@@ -182,7 +182,7 @@ QString MeshWidget::updateMesh(const glmesh::GpuTriangleMesh& mesh_data, const g
         mesh_ren_obj.material.shader = program_mgr_.getProgram(mesh_ren_obj.shader_type_id);
         mesh_ren_obj.material.light_dir = glm::normalize(glm::vec3(-0.0f, -0.0f, -1.0f));
         mesh_ren_obj.material.ambient = 0.7f;
-        renderable_objects_.push_back(std::move(mesh_ren_obj));
+        renderable_objects_.insert({mesh_uid, std::move(mesh_ren_obj)});
     }
 
     // 1. 设置模型居中偏移
@@ -214,18 +214,36 @@ QString MeshWidget::updateMesh(const glmesh::GpuTriangleMesh& mesh_data, const g
     return mesh_uid;
 }
 
+void MeshWidget::removeMesh(const QString &mesh_uid)
+{
+    {
+        std::lock_guard lock(renderable_objects_mutex_);
+        if(renderable_objects_.contains(mesh_uid)){
+            renderable_objects_.erase(mesh_uid);
+        }else{
+            APP_LOG_WARN("No such mesh with uid:{}", QStrToLogStr(mesh_uid));
+        }
+        update();
+    }
+}
+
 void MeshWidget::setMeshVisible(const QString &uid, bool visible)
 {
     {
         std::lock_guard lock(renderable_objects_mutex_);
-        for(auto& obj : renderable_objects_){
-            if(obj.uid != uid){
-                continue;
-            }
-            obj.visible = visible;
+        if(renderable_objects_.contains(uid)){
+            renderable_objects_[uid].visible = visible;
+        }else{
+            APP_LOG_WARN("No such mesh with uid:{}", QStrToLogStr(uid));
         }
     }
     update();    
+}
+
+void MeshWidget::setActiveMesh(const QString &mesh_uid)
+{
+
+    update();
 }
 
 void MeshWidget::resizeGL(int w, int h)
@@ -244,40 +262,15 @@ void MeshWidget::paintGL()
 
 void MeshWidget::mousePressEvent(QMouseEvent* event)
 {
-    if (event->buttons() & Qt::LeftButton) {
-        last_arcball_vec_ = getArcballVector(event->pos());
+    if(event->buttons() & Qt::LeftButton) {
+        ball_rotator_.onStartRotationEvent(event, size());
     }
 }
 
 void MeshWidget::mouseMoveEvent(QMouseEvent* event)
 {
-    if (event->buttons() & Qt::LeftButton) {
-        // 获取当前鼠标在球体上的三维向量
-        glm::vec3 current_arcball_vec = getArcballVector(event->pos());
-        
-        // 计算两个向量的夹角余弦值
-        float dot_prod = glm::dot(last_arcball_vec_, current_arcball_vec);
-        // 防止浮点数精度问题导致 acos 越界返回 NaN
-        dot_prod = glm::clamp(dot_prod, -1.0f, 1.0f); 
-        
-        // 计算旋转角度
-        float angle = std::acos(dot_prod);
-        
-        if (angle > 1e-5f) { // 如果确实发生了移动
-            // 通过叉乘得到旋转轴 (右手定则)
-            glm::vec3 axis = glm::cross(last_arcball_vec_, current_arcball_vec);
-            axis = glm::normalize(axis);
-            
-            // 构建这一次移动产生的旋转四元数
-            glm::quat delta_rotation = glm::angleAxis(angle, axis);
-            
-            // 将本次旋转叠加到总旋转上 (注意乘法顺序)
-            model_rotation_ = delta_rotation * model_rotation_;
-        }
-        
-        // 更新记录，用于下一帧计算
-        last_arcball_vec_ = current_arcball_vec;
-        
+    if(event->buttons() & Qt::LeftButton) {
+        ball_rotator_.onUpdateMousePos(event, size());
         update(); // 触发重绘
     }    
 }
@@ -322,17 +315,17 @@ void MeshWidget::drawRenderableObjects()
         return;
     }
     glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -camera_distance_));
-    view = view * glm::mat4_cast(model_rotation_); 
+    view = view * ball_rotator_.getRotationMat(); 
 
     glm::mat4 model = glm::translate(glm::mat4(1.0f), mesh_center_offset_);
 
     const float aspect = height() > 0 ? static_cast<float>(width()) / static_cast<float>(height()) : 1.0f;
     glm::mat4 proj = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 1000.0f);
 
-    // 引入 glm::inverse 和 glm::transpose
     glm::mat3 normal_matrix = glm::transpose(glm::inverse(glm::mat3(model)));
 
-    for(auto ren_obj : renderable_objects_){
+    for(auto& kv : renderable_objects_){
+        auto& ren_obj = kv.second;
         if(!ren_obj.visible || !ren_obj.drawable){
             continue;
         }
@@ -363,27 +356,4 @@ void MeshWidget::initGradientBackground()
     auto bkg_shader_prog = std::make_unique<glmesh::ShaderProgram>();
     bkg_shader_prog->createFromSource(kBgVertexShader, kBgFrameShader);
     program_mgr_.addProgram(SPT_BACKGROUND, std::move(bkg_shader_prog));
-}
-
-glm::vec3 MeshWidget::getArcballVector(const QPoint& pt)const
-{
-    // 1. 将鼠标坐标归一化到 [-1, 1] 的 NDC 空间
-    // 注意：Qt的Y轴向下，OpenGL的Y轴向上，所以Y要做 1.0 - ... 的反转
-    float x = (2.0f * pt.x() / width()) - 1.0f;
-    float y = 1.0f - (2.0f * pt.y() / height()); 
-    
-    glm::vec3 P(x, y, 0.0f);
-    
-    // 2. 计算点到屏幕中心的距离的平方
-    float OP_squared = x * x + y * y;
-    
-    if (OP_squared <= 1.0f) {
-        // 如果点在球体内（勾股定理求 Z）
-        P.z = std::sqrt(1.0f - OP_squared); 
-    } else {
-        // 如果点在球体外，把它拉回球面上（Z = 0）
-        P = glm::normalize(P); 
-    }
-    
-    return P;
 }

@@ -4,7 +4,7 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates 
  *  coherent OpenGL.
  *  
- *  File: main_widget.h
+ *  File: arcball_rotator.h
  *  Copyright (c) 2024-2026 scofieldzhu
  *  
  *  MIT License
@@ -27,28 +27,24 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *  SOFTWARE.
  */
-#ifndef __main_widget_h__
-#define __main_widget_h__
+#ifndef __arcball_rotator_h__
+#define __arcball_rotator_h__
 
-#include <QMainWindow>
-#include "ui_main_widget.h"
+#include <QMouseEvent>
+#include <glm/gtc/quaternion.hpp>
+#include "glmesh/kernel/glmesh_kernel_typedef.h"
 
-class MainWidget : public QMainWindow
+class ArcBallRotator
 {
-    Q_OBJECT
-
 public:
-    MainWidget(QWidget *parent = nullptr, Qt::WindowFlags flags = Qt::WindowFlags());
-    ~MainWidget();
-
-private slots:
-    void onImportMeshActionTriggered();
-    void onCustomContextMenuRequested(const QPoint &pos);
-    void onCurrentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous);
+    void onUpdateMousePos(QMouseEvent* event, const QSize& event_widget_size);
+    void onStartRotationEvent(QMouseEvent* event, const QSize& event_widget_size);
+    glm::mat4 getRotationMat()const;
 
 private:
-    QString treeItemToMeshUid(QTreeWidgetItem* item)const;
-    Ui::MainWidget ui_;
+    glm::vec3 getArcballVector(const QPoint& pt, const int widget_width, const int widget_height)const;
+    glm::vec3 last_arcball_vec_;  
+    glm::quat model_rotation_ = glm::quat(1.0f, 0.0f, 0.0f, 0.0f); // 记录累积的旋转（四元数）
 };
 
 #endif

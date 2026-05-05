@@ -39,6 +39,7 @@
 #include "glmesh/kernel/gl/gl_bkg.h"
 #include "shader_program_manager.h"
 #include "renderable_object.h"
+#include "arcball_rotator.h"
 
 class MeshWidget : public QOpenGLWidget 
 {
@@ -50,8 +51,10 @@ public:
         EmptyData,
         NotInitialized
     };
-    QString updateMesh(const glmesh::GpuTriangleMesh& mesh_data, const glmesh::Bounds3D& mb, UpdateError* outError = nullptr);
+    QString addMesh(const glmesh::GpuTriangleMesh& mesh_data, const glmesh::Bounds3D& mb, UpdateError* outError = nullptr);
+    void removeMesh(const QString& mesh_uid);
     void setMeshVisible(const QString& uid, bool visible);
+    void setActiveMesh(const QString& mesh_uid);
     explicit MeshWidget(QWidget* parent = nullptr);
     ~MeshWidget() override;
 
@@ -67,11 +70,10 @@ private:
     void drawRenderableObjects();
     glm::vec3 getArcballVector(const QPoint& pt)const;
     std::mutex renderable_objects_mutex_;
-    std::vector<RenderableObject> renderable_objects_;    
+    std::unordered_map<QString, RenderableObject> renderable_objects_;
     float camera_distance_ = 100.0f;
     bool gl_initialized_ = false;
-    glm::quat model_rotation_ = glm::quat(1.0f, 0.0f, 0.0f, 0.0f); // 记录累积的旋转（四元数）
-    glm::vec3 last_arcball_vec_;   
+    ArcBallRotator ball_rotator_;
     glm::vec3 mesh_center_offset_;
     float min_camera_distance_ = 0.0;
     float max_camera_distance_ = 0.0;
