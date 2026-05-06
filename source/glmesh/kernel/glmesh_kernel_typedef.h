@@ -4,7 +4,7 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates 
  *  coherent OpenGL.
  *  
- *  File: glm_kernel_basetype.h 
+ *  File: glmesh_kernel_basetype.h 
  *  Copyright (c) 2024-2024 scofieldzhu
  *  
  *  MIT License

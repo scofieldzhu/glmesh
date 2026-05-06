@@ -4,8 +4,8 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates 
  *  coherent OpenGL.
  *  
- *  File: glmesh_kernel_export.h 
- *  Copyright (c) 2024-2024 scofieldzhu
+ *  File: glmesh_render_typedef.h 
+ *  Copyright (c) 2024-2026 scofieldzhu
  *  
  *  MIT License
  *  
@@ -27,29 +27,19 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *  SOFTWARE.
  */
-#ifndef __glmesh_kernel_export_h__
-#define __glmesh_kernel_export_h__
+#ifndef __glmesh_render_typedef_h__
+#define __glmesh_render_typedef_h__
 
-#include "glmesh/glmesh_nsp.h"
+#include <glm/glm.hpp>
+#include <glm/mat4x4.hpp>
+#include <glm/vec3.hpp>
+#include "glmesh/glmesh_basedef.h"
+#include "glmesh/render/glmesh_render_export.h"
 
-#if defined(_WIN32) || defined(WIN32) || defined(_WIN64) || defined(WIN64) || defined(_WINDOWS) || defined(_WINDLL) 
-    #define PLATFORM_WINDOWS  
-#elif defined(__linux__)  
-    #define PLATFORM_LINUX  
-#elif defined(__APPLE__)  
-    #define PLATFORM_MACOS  
-#endif  
+GLMESH_NAMESPACE_BEGIN
 
-#if defined(PLATFORM_WINDOWS)  
-    #if defined(GLMESH_KERNEL_EXPORT)  
-        #define GLMESH_KERNEL_API __declspec(dllexport)  
-    #else  
-        #define GLMESH_KERNEL_API __declspec(dllimport)  
-    #endif  
-#elif defined(PLATFORM_LINUX) || defined(PLATFORM_MACOS)  
-    #define GLMESH_KERNEL_API __attribute__((visibility("default")))  
-#else  
-    #define GLMESH_KERNEL_API  
-#endif 
+
+GLMESH_NAMESPACE_END
+
 
 #endif

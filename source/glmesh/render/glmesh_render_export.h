@@ -4,8 +4,8 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates 
  *  coherent OpenGL.
  *  
- *  File: glmesh_kernel_export.h 
- *  Copyright (c) 2024-2024 scofieldzhu
+ *  File: glm_render_export.h 
+ *  Copyright (c) 2024-2026 scofieldzhu
  *  
  *  MIT License
  *  
@@ -27,8 +27,8 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *  SOFTWARE.
  */
-#ifndef __glmesh_kernel_export_h__
-#define __glmesh_kernel_export_h__
+#ifndef __glmesh_render_export_h__
+#define __glmesh_render_export_h__
 
 #include "glmesh/glmesh_nsp.h"
 
@@ -41,15 +41,15 @@
 #endif  
 
 #if defined(PLATFORM_WINDOWS)  
-    #if defined(GLMESH_KERNEL_EXPORT)  
-        #define GLMESH_KERNEL_API __declspec(dllexport)  
+    #if defined(GLMESH_RENDER_EXPORT)  
+        #define GLMESH_RENDER_API __declspec(dllexport)  
     #else  
-        #define GLMESH_KERNEL_API __declspec(dllimport)  
+        #define GLMESH_RENDER_API __declspec(dllimport)  
     #endif  
 #elif defined(PLATFORM_LINUX) || defined(PLATFORM_MACOS)  
-    #define GLMESH_KERNEL_API __attribute__((visibility("default")))  
+    #define GLMESH_RENDER_API __attribute__((visibility("default")))  
 #else  
-    #define GLMESH_KERNEL_API  
+    #define GLMESH_RENDER_API  
 #endif 
 
 #endif
