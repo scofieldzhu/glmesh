@@ -40,24 +40,24 @@ GLMESH_NAMESPACE_BEGIN
 class GLMESH_RENDER_API Camera
 {
 public:
-    enum class ProjectionType {
+    enum class ProjectionType{
         Perspective,
         Orthographic
     };
     void setProjectionType(ProjectionType type);
-    ProjectionType projectionType() const;
+    ProjectionType projectionType() const{ return projection_type_; }
     void reset();
     void setViewport(int width, int height);
     void setPerspective(float fov_y_deg, float near_plane, float far_plane);
     void setOrthographicScale(float scale);
     void setCenter(const glm::vec3& center);
-    const glm::vec3& center() const;
+    const glm::vec3& center() const{ return center_; }
     void setCenterOffset(const glm::vec3& center_offset);
-    const glm::vec3& centerOffset() const;
+    const glm::vec3& centerOffset() const{ return center_offset_; }
     void setDistance(float distance);
-    float distance() const;
+    float distance() const{ return distance_; }
     void setRotation(const glm::quat& rotation);
-    const glm::quat& rotation() const;
+    const glm::quat& rotation() const{ return rotation_; }
     void fitBounds(const glm::vec3& min_bound, const glm::vec3& max_bound);
     void fitBounds(const glm::vec3& center, float radius);
     void zoomByWheelDelta(float wheel_delta);
@@ -78,21 +78,21 @@ public:
 
 private:
     float clampDistance(float distance) const;
-    ProjectionType projection_type_{ProjectionType::Perspective};
-    int viewport_width_{1};
-    int viewport_height_{1};
-    glm::vec3 center_{0.0f, 0.0f, 0.0f};
-    glm::vec3 center_offset_{0.0f, 0.0f, 0.0f};
-    float distance_{100.0f};
-    float min_distance_{1.0f};
-    float max_distance_{1000.0f};
-    glm::quat rotation_{1.0f, 0.0f, 0.0f, 0.0f};
-    float fov_y_deg_{45.0f};
-    float near_plane_{0.1f};
-    float far_plane_{1000.0f};
-    float orthographic_scale_{10.0f};
-    float orbit_sensitivity_{0.005f};
-    float pan_sensitivity_{0.0015f};
+    ProjectionType projection_type_ = ProjectionType::Perspective;
+    int viewport_width_ = 1;
+    int viewport_height_ = 1;
+    glm::vec3 center_ = {0.0f, 0.0f, 0.0f};
+    glm::vec3 center_offset_ = {0.0f, 0.0f, 0.0f};
+    float distance_ = 100.0f;
+    float min_distance_ = 1.0f;
+    float max_distance_ = 1000.0f;
+    glm::quat rotation_ = {1.0f, 0.0f, 0.0f, 0.0f};
+    float fov_y_deg_ = 45.0f;
+    float near_plane_ = 0.1f;
+    float far_plane_ = 1000.0f;
+    float orthographic_scale_ = 10.0f;
+    float orbit_sensitivity_ = 0.005f;
+    float pan_sensitivity_ = 0.0015f;
 };
 
 GLMESH_NAMESPACE_END

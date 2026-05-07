@@ -72,11 +72,6 @@ void Camera::setProjectionType(ProjectionType type)
     projection_type_ = type;
 }
 
-Camera::ProjectionType Camera::projectionType() const
-{
-    return projection_type_;
-}
-
 void Camera::setPerspective(float fov_y_deg, float near_plane, float far_plane)
 {
     fov_y_deg_ = std::clamp(fov_y_deg, 1.0f, 120.0f);
@@ -94,19 +89,9 @@ void Camera::setCenter(const glm::vec3& center)
     center_ = center;
 }
 
-const glm::vec3& Camera::center() const
-{
-    return center_;
-}
-
 void Camera::setCenterOffset(const glm::vec3& center_offset)
 {
     center_offset_ = center_offset;
-}
-
-const glm::vec3& Camera::centerOffset() const
-{
-    return center_offset_;
 }
 
 void Camera::setDistance(float distance)
@@ -114,55 +99,37 @@ void Camera::setDistance(float distance)
     distance_ = clampDistance(distance);
 }
 
-float Camera::distance() const
-{
-    return distance_;
-}
-
 void Camera::setRotation(const glm::quat& rotation)
 {
     rotation_ = glm::normalize(rotation);
-}
-
-const glm::quat& Camera::rotation() const
-{
-    return rotation_;
 }
 
 void Camera::fitBounds(const glm::vec3& min_bound, const glm::vec3& max_bound)
 {
     glm::vec3 center = (min_bound + max_bound) * 0.5f;
     float radius = glm::length(max_bound - min_bound) * 0.5f;
-
     fitBounds(center, radius);
 }
 
 void Camera::fitBounds(const glm::vec3& center, float radius)
 {
-    if (radius <= 0.000001f) {
+    if(radius <= 0.000001f){
         radius = 1.0f;
     }
-
     center_ = center;
     center_offset_ = -center;
-
     distance_ = radius * 2.0f;
-
     min_distance_ = radius * 1.2f;
     max_distance_ = radius * 10.0f;
-
     near_plane_ = std::max(radius * 0.01f, 0.001f);
-    far_plane_ = std::max(radius * 20.0f, distance_ + radius * 10.0f);
-
+    far_plane_ = radius * 20.0f;
     orthographic_scale_ = radius * 2.0f;
 }
 
 void Camera::zoomByWheelDelta(float wheel_delta)
 {
     float scroll_amount = wheel_delta / 120.0f;
-
     float step = (max_distance_ - min_distance_) * 0.05f;
-
     distance_ -= scroll_amount * step;
     distance_ = clampDistance(distance_);
 }
@@ -171,8 +138,7 @@ void Camera::zoom(float factor)
 {
     factor = std::clamp(factor, 0.05f, 20.0f);
     distance_ = clampDistance(distance_ * factor);
-
-    if (projection_type_ == ProjectionType::Orthographic) {
+    if(projection_type_ == ProjectionType::Orthographic) {
         orthographic_scale_ = std::max(0.0001f, orthographic_scale_ * factor);
     }
 }
@@ -180,11 +146,7 @@ void Camera::zoom(float factor)
 void Camera::pan(float delta_x, float delta_y)
 {
     float scale = distance_ * pan_sensitivity_;
-
-    glm::vec3 offset =
-        -right() * delta_x * scale +
-         up()    * delta_y * scale;
-
+    glm::vec3 offset = -right() * delta_x * scale + up() * delta_y * scale;
     center_ += offset;
     center_offset_ = -center_;
 }
@@ -200,20 +162,14 @@ void Camera::orbit(float delta_x, float delta_y)
 
 glm::mat4 Camera::viewMatrix() const
 {
-    glm::mat4 view = glm::translate(
-        glm::mat4(1.0f),
-        glm::vec3(0.0f, 0.0f, -distance_)
-    );
+    glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -distance_));
     view = view * glm::toMat4(rotation_);
     return view;
 }
 
 glm::mat4 Camera::viewMatrix(const glm::mat4& external_rotation) const
 {
-    glm::mat4 view = glm::translate(
-        glm::mat4(1.0f),
-        glm::vec3(0.0f, 0.0f, -distance_)
-    );
+    glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -distance_));
     view = view * external_rotation;
     return view;
 }
@@ -221,27 +177,12 @@ glm::mat4 Camera::viewMatrix(const glm::mat4& external_rotation) const
 glm::mat4 Camera::projectionMatrix() const
 {
     float aspect = aspectRatio();
-
     if(projection_type_ == ProjectionType::Perspective) {
-        return glm::perspective(
-            glm::radians(fov_y_deg_),
-            aspect,
-            near_plane_,
-            far_plane_
-        );
+        return glm::perspective(glm::radians(fov_y_deg_), aspect, near_plane_, far_plane_);
     }
-
     float half_height = orthographic_scale_ * 0.5f;
     float half_width = half_height * aspect;
-
-    return glm::ortho(
-        -half_width,
-         half_width,
-        -half_height,
-         half_height,
-         near_plane_,
-         far_plane_
-    );
+    return glm::ortho(-half_width, half_width, -half_height, half_height, near_plane_, far_plane_);
 }
 
 glm::mat4 Camera::modelCenterMatrix() const
@@ -271,8 +212,7 @@ glm::vec3 Camera::up() const
 
 float Camera::aspectRatio() const
 {
-    return static_cast<float>(viewport_width_) /
-           static_cast<float>(viewport_height_);
+    return static_cast<float>(viewport_width_) / static_cast<float>(viewport_height_);
 }
 
 float Camera::clampDistance(float distance) const

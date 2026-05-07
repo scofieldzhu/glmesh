@@ -39,6 +39,7 @@
 #include "glmesh/kernel/gl/gl_bkg.h"
 #include "renderable_object.h"
 #include "arcball_rotator.h"
+#include "glmesh/render/camera.h"
 
 class MeshWidget : public QOpenGLWidget 
 {
@@ -74,14 +75,11 @@ private:
     void handleMeshBoundsChanged(const glmesh::Bounds3D& bounds);
     std::mutex renderable_objects_mutex_;
     std::unordered_map<QString, RenderableObject> renderable_objects_;
-    float camera_distance_ = 100.0f;
     bool gl_initialized_ = false;
     ArcBallRotator ball_rotator_;
-    glm::vec3 mesh_center_offset_;
-    float min_camera_distance_ = 0.0;
-    float max_camera_distance_ = 0.0;
     std::unique_ptr<glmesh::GLBkg> gl_bkg_;
     QString current_active_mesh_uid_;
+    glmesh::Camera active_camera_;
 };
 
 #endif

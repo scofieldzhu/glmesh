@@ -29,7 +29,13 @@
  */
 #include "arcball_rotator.h"
 
-void ArcBallRotator::onUpdateMousePos(QMouseEvent* event, const QSize& event_widget_size)
+void ArcBallRotator::reset()
+{
+    model_rotation_ = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+    last_arcball_vec_ = {1.0, 0.0, 0.0};
+}
+
+void ArcBallRotator::onUpdateMousePos(QMouseEvent *event, const QSize &event_widget_size)
 {
     // 获取当前鼠标在球体上的三维向量
     glm::vec3 current_arcball_vec = getArcballVector(event->pos(), event_widget_size.width(), event_widget_size.height());

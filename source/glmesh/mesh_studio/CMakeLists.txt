@@ -50,5 +50,6 @@ target_link_libraries(${target} PRIVATE
     Qt5::Gui
     Qt5::Widgets
     glmesh.kernel
+    glmesh.render
     opengl32
 )

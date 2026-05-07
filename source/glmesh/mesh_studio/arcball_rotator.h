@@ -37,6 +37,7 @@
 class ArcBallRotator
 {
 public:
+    void reset();
     void onUpdateMousePos(QMouseEvent* event, const QSize& event_widget_size);
     void onStartRotationEvent(QMouseEvent* event, const QSize& event_widget_size);
     glm::mat4 getRotationMat()const;

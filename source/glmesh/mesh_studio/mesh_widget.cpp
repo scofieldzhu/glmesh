@@ -271,6 +271,7 @@ bool MeshWidget::isValidMesh(const QString &uid) const
 void MeshWidget::resizeGL(int w, int h)
 {
     ::glViewport(0, 0, w, h);
+    active_camera_.setViewport(w, h);
 }
 
 void MeshWidget::paintGL()
@@ -299,20 +300,7 @@ void MeshWidget::mouseMoveEvent(QMouseEvent* event)
 
 void MeshWidget::wheelEvent(QWheelEvent* event)
 {
-    float scroll_amount = event->angleDelta().y() / 120.0f;
-    
-    // 缩放步长也可以跟模型尺寸挂钩，大模型缩放快，小模型缩放慢
-    float step = (max_camera_distance_ - min_camera_distance_) * 0.05f; 
-    
-    camera_distance_ -= scroll_amount * step;
-    
-    // 应用最小和最大距离限制，防止穿模和丢失
-    if (camera_distance_ < min_camera_distance_) {
-        camera_distance_ = min_camera_distance_;
-    }
-    if (camera_distance_ > max_camera_distance_) {
-        camera_distance_ = max_camera_distance_;
-    }
+    active_camera_.zoomByWheelDelta(event->angleDelta().y());
     update(); // 仅在视角变化时要求重绘
 }
 
@@ -336,14 +324,10 @@ void MeshWidget::drawRenderableObjects()
     if(renderable_objects_.empty()){
         return;
     }
-    glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -camera_distance_));
-    view = view * ball_rotator_.getRotationMat(); 
 
-    glm::mat4 model = glm::translate(glm::mat4(1.0f), mesh_center_offset_);
-
-    const float aspect = height() > 0 ? static_cast<float>(width()) / static_cast<float>(height()) : 1.0f;
-    glm::mat4 proj = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 1000.0f);
-
+    auto view = active_camera_.viewMatrix(ball_rotator_.getRotationMat());
+    auto model = active_camera_.modelCenterMatrix();
+    auto proj = active_camera_.projectionMatrix();
     glm::mat3 normal_matrix = glm::transpose(glm::inverse(glm::mat3(model)));
 
     for(auto& kv : renderable_objects_){
@@ -388,24 +372,8 @@ void MeshWidget::drawRenderableObjects()
 
 void MeshWidget::handleMeshBoundsChanged(const glmesh::Bounds3D& bounds)
 {
-    // 1. 设置模型居中偏移
-    // 渲染时，我们要把模型从它原本的中心点平移到原点 (0,0,0)
-    // 所以 model 矩阵需要加上 translate(-center_x, -center_y, -center_z)
-    mesh_center_offset_ = -bounds.center;
-    
-    // 2. 自适应相机距离
-    // 如果想要模型在视野中大小合适，可以根据它的包围球半径来设置
-    // 假设 FOV 是 45 度，相机距离通常设置为半径的 2 到 3 倍
-    camera_distance_ = bounds.radius * 2.0f;
-    
-    // 3. 设置滚轮缩放限制
-    // 防止滚轮滑得太近直接穿模，或者滑得太远看不见
-    min_camera_distance_ = bounds.radius * 1.2f;  // 至少离模型表面一点点
-    max_camera_distance_ = bounds.radius * 10.0f; // 最远不超过半径的10倍
-    
-    // 4. 重置相机的旋转状态
-    // 重置 Arcball 或者四元数等状态，保证每次换模型都是正对的
-    // ...
+    active_camera_.fitBounds(bounds.center, bounds.radius);
+    ball_rotator_.reset();
 }
 
 void MeshWidget::initGradientBackground()
