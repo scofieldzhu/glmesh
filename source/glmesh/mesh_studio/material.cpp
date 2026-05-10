@@ -45,5 +45,5 @@ void Material::bind() const
     }
     shader_prog->use();
     shader_prog->setVec3("uObjectColor", base_color);
-    shader_prog->setBool("uUseVertexColor", diffuse);
+    shader_prog->setBool("uUseVertexColor", use_vertex_color);
 }

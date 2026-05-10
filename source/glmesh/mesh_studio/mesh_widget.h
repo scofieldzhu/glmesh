@@ -57,14 +57,12 @@ public:
     void setActiveMesh(const QString& mesh_uid);
     QString activeMesh()const{ return current_active_mesh_uid_; }
     bool isValidMesh(const QString& uid)const;
-    void setAmbientLightEnabled(bool enabled);
     void setAmbientLight(const QColor& color, double factor);
     QColor ambientLightColor()const{ return ToColor(ambient_light_color_); }
     void setDiffuseLightEnabled(bool enabled);
     void setDiffuseLightColor(const QColor& color);
     QColor diffuseLightColor()const{ return ToColor(diffuse_light_color_); }
     void setLightDirection(const glm::vec3& dir);
-
     explicit MeshWidget(QWidget* parent = nullptr);
     ~MeshWidget() override;
 
@@ -86,14 +84,11 @@ private:
     std::unique_ptr<glmesh::GLBkg> gl_bkg_;
     QString current_active_mesh_uid_;
     glmesh::Camera active_camera_;
-
-    bool ambient_light_on_ = true;
     double ambient_factor_ = 1.0f;
     glm::vec3 ambient_light_color_{1.0f, 1.0f, 1.0f};
-    glm::vec3 diffuse_light_color_{1.0f, 0.0f, 0.0f};
+    glm::vec3 diffuse_light_color_{1.0f, 0.0f, 0.0f};    
     bool diffuse_light_on_ = true;
-    // 光照方向 (默认从右上方往左下方打光，世界坐标系)
-    glm::vec3 light_dir_{1.0f, 1.0f, 1.0f}; 
+    glm::vec3 light_dir_{1.0f, 1.0f, 1.0f};  // 光照方向 (默认从右上方往左下方打光，世界坐标系)
 };
 
 #endif

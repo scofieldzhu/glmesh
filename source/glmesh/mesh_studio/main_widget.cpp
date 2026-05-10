@@ -36,6 +36,7 @@
 #include "resource_util.h"
 
 namespace{
+    constexpr double kDefaultAmbientFactor = 0.2;
 }
 
 MainWidget::MainWidget(QWidget *parent, Qt::WindowFlags flags)
@@ -76,23 +77,21 @@ MainWidget::MainWidget(QWidget *parent, Qt::WindowFlags flags)
     connect(ui_.ambientClrBtn, &ColorButton::colorChanged, this, [this](const QColor& clr){
         this->ui_.meshRenderWidget->setAmbientLight(clr, this->ui_.ambientIntensitySlider->value());
     });
-    connect(ui_.ambientOnCb, &QAbstractButton::toggled, this, [this](bool chk){
-        ui_.ambientIntensitySlider->setEnabled(chk);
-        ui_.ambientClrBtn->setEnabled(chk);
-        this->ui_.meshRenderWidget->setAmbientLightEnabled(chk);
-        this->ui_.meshRenderWidget->setAmbientLight(ui_.ambientClrBtn->color(), this->ui_.ambientIntensitySlider->value());
-    });
     connect(ui_.ambientIntensitySlider, &QSlider::valueChanged, this, &MainWidget::onAmbientIntensitySliderValueChanged);
+    connect(ui_.diffuseOnCb, &QAbstractButton::toggled, this, [this](bool chk){
+        ui_.meshRenderWidget->setDiffuseLightEnabled(chk);
+        ui_.diffuseClrBtn->setEnabled(chk);
+        if(!chk){
+            ui_.ambientIntensitySlider->setValue(ui_.ambientIntensitySlider->maximum());
+        }else{
+            ui_.ambientIntensitySlider->setValue(static_cast<int>((ui_.ambientIntensitySlider->maximum() - ui_.ambientIntensitySlider->minimum()) * kDefaultAmbientFactor));        
+        }       
+    });
     connect(ui_.diffuseClrBtn, &ColorButton::colorChanged, this, [this](const QColor& clr){
         this->ui_.meshRenderWidget->setDiffuseLightColor(clr);
     });
-    connect(ui_.diffuseOnCb, &QAbstractButton::toggled, this, [this](bool chk){
-        ui_.diffuseClrBtn->setEnabled(chk);
-        this->ui_.meshRenderWidget->setDiffuseLightEnabled(chk);
-        this->ui_.meshRenderWidget->setDiffuseLightColor(ui_.diffuseClrBtn->color());        
-    });
-    ui_.ambientOnCb->setChecked(false);
-    ui_.diffuseOnCb->setChecked(false);
+    ui_.ambientIntensitySlider->setValue(static_cast<int>((ui_.ambientIntensitySlider->maximum() - ui_.ambientIntensitySlider->minimum()) * kDefaultAmbientFactor));
+    ui_.diffuseOnCb->setChecked(true);
 }
 
 MainWidget::~MainWidget()

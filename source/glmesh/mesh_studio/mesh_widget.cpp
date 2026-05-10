@@ -72,9 +72,12 @@ namespace
 
         out vec3 vNormal;
         out vec3 vColor;
+        out vec3 vFragPos; // 传给片元着色器的世界坐标
 
         void main()
         {
+            vec4 worldPos = uModel * vec4(aPosition, 1.0);
+            vFragPos = worldPos.xyz; // 记录世界坐标
             gl_Position = uProj * uView * uModel * vec4(aPosition, 1.0);            
             vNormal = uNormalMatrix * aNormal; 
             vColor = aColor;
@@ -86,35 +89,59 @@ namespace
         #version 330 core
         in vec3 vNormal;
         in vec3 vColor;
+        in vec3 vFragPos; // 接收世界坐标
 
         out vec4 FragColor;
 
         uniform vec3 uObjectColor;  
         uniform bool uUseVertexColor;    
-        uniform bool uUseAmbient;
         uniform float uAmbientFactor;
         uniform vec3 uAmbientLightColor; 
         uniform bool uUseDiffuse;
         uniform vec3 uDiffuseLightColor; 
         uniform vec3 uLightDir;  
 
+        // 【新增】相机位置，用于算高光视线角度
+        uniform vec3 uViewPos;
+
         void main()
         {
             vec3 baseColor = uUseVertexColor ? vColor : uObjectColor;
+            vec3 ambient = uAmbientFactor * uAmbientLightColor * baseColor;
 
-            vec3 ambient = vec3(0.0);
-            if(uUseAmbient){
-                ambient = uAmbientFactor * uAmbientLightColor * baseColor;
-            }
-            vec3 N = normalize(vNormal);
-            vec3 L = normalize(-uLightDir);
-            float diff = max(dot(N, L), 0.0);
             vec3 diffuse = vec3(0.0);
+            vec3 specular = vec3(0.0); // 【新增】高光颜色
             if(uUseDiffuse){
+                vec3 N;
+                // 关键防御逻辑：如果顶点法线无效(长度接近0)，则实时生成 Flat 法线
+                if (length(vNormal) < 0.01) {
+                    vec3 fdx = dFdx(vFragPos);
+                    vec3 fdy = dFdy(vFragPos);
+                    N = normalize(cross(fdx, fdy));
+                } else {
+                    N = normalize(vNormal);
+                }
+                // L 向量：光源方向取反（指向光源）
+                vec3 L = normalize(-uLightDir);
+                // 为了防止在模型背面变全黑，可以使用 abs(dot) 实现双面光照 (Double-sided lighting)
+                // 这在查看内部拓扑时非常有用
+                float diff = max(dot(N, L), 0.0);
                 diffuse = diff * uDiffuseLightColor * baseColor;
+
+                // 3. 【新增】镜面高光 (Specular) - Blinn-Phong 模型
+                vec3 viewDir = normalize(uViewPos - vFragPos); // 从片元指向相机的视线
+                vec3 halfVector = normalize(L + viewDir);      // 光线与视线的半程向量
+                
+                // 只有被光照到的面（diff > 0）才有高光
+                if (diff > 0.0) {
+                    // 32.0 是反光度(Shininess)，值越大光斑越小越锐利(像金属)，越小光斑越散(像塑料)
+                    float spec = pow(max(dot(N, halfVector), 0.0), 32.0);
+                    // 高光一般用光源颜色（这里让它稍微偏白一点，效果更好）
+                    specular = spec * uDiffuseLightColor; 
+                }
             }
-            vec3 resultClr = ambient + diffuse;
-            FragColor = vec4(resultClr, 1.0);
+
+            FragColor = vec4(ambient + diffuse + specular, 1.0);
         }
     )";
 
@@ -202,7 +229,7 @@ QString MeshWidget::addMesh(const glmesh::GpuTriangleMesh& mesh_data, const glme
         mesh_ren_obj.drawable = gl_mesh;
         mesh_ren_obj.bounds = bounds;
         mesh_ren_obj.material.shader_prog_id = SPT_MESH;
-        mesh_ren_obj.material.light_dir = glm::normalize(glm::vec3(-0.0f, -0.0f, -1.0f));
+        //mesh_ren_obj.material.light_dir = glm::normalize(glm::vec3(-0.0f, -0.0f, -1.0f));
         //mesh_ren_obj.material.ambient = 0.7f;
         renderable_objects_.insert({mesh_uid, std::move(mesh_ren_obj)});
     }
@@ -273,12 +300,6 @@ void MeshWidget::setActiveMesh(const QString &mesh_uid)
 bool MeshWidget::isValidMesh(const QString &uid) const
 {
     return renderable_objects_.contains(uid);
-}
-
-void MeshWidget::setAmbientLightEnabled(bool enabled)
-{
-    ambient_light_on_ = enabled;
-    update();
 }
 
 void MeshWidget::resizeGL(int w, int h)
@@ -358,13 +379,28 @@ void MeshWidget::drawRenderableObjects()
         shader_prog->setMat4("uProj", proj);
         shader_prog->setMat3("uNormalMatrix", normal_matrix);
 
-        shader_prog->setBool("uUseAmbient", ambient_light_on_);
         shader_prog->setFloat("uAmbientFactor", ambient_factor_);
         shader_prog->setVec3("uAmbientLightColor", ambient_light_color_);
-        shader_prog->setBool("uUseDiffuse", diffuse_light_on_);
+        shader_prog->setBool("uUseDiffuse", diffuse_light_on_);        
         shader_prog->setVec3("uDiffuseLightColor", diffuse_light_color_);
 
-        shader_prog->setVec3("uLightDir", active_camera_.forward());
+        // glm::mat4 inv_view = glm::inverse(view);
+        // glm::vec3 cam_forward = -glm::vec3(inv_view[2]);
+        // shader_prog->setVec3("uLightDir", cam_forward);
+
+        glm::mat4 inv_view = glm::inverse(view);
+        glm::vec3 cam_forward = -glm::vec3(inv_view[2]);
+        glm::vec3 cam_up      =  glm::vec3(inv_view[1]);
+        glm::vec3 cam_right   =  glm::vec3(inv_view[0]);
+
+        // 让光源从相机的 右上方 打向模型，而不是正前方
+        // 偏移系数 (0.5右, 0.5上) 可以自己微调
+        glm::vec3 light_dir = cam_forward + cam_right * 0.5f + cam_up * 0.5f;
+        shader_prog->setVec3("uLightDir", light_dir);
+
+        // 为了算高光，我们还需要把相机当前的世界坐标传给 Shader
+        glm::vec3 cam_pos = glm::vec3(inv_view[3]);
+        shader_prog->setVec3("uViewPos", cam_pos);
 
         switch(ren_obj.material.render_mode){
             case MeshRenderMode::Facet:
@@ -421,25 +457,20 @@ void MeshWidget::initGradientBackground()
 
 void MeshWidget::setAmbientLight(const QColor& color, double factor)
 {
-    if(ambient_light_on_){
-        ambient_light_color_ = glm::vec3(color.redF(), color.greenF(), color.blueF());
-        ambient_factor_ = std::clamp(factor, 0.0, 1.0);
-        update(); 
-    }    
+    ambient_light_color_ = glm::vec3(color.redF(), color.greenF(), color.blueF());
+    ambient_factor_ = std::clamp(factor, 0.0, 1.0);
+    update(); 
 }
 
 void MeshWidget::setDiffuseLightEnabled(bool enabled)
 {
     diffuse_light_on_ = enabled;
-    update();
 }
 
-void MeshWidget::setDiffuseLightColor(const QColor& color)
+void MeshWidget::setDiffuseLightColor(const QColor &color)
 {
-    if(diffuse_light_on_){
-        diffuse_light_color_ = glm::vec3(color.redF(), color.greenF(), color.blueF());
-        update(); 
-    }    
+    diffuse_light_color_ = glm::vec3(color.redF(), color.greenF(), color.blueF());
+    update(); 
 }
 
 void MeshWidget::setLightDirection(const glm::vec3& dir)

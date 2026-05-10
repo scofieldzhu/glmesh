@@ -37,9 +37,7 @@ struct Material
 {
     void bind() const;
     ProgramTypeId shader_prog_id = -1;    
-    glm::vec3 base_color{ 0.8f, 0.8f, 0.8f }; // 统一的材质颜色
-    glm::vec3 light_dir  {1.0f, -1.0f, -1.0f};
-    float diffuse  = 1.0f;
+    glm::vec3 base_color{ 1.0f, 1.0f, 1.0f }; // 统一的材质颜色
     float point_size = 1.0f;
     float line_width = 1.0f;
     bool use_vertex_color = true; // 默认优先使用模型的顶点颜色
