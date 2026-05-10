@@ -47,7 +47,6 @@ public:
 
 private:
     void mousePressEvent(QMouseEvent *ev) override;
-    void paintEvent(QPaintEvent *event) override;
     QColor color_ = Qt::black;
 };
 

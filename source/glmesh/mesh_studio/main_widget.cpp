@@ -41,11 +41,13 @@ namespace{
 MainWidget::MainWidget(QWidget *parent, Qt::WindowFlags flags)
     :QMainWindow(parent, flags)
 {
+    ui_.setupUi(this);
+    ui_.ambientClrBtn->setColor(ui_.meshRenderWidget->ambientLightColor());
+    ui_.diffuseClrBtn->setColor(ui_.meshRenderWidget->diffuseLightColor());
     auto style_sheets = ReadStyleSheetFiles({":/qss/control.css", ":/qss/main_widget.css"});
     if(!style_sheets.isEmpty()){
         setStyleSheet(style_sheets);
     }
-    ui_.setupUi(this);
     ui_.meshRenderWidget->setObjectName("renderViewport");
     connect(ui_.actionImportMesh, &QAction::triggered, this, &MainWidget::onImportMeshActionTriggered);
 
@@ -71,6 +73,26 @@ MainWidget::MainWidget(QWidget *parent, Qt::WindowFlags flags)
     ui_.displayModeComboBox->setCurrentIndex(0);
     connect(ui_.displayModeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onDisplayModeChanged(int)));
     connect(ui_.ambientIntensitySlider, &QSlider::valueChanged, this, &MainWidget::onAmbientIntensitySliderValueChanged);
+    connect(ui_.ambientClrBtn, &ColorButton::colorChanged, this, [this](const QColor& clr){
+        this->ui_.meshRenderWidget->setAmbientLight(clr, this->ui_.ambientIntensitySlider->value());
+    });
+    connect(ui_.ambientOnCb, &QAbstractButton::toggled, this, [this](bool chk){
+        ui_.ambientIntensitySlider->setEnabled(chk);
+        ui_.ambientClrBtn->setEnabled(chk);
+        this->ui_.meshRenderWidget->setAmbientLightEnabled(chk);
+        this->ui_.meshRenderWidget->setAmbientLight(ui_.ambientClrBtn->color(), this->ui_.ambientIntensitySlider->value());
+    });
+    connect(ui_.ambientIntensitySlider, &QSlider::valueChanged, this, &MainWidget::onAmbientIntensitySliderValueChanged);
+    connect(ui_.diffuseClrBtn, &ColorButton::colorChanged, this, [this](const QColor& clr){
+        this->ui_.meshRenderWidget->setDiffuseLightColor(clr);
+    });
+    connect(ui_.diffuseOnCb, &QAbstractButton::toggled, this, [this](bool chk){
+        ui_.diffuseClrBtn->setEnabled(chk);
+        this->ui_.meshRenderWidget->setDiffuseLightEnabled(chk);
+        this->ui_.meshRenderWidget->setDiffuseLightColor(ui_.diffuseClrBtn->color());        
+    });
+    ui_.ambientOnCb->setChecked(false);
+    ui_.diffuseOnCb->setChecked(false);
 }
 
 MainWidget::~MainWidget()
@@ -107,7 +129,7 @@ void MainWidget::onCurrentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem 
 void MainWidget::onAmbientIntensitySliderValueChanged(int value)
 {
     float ambient_intensity_value = (float)value / (ui_.ambientIntensitySlider->maximum() - ui_.ambientIntensitySlider->minimum());
-    ui_.meshRenderWidget->setMeshLight(ui_.meshRenderWidget->activeMesh(), ambient_intensity_value);
+    ui_.meshRenderWidget->setAmbientLight(ui_.ambientClrBtn->color(), ambient_intensity_value);
 }
 
 void MainWidget::onDisplayModeChanged(int mode_index)

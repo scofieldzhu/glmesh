@@ -35,31 +35,23 @@
 ColorButton::ColorButton(QWidget *parent)
     : QLabel(parent)
 {
+    setColor(color_);
 }
 
 void ColorButton::mousePressEvent(QMouseEvent *ev)
 {
     if(ev->button() & Qt::LeftButton){
-        QColor color = QColorDialog::getColor(Qt::white, this, tr("Please choose color"));
+        QColor color = QColorDialog::getColor(color_, nullptr, tr("Please choose color"));
         if(color.isValid()) {
             setColor(color);
         }
     }
 }
 
-void ColorButton::paintEvent(QPaintEvent *event)
-{
-    Q_UNUSED(event);
-    QPainter painter(this);
-    painter.fillRect(rect(), color_);
-    painter.setPen(Qt::black);
-    painter.drawText(rect(), Qt::AlignCenter, text());
-}
-
 void ColorButton::setColor(const QColor &clr)
 {
     color_ = clr;
-    QString stylesheet = QString("background-color:rgb(%1, %2, %3)").arg(clr.red()).arg(clr.green()).arg(clr.blue());
+    QString stylesheet = QString("background-color:rgb(%1, %2, %3); border: 2px solid black;").arg(clr.red()).arg(clr.green()).arg(clr.blue());
     setStyleSheet(stylesheet);
     update();
     emit colorChanged(color_);

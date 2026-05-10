@@ -47,6 +47,7 @@ public:
     uint32_t id() const noexcept { return program_id_; }
     void destroy() noexcept;
     int32_t uniformLocation(std::string_view name) const;
+    void setBool(std::string_view name, bool value) const;
     void setInt(std::string_view name, int value) const;
     void setFloat(std::string_view name, float value) const;
     void setVec3(std::string_view name, const glm::vec3& value) const;

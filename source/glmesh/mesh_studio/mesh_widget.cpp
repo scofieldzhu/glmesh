@@ -87,18 +87,34 @@ namespace
         in vec3 vNormal;
         in vec3 vColor;
 
-        uniform vec3 uLightDir;
-        uniform float uAmbient;
-
         out vec4 FragColor;
+
+        uniform vec3 uObjectColor;  
+        uniform bool uUseVertexColor;    
+        uniform bool uUseAmbient;
+        uniform float uAmbientFactor;
+        uniform vec3 uAmbientLightColor; 
+        uniform bool uUseDiffuse;
+        uniform vec3 uDiffuseLightColor; 
+        uniform vec3 uLightDir;  
 
         void main()
         {
+            vec3 baseColor = uUseVertexColor ? vColor : uObjectColor;
+
+            vec3 ambient = vec3(0.0);
+            if(uUseAmbient){
+                ambient = uAmbientFactor * uAmbientLightColor * baseColor;
+            }
             vec3 N = normalize(vNormal);
             vec3 L = normalize(-uLightDir);
-            float lambert = max(dot(N, L), 0.0);
-            vec3 color = vColor * (uAmbient + lambert);
-            FragColor = vec4(color, 1.0);
+            float diff = max(dot(N, L), 0.0);
+            vec3 diffuse = vec3(0.0);
+            if(uUseDiffuse){
+                diffuse = diff * uDiffuseLightColor * baseColor;
+            }
+            vec3 resultClr = ambient + diffuse;
+            FragColor = vec4(resultClr, 1.0);
         }
     )";
 
@@ -149,7 +165,13 @@ void MeshWidget::initializeGL()
     glmesh::gl::EnableDebugOutput();
 
     auto mesh_shader_program = std::make_unique<glmesh::ShaderProgram>();
-    mesh_shader_program->createFromSource(kMeshVertexShader, kMeshFragmentShader);
+    try{
+        mesh_shader_program->createFromSource(kMeshVertexShader, kMeshFragmentShader);
+    }catch(const std::exception& e){
+        APP_LOG_ERROR("exception:{}", std::string(e.what()));
+        return;
+    }
+    
     ShaderProgramManager::Inst().addProgram(SPT_MESH, std::move(mesh_shader_program));
 
     initGradientBackground();
@@ -181,11 +203,9 @@ QString MeshWidget::addMesh(const glmesh::GpuTriangleMesh& mesh_data, const glme
         mesh_ren_obj.bounds = bounds;
         mesh_ren_obj.material.shader_prog_id = SPT_MESH;
         mesh_ren_obj.material.light_dir = glm::normalize(glm::vec3(-0.0f, -0.0f, -1.0f));
-        mesh_ren_obj.material.ambient = 0.7f;
+        //mesh_ren_obj.material.ambient = 0.7f;
         renderable_objects_.insert({mesh_uid, std::move(mesh_ren_obj)});
     }
-
-    handleMeshBoundsChanged(bounds);
 
     doneCurrent();
     
@@ -206,19 +226,6 @@ void MeshWidget::removeMesh(const QString &mesh_uid)
         }else{
             APP_LOG_WARN("No such mesh with uid:{}", QStrToLogStr(mesh_uid));
         }        
-    }
-    update();
-}
-
-void MeshWidget::setMeshLight(const QString &uid, float ambient)
-{
-    {
-        std::lock_guard lock(renderable_objects_mutex_);
-        if(renderable_objects_.contains(uid)){
-            renderable_objects_[uid].material.ambient = ambient;
-        }else{
-            APP_LOG_WARN("No such mesh with uid:{}", QStrToLogStr(uid));
-        }
     }
     update();
 }
@@ -268,6 +275,12 @@ bool MeshWidget::isValidMesh(const QString &uid) const
     return renderable_objects_.contains(uid);
 }
 
+void MeshWidget::setAmbientLightEnabled(bool enabled)
+{
+    ambient_light_on_ = enabled;
+    update();
+}
+
 void MeshWidget::resizeGL(int w, int h)
 {
     ::glViewport(0, 0, w, h);
@@ -294,6 +307,7 @@ void MeshWidget::mouseMoveEvent(QMouseEvent* event)
 {
     if(event->buttons() & Qt::LeftButton) {
         ball_rotator_.onUpdateMousePos(event, size());
+        active_camera_.setRotation(ball_rotator_.getRotationMat());
         update(); // 触发重绘
     }    
 }
@@ -324,8 +338,7 @@ void MeshWidget::drawRenderableObjects()
     if(renderable_objects_.empty()){
         return;
     }
-
-    auto view = active_camera_.viewMatrix(ball_rotator_.getRotationMat());
+    auto view = active_camera_.viewMatrix();
     auto model = active_camera_.modelCenterMatrix();
     auto proj = active_camera_.projectionMatrix();
     glm::mat3 normal_matrix = glm::transpose(glm::inverse(glm::mat3(model)));
@@ -344,6 +357,15 @@ void MeshWidget::drawRenderableObjects()
         shader_prog->setMat4("uView", view);
         shader_prog->setMat4("uProj", proj);
         shader_prog->setMat3("uNormalMatrix", normal_matrix);
+
+        shader_prog->setBool("uUseAmbient", ambient_light_on_);
+        shader_prog->setFloat("uAmbientFactor", ambient_factor_);
+        shader_prog->setVec3("uAmbientLightColor", ambient_light_color_);
+        shader_prog->setBool("uUseDiffuse", diffuse_light_on_);
+        shader_prog->setVec3("uDiffuseLightColor", diffuse_light_color_);
+
+        shader_prog->setVec3("uLightDir", active_camera_.forward());
+
         switch(ren_obj.material.render_mode){
             case MeshRenderMode::Facet:
                 glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -374,6 +396,7 @@ void MeshWidget::handleMeshBoundsChanged(const glmesh::Bounds3D& bounds)
 {
     active_camera_.fitBounds(bounds.center, bounds.radius);
     ball_rotator_.reset();
+    active_camera_.setRotation(ball_rotator_.getRotationMat());
 }
 
 void MeshWidget::initGradientBackground()
@@ -394,4 +417,33 @@ void MeshWidget::initGradientBackground()
     auto bkg_shader_prog = std::make_unique<glmesh::ShaderProgram>();
     bkg_shader_prog->createFromSource(kBgVertexShader, kBgFrameShader);
     ShaderProgramManager::Inst().addProgram(SPT_BACKGROUND, std::move(bkg_shader_prog));
+}
+
+void MeshWidget::setAmbientLight(const QColor& color, double factor)
+{
+    if(ambient_light_on_){
+        ambient_light_color_ = glm::vec3(color.redF(), color.greenF(), color.blueF());
+        ambient_factor_ = std::clamp(factor, 0.0, 1.0);
+        update(); 
+    }    
+}
+
+void MeshWidget::setDiffuseLightEnabled(bool enabled)
+{
+    diffuse_light_on_ = enabled;
+    update();
+}
+
+void MeshWidget::setDiffuseLightColor(const QColor& color)
+{
+    if(diffuse_light_on_){
+        diffuse_light_color_ = glm::vec3(color.redF(), color.greenF(), color.blueF());
+        update(); 
+    }    
+}
+
+void MeshWidget::setLightDirection(const glm::vec3& dir)
+{
+    light_dir_ = dir;
+    update();
 }

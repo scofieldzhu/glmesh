@@ -44,8 +44,6 @@ void Material::bind() const
         return;
     }
     shader_prog->use();
-    shader_prog->setVec3("uBaseColor", base_color);
-    shader_prog->setVec3("uLightDir", light_dir);
-    shader_prog->setFloat("uAmbient", ambient);
-    shader_prog->setFloat("uDiffuse", diffuse);
+    shader_prog->setVec3("uObjectColor", base_color);
+    shader_prog->setBool("uUseVertexColor", diffuse);
 }

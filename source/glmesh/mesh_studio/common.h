@@ -30,7 +30,8 @@
 #ifndef __common_h__
 #define __common_h__
 
-#include "glmesh/glmesh_basedef.h"
+#include <QColor>
+#include "glmesh/kernel/glmesh_kernel_typedef.h"
 
 enum ShaderProgramType
 {
@@ -45,5 +46,9 @@ enum class MeshRenderMode {
 };
 
 using ProgramTypeId = glmesh::uint32;
+
+inline QColor ToColor(const glm::vec3& clr){
+    return QColor::fromRgbF(clr[0], clr[1], clr[2]);
+}
 
 #endif

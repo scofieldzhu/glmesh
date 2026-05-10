@@ -781,7 +781,7 @@
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_8">
              <property name="spacing">
-              <number>4</number>
+              <number>6</number>
              </property>
              <property name="leftMargin">
               <number>4</number>
@@ -797,8 +797,29 @@
              </property>
              <item>
               <widget class="QCheckBox" name="ambientOnCb">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>100</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>100</width>
+                 <height>16777215</height>
+                </size>
+               </property>
                <property name="text">
                 <string>Ambient</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
                </property>
               </widget>
              </item>
@@ -842,7 +863,7 @@
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_9">
              <property name="spacing">
-              <number>4</number>
+              <number>6</number>
              </property>
              <property name="leftMargin">
               <number>4</number>
@@ -858,13 +879,34 @@
              </property>
              <item>
               <widget class="QCheckBox" name="diffuseOnCb">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>100</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>100</width>
+                 <height>16777215</height>
+                </size>
+               </property>
                <property name="text">
                 <string>Diffuse</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
                </property>
               </widget>
              </item>
              <item>
-              <widget class="QLabel" name="diffuseClrBtn">
+              <widget class="ColorButton" name="diffuseClrBtn">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
                  <horstretch>0</horstretch>
@@ -889,11 +931,17 @@
               </widget>
              </item>
              <item>
-              <widget class="QSlider" name="diffuseIntensityValue">
+              <spacer name="horizontalSpacer_4">
                <property name="orientation">
                 <enum>Qt::Horizontal</enum>
                </property>
-              </widget>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
              </item>
             </layout>
            </item>

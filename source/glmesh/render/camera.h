@@ -56,6 +56,7 @@ public:
     const glm::vec3& centerOffset() const{ return center_offset_; }
     void setDistance(float distance);
     float distance() const{ return distance_; }
+    void setRotation(const glm::mat4& rotation);
     void setRotation(const glm::quat& rotation);
     const glm::quat& rotation() const{ return rotation_; }
     void fitBounds(const glm::vec3& min_bound, const glm::vec3& max_bound);

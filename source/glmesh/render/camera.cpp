@@ -99,6 +99,11 @@ void Camera::setDistance(float distance)
     distance_ = clampDistance(distance);
 }
 
+void Camera::setRotation(const glm::mat4& rotation)
+{
+    rotation_ = glm::quat_cast(rotation);
+}
+
 void Camera::setRotation(const glm::quat& rotation)
 {
     rotation_ = glm::normalize(rotation);

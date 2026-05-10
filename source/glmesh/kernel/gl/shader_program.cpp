@@ -199,6 +199,14 @@ GLint ShaderProgram::uniformLocation(std::string_view name) const
     return location;
 }
 
+void ShaderProgram::setBool(std::string_view name, bool value) const
+{
+    const GLint loc = uniformLocation(name);
+    if(loc != -1){
+        glUniform1i(loc, static_cast<int>(value));
+    }
+}
+
 void ShaderProgram::setInt(std::string_view name, int value) const
 {
     const GLint loc = uniformLocation(name);
