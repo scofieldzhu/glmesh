@@ -122,6 +122,7 @@ namespace
                     N = normalize(vNormal);
                 }
                 // L 向量：光源方向取反（指向光源）
+                // Offset light direction slightly to avoid headlamp effect
                 vec3 L = normalize(-uLightDir);
                 // 为了防止在模型背面变全黑，可以使用 abs(dot) 实现双面光照 (Double-sided lighting)
                 // 这在查看内部拓扑时非常有用
@@ -135,7 +136,7 @@ namespace
                 // 只有被光照到的面（diff > 0）才有高光
                 if (diff > 0.0) {
                     // 32.0 是反光度(Shininess)，值越大光斑越小越锐利(像金属)，越小光斑越散(像塑料)
-                    float spec = pow(max(dot(N, halfVector), 0.0), 32.0);
+                    float spec = pow(max(dot(N, halfVector), 0.0), 32);
                     // 高光一般用光源颜色（这里让它稍微偏白一点，效果更好）
                     specular = spec * uDiffuseLightColor; 
                 }
@@ -229,8 +230,6 @@ QString MeshWidget::addMesh(const glmesh::GpuTriangleMesh& mesh_data, const glme
         mesh_ren_obj.drawable = gl_mesh;
         mesh_ren_obj.bounds = bounds;
         mesh_ren_obj.material.shader_prog_id = SPT_MESH;
-        //mesh_ren_obj.material.light_dir = glm::normalize(glm::vec3(-0.0f, -0.0f, -1.0f));
-        //mesh_ren_obj.material.ambient = 0.7f;
         renderable_objects_.insert({mesh_uid, std::move(mesh_ren_obj)});
     }
 
@@ -384,19 +383,18 @@ void MeshWidget::drawRenderableObjects()
         shader_prog->setBool("uUseDiffuse", diffuse_light_on_);        
         shader_prog->setVec3("uDiffuseLightColor", diffuse_light_color_);
 
-        // glm::mat4 inv_view = glm::inverse(view);
-        // glm::vec3 cam_forward = -glm::vec3(inv_view[2]);
-        // shader_prog->setVec3("uLightDir", cam_forward);
-
-        glm::mat4 inv_view = glm::inverse(view);
+        glm::mat4 inv_view    = glm::inverse(view);
+        glm::vec3 cam_back    = glm::vec3(inv_view[2]); // 指向相机后方
         glm::vec3 cam_forward = -glm::vec3(inv_view[2]);
         glm::vec3 cam_up      =  glm::vec3(inv_view[1]);
         glm::vec3 cam_right   =  glm::vec3(inv_view[0]);
 
         // 让光源从相机的 右上方 打向模型，而不是正前方
         // 偏移系数 (0.5右, 0.5上) 可以自己微调
-        glm::vec3 light_dir = cam_forward + cam_right * 0.5f + cam_up * 0.5f;
-        shader_prog->setVec3("uLightDir", light_dir);
+        // 构造一个新的光源方向：放在相机的右上方，并照向模型
+        // 也就是顺着 相机右方(0.5) + 相机上方(0.5) + 相机前方(-1.0) 的混合方向打光
+        glm::vec3 custom_light_dir = glm::normalize(0.5f * cam_right + 0.5f * cam_up - 1.0f * cam_back);
+        shader_prog->setVec3("uLightDir", custom_light_dir);
 
         // 为了算高光，我们还需要把相机当前的世界坐标传给 Shader
         glm::vec3 cam_pos = glm::vec3(inv_view[3]);

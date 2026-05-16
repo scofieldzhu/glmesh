@@ -78,6 +78,7 @@ MainWidget::MainWidget(QWidget *parent, Qt::WindowFlags flags)
         this->ui_.meshRenderWidget->setAmbientLight(clr, this->ui_.ambientIntensitySlider->value());
     });
     connect(ui_.ambientIntensitySlider, &QSlider::valueChanged, this, &MainWidget::onAmbientIntensitySliderValueChanged);
+    ui_.diffuseOnCb->setChecked(true);
     connect(ui_.diffuseOnCb, &QAbstractButton::toggled, this, [this](bool chk){
         ui_.meshRenderWidget->setDiffuseLightEnabled(chk);
         ui_.diffuseClrBtn->setEnabled(chk);
@@ -91,7 +92,7 @@ MainWidget::MainWidget(QWidget *parent, Qt::WindowFlags flags)
         this->ui_.meshRenderWidget->setDiffuseLightColor(clr);
     });
     ui_.ambientIntensitySlider->setValue(static_cast<int>((ui_.ambientIntensitySlider->maximum() - ui_.ambientIntensitySlider->minimum()) * kDefaultAmbientFactor));
-    ui_.diffuseOnCb->setChecked(true);
+    ui_.diffuseOnCb->setChecked(false);
 }
 
 MainWidget::~MainWidget()
