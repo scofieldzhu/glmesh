@@ -17,6 +17,7 @@ set(EXPORT_HEAD_FILES
     gl/gl_bkg.h
     gl/gpu_bkg.h
     gl/gpu_bkg_vertex.h
+    gl/gl_trackball_gizmo.h
     gl/gl_api_init.h
     gl/shader_program.h
     gl/gl_debug.h
@@ -48,6 +49,7 @@ set(SOURCE_FILES
     gl/gl_debug.cpp    
     gl/gpu_bkg_vertex.cpp
     gl/gl_bkg.cpp
+    gl/gl_trackball_gizmo.cpp
     core/cpu_triangle_mesh.cpp
     core/geometry_utils.cpp
     io/mesh_loader.cpp
@@ -77,3 +79,20 @@ if(MSVC)
         GLMESH_KERNEL_EXPORT
     )
 endif()
+
+# --- install rules ---
+install(TARGETS ${PKG_PROJ}
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+)
+
+set(HEADER_BASE "${CMAKE_CURRENT_SOURCE_DIR}")
+foreach(hdr ${EXPORT_HEAD_FILES})
+    get_filename_component(hdr_dir "${hdr}" DIRECTORY)
+    if(hdr_dir)
+        install(FILES "${hdr}" DESTINATION "include/glmesh/kernel/${hdr_dir}")
+    else()
+        install(FILES "${hdr}" DESTINATION "include/glmesh/kernel")
+    endif()
+endforeach()

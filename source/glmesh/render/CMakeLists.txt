@@ -21,3 +21,20 @@ if(MSVC)
         GLMESH_RENDER_EXPORT
     )
 endif()
+
+# --- install rules ---
+install(TARGETS ${PKG_PROJ}
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+)
+
+set(HEADER_BASE "${CMAKE_CURRENT_SOURCE_DIR}")
+foreach(hdr ${EXPORT_HEAD_FILES})
+    get_filename_component(hdr_dir "${hdr}" DIRECTORY)
+    if(hdr_dir)
+        install(FILES "${hdr}" DESTINATION "include/glmesh/render/${hdr_dir}")
+    else()
+        install(FILES "${hdr}" DESTINATION "include/glmesh/render")
+    endif()
+endforeach()

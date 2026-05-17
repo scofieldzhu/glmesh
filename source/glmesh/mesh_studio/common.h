@@ -36,7 +36,8 @@
 enum ShaderProgramType
 {
     SPT_BACKGROUND,
-    SPT_MESH    
+    SPT_MESH,
+    SPT_GIZMO
 };
 
 enum class MeshRenderMode {

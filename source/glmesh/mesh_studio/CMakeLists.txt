@@ -53,3 +53,59 @@ target_link_libraries(${target} PRIVATE
     glmesh.render
     opengl32
 )
+
+# --- install rules ---
+install(TARGETS ${target}
+    RUNTIME DESTINATION bin
+)
+
+# --- Install runtime dependencies on Windows ---
+if(WIN32)
+    get_target_property(qt_core_location Qt5::Core LOCATION)
+    get_filename_component(qt_bin_dir "${qt_core_location}" DIRECTORY)
+
+    find_program(WINDEPLOYQT_EXECUTABLE
+        NAMES windeployqt
+        HINTS "${qt_bin_dir}"
+    )
+
+    if(NOT WINDEPLOYQT_EXECUTABLE)
+        message(FATAL_ERROR "windeployqt not found")
+    endif()
+
+    # get_target_property(qmake_executable Qt5::qmake IMPORTED_LOCATION)
+    # get_filename_component(qt_bin_dir "${qmake_executable}" DIRECTORY)
+    # find_program(WINDEPLOYQT_EXECUTABLE windeployqt HINTS "${qt_bin_dir}")
+
+    # Copy all DLLs from build output to install bin (vcpkg deps: PCL, spdlog, etc.)
+    install(CODE "
+        file(GLOB build_dlls \"${CMAKE_BINARY_DIR}/bin/*.dll\")
+        foreach(dll_path \${build_dlls})
+            file(COPY \"\${dll_path}\" DESTINATION \"\${CMAKE_INSTALL_PREFIX}/bin\")
+            get_filename_component(dll_name \"\${dll_path}\" NAME)
+            message(STATUS \"Copied: \${dll_name}\")
+        endforeach()
+    ")
+
+    # Run windeployqt for Qt DLLs, platform plugin, and MSVC runtime
+    if(WINDEPLOYQT_EXECUTABLE)
+        install(CODE "
+            message(STATUS \"Running windeployqt...\")
+            execute_process(
+                COMMAND \"${WINDEPLOYQT_EXECUTABLE}\"
+                    --no-translations
+                    \"\${CMAKE_INSTALL_PREFIX}/bin/MeshStudio.exe\"
+                RESULT_VARIABLE _wdqt_result
+                OUTPUT_VARIABLE _wdqt_out
+                ERROR_VARIABLE _wdqt_err
+            )
+            if(NOT _wdqt_result EQUAL 0)
+                message(WARNING \"windeployqt failed (\${_wdqt_result}): \${_wdqt_err}\")
+            else()
+                message(STATUS \"windeployqt completed\")
+            endif()
+        ")
+    else()
+        message(WARNING "windeployqt not found. Qt runtime DLLs must be deployed manually.")
+    endif()
+endif()

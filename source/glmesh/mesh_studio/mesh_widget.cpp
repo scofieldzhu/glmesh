@@ -43,6 +43,7 @@
 #include "glmesh/kernel/core/cpu_bkg.h"
 #include "glmesh/kernel/gl/gpu_bkg.h"
 #include "glmesh/kernel/gl/gl_bkg.h"
+#include "glmesh/kernel/gl/gl_trackball_gizmo.h"
 #include "common.h"
 #include "shader_program_manager.h"
 #include "app_log.h"
@@ -167,17 +168,34 @@ namespace
             frag_color = vec4(v_color, 1.0);
         }
     )";
+
+    const char* kGizmoVertexShader = R"(
+        #version 330 core
+        layout(location = 0) in vec3 aPos;
+        uniform mat4 uMVP;
+        void main(){ gl_Position = uMVP * vec4(aPos, 1.0); }
+    )";
+
+    const char* kGizmoFragmentShader = R"(
+        #version 330 core
+        uniform vec3 uColor;
+        out vec4 FragColor;
+        void main(){ FragColor = vec4(uColor, 1.0); }
+    )";
 }
 
 MeshWidget::MeshWidget(QWidget* parent)
     : QOpenGLWidget(parent)
 {
+    setMouseTracking(true);
 }
 
 MeshWidget::~MeshWidget()
 {
     makeCurrent();
     renderable_objects_.clear();
+    trackball_gizmo_.reset();
+    gl_bkg_.reset();
     ShaderProgramManager::Inst().destory();
     doneCurrent();
 }
@@ -203,6 +221,7 @@ void MeshWidget::initializeGL()
     ShaderProgramManager::Inst().addProgram(SPT_MESH, std::move(mesh_shader_program));
 
     initGradientBackground();
+    initTrackballGizmo();
 
     gl_initialized_ = true;
 }
@@ -314,6 +333,7 @@ void MeshWidget::paintGL()
     ::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     drawGradientBackground();
     drawRenderableObjects();
+    drawTrackballGizmo();
 }
 
 void MeshWidget::mousePressEvent(QMouseEvent* event)
@@ -329,7 +349,13 @@ void MeshWidget::mouseMoveEvent(QMouseEvent* event)
         ball_rotator_.onUpdateMousePos(event, size());
         active_camera_.setRotation(ball_rotator_.getRotationMat());
         update(); // 触发重绘
-    }    
+        return;
+    }
+    int new_axis = pickGizmoAxis(event->pos());
+    if(new_axis != hovered_gizmo_axis_){
+        hovered_gizmo_axis_ = new_axis;
+        update();
+    }
 }
 
 void MeshWidget::wheelEvent(QWheelEvent* event)
@@ -475,4 +501,158 @@ void MeshWidget::setLightDirection(const glm::vec3& dir)
 {
     light_dir_ = dir;
     update();
+}
+
+void MeshWidget::initTrackballGizmo()
+{
+    auto gizmo_shader = std::make_unique<glmesh::ShaderProgram>();
+    gizmo_shader->createFromSource(kGizmoVertexShader, kGizmoFragmentShader);
+    ShaderProgramManager::Inst().addProgram(SPT_GIZMO, std::move(gizmo_shader));
+
+    trackball_gizmo_ = std::make_unique<glmesh::GLTrackballGizmo>();
+    trackball_gizmo_->create(96);
+}
+
+void MeshWidget::drawTrackballGizmo()
+{
+    if(!trackball_gizmo_ || !trackball_gizmo_->valid()){
+        return;
+    }
+    int w = width();
+    int h = height();
+    if(w <= 0 || h <= 0){
+        return;
+    }
+
+    float world_radius = computeGizmoWorldRadius();
+    if(world_radius <= 0.0f){
+        return;
+    }
+
+    glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_TRUE);
+    glLineWidth(1.5f);
+
+    // gizmo 中心位于世界原点（与 mesh 经 modelCenterMatrix 后所在位置一致）。
+    glm::mat4 view = active_camera_.viewMatrix();
+    glm::mat4 proj = active_camera_.projectionMatrix();
+    glm::mat4 model = glm::scale(glm::mat4(1.0f), glm::vec3(world_radius));
+    glm::mat4 mvp = proj * view * model;
+
+    auto* prog = ShaderProgramManager::Inst().getProgram(SPT_GIZMO);
+    if(prog == nullptr){
+        glLineWidth(1.0f);
+        return;
+    }
+    prog->use();
+    prog->setMat4("uMVP", mvp);
+
+    // X=红, Y=绿, Z=蓝（与 MeshLab 一致），高亮为黄色。
+    const glm::vec3 axis_colors[3] = {
+        glm::vec3(0.95f, 0.25f, 0.25f),
+        glm::vec3(0.25f, 0.85f, 0.25f),
+        glm::vec3(0.30f, 0.45f, 0.95f)
+    };
+    const glm::vec3 highlight_color(1.0f, 0.85f, 0.0f);
+
+    for(int axis = 0; axis < 3; ++axis){
+        bool hi = (axis == hovered_gizmo_axis_);
+        prog->setVec3("uColor", hi ? highlight_color : axis_colors[axis]);
+        if(hi){
+            glLineWidth(2.5f);
+        }else{
+            glLineWidth(1.5f);
+        }
+        trackball_gizmo_->drawAxis(axis);
+    }
+
+    glmesh::ShaderProgram::UnuseAny();
+    glLineWidth(1.0f);
+}
+
+float MeshWidget::computeGizmoWorldRadius() const
+{
+    int h = height();
+    if(h <= 0){
+        return 0.0f;
+    }
+    // 目标：让三环在屏幕上的视觉半径恒为 viewport 短边的固定比例（与缩放无关）。
+    // 透视投影下，世界半径 r 在屏幕上的像素半径约为 (r / depth) * (h / 2) * proj[1][1]。
+    // 反推 r = pixel_radius * (2 * depth) / (h * proj[1][1])。
+    // depth 取相机到 gizmo 中心的距离 = active_camera_.distance()。
+    int w = width();
+    float screen_short = static_cast<float>(std::min(w, h));
+    float pixel_radius = 0.4f * screen_short;
+
+    glm::mat4 proj = active_camera_.projectionMatrix();
+    float p11 = proj[1][1]; // 透视: cot(fov/2); 正交: 2/height_world
+    if(std::abs(p11) < 1e-6f){
+        return 1.0f;
+    }
+    if(active_camera_.projectionType() == glmesh::Camera::ProjectionType::Perspective){
+        float depth = active_camera_.distance();
+        return pixel_radius * (2.0f * depth) / (static_cast<float>(h) * p11);
+    }
+    // 正交投影下半径与距离无关，但会跟随 orthographic_scale 缩放，
+    // 此处用 proj[1][1] 推回 world 单位即可。
+    return pixel_radius * 2.0f / (static_cast<float>(h) * p11);
+}
+
+int MeshWidget::pickGizmoAxis(const QPoint& pos) const
+{
+    if(!trackball_gizmo_ || !trackball_gizmo_->valid()){
+        return -1;
+    }
+    int w = width();
+    int h = height();
+    if(w <= 0 || h <= 0){
+        return -1;
+    }
+    float world_radius = const_cast<MeshWidget*>(this)->computeGizmoWorldRadius();
+    if(world_radius <= 0.0f){
+        return -1;
+    }
+
+    glm::mat4 mvp = active_camera_.projectionMatrix() *
+                    active_camera_.viewMatrix() *
+                    glm::scale(glm::mat4(1.0f), glm::vec3(world_radius));
+
+    auto project = [&](const glm::vec3& wp, glm::vec2& out_screen) -> bool {
+        glm::vec4 clip = mvp * glm::vec4(wp, 1.0f);
+        if(clip.w <= 0.0f){
+            return false;
+        }
+        glm::vec3 ndc(clip.x / clip.w, clip.y / clip.w, clip.z / clip.w);
+        out_screen.x = (ndc.x * 0.5f + 0.5f) * static_cast<float>(w);
+        out_screen.y = (1.0f - (ndc.y * 0.5f + 0.5f)) * static_cast<float>(h);
+        return true;
+    };
+
+    const float pick_threshold_px = 8.0f;
+    glm::vec2 mouse(static_cast<float>(pos.x()), static_cast<float>(pos.y()));
+    int seg = trackball_gizmo_->segments();
+    int best_axis = -1;
+    float best_d2 = pick_threshold_px * pick_threshold_px;
+
+    for(int axis = 0; axis < 3; ++axis){
+        for(int i = 0; i < seg; ++i){
+            glm::vec3 a_w = glmesh::GLTrackballGizmo::axisRingPoint(axis, i, seg);
+            glm::vec3 b_w = glmesh::GLTrackballGizmo::axisRingPoint(axis, (i + 1) % seg, seg);
+            glm::vec2 a_s, b_s;
+            if(!project(a_w, a_s) || !project(b_w, b_s)){
+                continue;
+            }
+            // 点到线段距离平方
+            glm::vec2 ab = b_s - a_s;
+            float ab_len2 = glm::dot(ab, ab);
+            float t = ab_len2 > 1e-6f ? glm::clamp(glm::dot(mouse - a_s, ab) / ab_len2, 0.0f, 1.0f) : 0.0f;
+            glm::vec2 closest = a_s + t * ab;
+            float d2 = glm::dot(mouse - closest, mouse - closest);
+            if(d2 < best_d2){
+                best_d2 = d2;
+                best_axis = axis;
+            }
+        }
+    }
+    return best_axis;
 }

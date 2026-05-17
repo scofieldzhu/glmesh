@@ -36,6 +36,7 @@
 #include <mutex>
 #include "common.h"
 #include "glmesh/kernel/gl/gl_bkg.h"
+#include "glmesh/kernel/gl/gl_trackball_gizmo.h"
 #include "renderable_object.h"
 #include "arcball_rotator.h"
 #include "glmesh/render/camera.h"
@@ -75,6 +76,10 @@ private:
     void wheelEvent(QWheelEvent* event) override;
     void initGradientBackground();
     void drawGradientBackground();
+    void initTrackballGizmo();
+    void drawTrackballGizmo();
+    float computeGizmoWorldRadius() const;
+    int pickGizmoAxis(const QPoint& pos) const;
     void drawRenderableObjects();
     void handleMeshBoundsChanged(const glmesh::Bounds3D& bounds);
     std::mutex renderable_objects_mutex_;
@@ -82,6 +87,8 @@ private:
     bool gl_initialized_ = false;
     ArcBallRotator ball_rotator_;
     std::unique_ptr<glmesh::GLBkg> gl_bkg_;
+    std::unique_ptr<glmesh::GLTrackballGizmo> trackball_gizmo_;
+    int hovered_gizmo_axis_ = -1;
     QString current_active_mesh_uid_;
     glmesh::Camera active_camera_;
     double ambient_factor_ = 1.0f;

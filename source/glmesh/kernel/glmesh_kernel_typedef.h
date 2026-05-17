@@ -58,6 +58,7 @@ struct CpuBkgVertex;
 struct CpuBkg;
 
 struct GLDrawable;
+class GLTrackballGizmo;
 
 class IndexBuffer;
 class ShaderProgram;
