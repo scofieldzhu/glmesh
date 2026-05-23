@@ -1,4 +1,3 @@
-#include "cpu_triangle_mesh.h"
 /*
  *  glmesh is a mesh data render library base on QOpengl.
  *  glmesh provides object-oriented interfaces to the OpenGL API (3.0 and higher).
@@ -34,15 +33,27 @@
 
 GLMESH_NAMESPACE_BEGIN
 
-void CpuTriangleMesh::buildFromPolygonMesh(const CpuPolygonMesh& polyon_mesh)
+template<typename V>
+void CpuTriangleMesh<V>::buildFromPolygonMesh(const CpuPolygonMesh& polyon_mesh)
 {
-    vertices = polyon_mesh.vertices;
+    vertices.resize(polyon_mesh.vertices.size());
+    for (size_t i = 0; i < polyon_mesh.vertices.size(); ++i) {
+        const auto& src = polyon_mesh.vertices[i];
+        vertices[i].position = src.position;
+        if constexpr (VertexTraits<V>::has_normal) {
+            vertices[i].normal = src.normal;
+        }
+        if constexpr (VertexTraits<V>::has_color) {
+            vertices[i].color = src.color;
+        }
+    }
+
     indices.clear();
-    for(const auto& poly : polyon_mesh.polygons){
-        if(poly.size() < 3){
+    for (const auto& poly : polyon_mesh.polygons) {
+        if (poly.size() < 3) {
             continue;
         }
-        for(auto i = 1; i + 1 < poly.size(); ++i){
+        for (auto i = 1; i + 1 < poly.size(); ++i) {
             indices.push_back(poly[0]);
             indices.push_back(poly[i]);
             indices.push_back(poly[i + 1]);
@@ -50,9 +61,10 @@ void CpuTriangleMesh::buildFromPolygonMesh(const CpuPolygonMesh& polyon_mesh)
     }
 }
 
-std::optional<Bounds3D> CpuTriangleMesh::calcBounds() const
+template<typename V>
+std::optional<Bounds3D> CpuTriangleMesh<V>::calcBounds() const
 {
-    if(vertices.empty()){
+    if (vertices.empty()) {
         return std::nullopt;
     }
     Bounds3D bounds;
@@ -62,25 +74,13 @@ std::optional<Bounds3D> CpuTriangleMesh::calcBounds() const
     float max_y = max_x;
     float min_z = min_x;
     float max_z = max_x;
-    for(const auto& v : vertices){
-        if(v.position.x < min_x){
-            min_x = v.position.x;
-        }
-        if(v.position.x > max_x){
-            max_x = v.position.x;
-        }
-        if(v.position.y < min_y){
-            min_y = v.position.y;
-        }
-        if(v.position.y > max_y){
-            max_y = v.position.y;
-        }
-        if(v.position.z < min_z){
-            min_z = v.position.z;
-        }
-        if(v.position.z > max_z){
-            max_z = v.position.z;
-        }
+    for (const auto& v : vertices) {
+        if (v.position.x < min_x) { min_x = v.position.x; }
+        if (v.position.x > max_x) { max_x = v.position.x; }
+        if (v.position.y < min_y) { min_y = v.position.y; }
+        if (v.position.y > max_y) { max_y = v.position.y; }
+        if (v.position.z < min_z) { min_z = v.position.z; }
+        if (v.position.z > max_z) { max_z = v.position.z; }
     }
     bounds.min_x = min_x;
     bounds.max_x = max_x;
@@ -91,16 +91,18 @@ std::optional<Bounds3D> CpuTriangleMesh::calcBounds() const
     bounds.center.x = (min_x + max_x) / 2.0;
     bounds.center.y = (min_y + max_y) / 2.0;
     bounds.center.z = (min_z + max_z) / 2.0;
-    // 再次遍历，计算从中心点到所有顶点的最大距离作为半径 (包围球), 这样可以使得计算出来的半径更准确.
+
     float max_dist = 0.0f;
-    for(const auto& v : vertices) {
+    for (const auto& v : vertices) {
         auto dist = glm::length(v.position - bounds.center);
-        if(dist > max_dist){
+        if (dist > max_dist) {
             max_dist = dist;
         }
     }
     bounds.radius = max_dist;
     return bounds;
 }
+
+template struct GLMESH_KERNEL_API CpuTriangleMesh<CpuVertex>;
 
 GLMESH_NAMESPACE_END

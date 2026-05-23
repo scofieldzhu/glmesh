@@ -72,6 +72,8 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/install" CACHE PATH "Default install prefix" FORCE)
 endif()
 
+set(CMAKE_DEBUG_POSTFIX "-d")
+
 add_subdirectory(source/${PROJECT_NAME}/kernel)
 add_subdirectory(source/${PROJECT_NAME}/render)
 add_subdirectory(source/${PROJECT_NAME}/mesh_studio)

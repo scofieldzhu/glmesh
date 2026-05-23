@@ -28,25 +28,9 @@
  *  SOFTWARE.
  */
 #include "gl_rectangle.h"
-#include "glmesh/kernel/gl/gpu_rectangle.h"
 #include "glad/glad.h"
 
 GLMESH_NAMESPACE_BEGIN
-
-// Split the quad into two CCW triangles: (0,1,2) and (0,2,3).
-namespace{
-    constexpr uint32 kRectIndices[6] = {0, 1, 2, 0, 2, 3};
-} 
-
-void GLRectangle::upload(const GpuRectangle& rect, uint32 usage)
-{
-    vao_.bind();
-    vbo_.upload(rect.vertices.data(), rect.vertices.size() * sizeof(GpuVertex), usage);
-    ebo_.upload(kRectIndices, sizeof(kRectIndices), usage);
-    GpuVertex::SetupAttribs();
-    vao_.unbind();
-    uploaded_ = true;
-}
 
 void GLRectangle::draw() const
 {

@@ -4,7 +4,7 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates
  *  coherent OpenGL.
  *
- *  File: gpu_rect.h
+ *  File: gpu_rectangle.h
  *  Copyright (c) 2024-2026 scofieldzhu
  *
  *  MIT License
@@ -35,10 +35,10 @@
 
 GLMESH_NAMESPACE_BEGIN
 
-// Vertices are ordered: bottom-left, bottom-right, top-right, top-left (CCW).
+template<typename V = GpuVertex>
 struct GpuRectangle
 {
-    std::array<GpuVertex, 4> vertices;
+    std::array<V, 4> vertices;
 };
 
 GLMESH_NAMESPACE_END

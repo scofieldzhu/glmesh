@@ -35,6 +35,7 @@
 #include <QWheelEvent>
 #include <mutex>
 #include "common.h"
+#include "glmesh/kernel/gl/gpu_triangle_mesh.h"
 #include "glmesh/kernel/gl/gl_bkg.h"
 #include "glmesh/kernel/gl/gl_trackball_gizmo.h"
 #include "renderable_object.h"
@@ -51,7 +52,7 @@ public:
         EmptyData,
         NotInitialized
     };
-    QString addMesh(const glmesh::GpuTriangleMesh& mesh_data, const glmesh::Bounds3D& mb, UpdateError* out_err = nullptr);
+    QString addMesh(const glmesh::GpuTriangleMesh<>& mesh_data, const glmesh::Bounds3D& mb, UpdateError* out_err = nullptr);
     void removeMesh(const QString& mesh_uid);
     void setMeshVisible(const QString& uid, bool visible);
     void setMeshRenderMode(const QString& uid, MeshRenderMode mode);

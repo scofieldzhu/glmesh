@@ -35,9 +35,7 @@ set(SOURCE_FILES
 
 add_executable(${target}
     ${SOURCE_FILES}
-    ${QT_UI_FILES}
-    shader_program_manager.h
-    common.h
+    ${QT_UI_FILES}    
 )
 
 target_include_directories(${target} PRIVATE
@@ -52,6 +50,10 @@ target_link_libraries(${target} PRIVATE
     glmesh.kernel
     glmesh.render
     opengl32
+)
+
+set_target_properties(${target} PROPERTIES
+    DEBUG_POSTFIX "-d"
 )
 
 # --- install rules ---
@@ -94,7 +96,7 @@ if(WIN32)
             execute_process(
                 COMMAND \"${WINDEPLOYQT_EXECUTABLE}\"
                     --no-translations
-                    \"\${CMAKE_INSTALL_PREFIX}/bin/MeshStudio.exe\"
+                    \"$<TARGET_FILE:${target}>\"
                 RESULT_VARIABLE _wdqt_result
                 OUTPUT_VARIABLE _wdqt_out
                 ERROR_VARIABLE _wdqt_err

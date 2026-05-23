@@ -157,11 +157,11 @@ void MainWidget::onImportMeshActionTriggered()
     if(polygon_mesh.polygons.empty()){
         return;        
     }
-    glmesh::CpuTriangleMesh triangle_mesh;
+    glmesh::CpuTriangleMesh<> triangle_mesh;
     triangle_mesh.buildFromPolygonMesh(polygon_mesh);
     auto mesh_bound_opt = triangle_mesh.calcBounds();
     APP_LOG_TRACE("Center:{} radius:{}", GlmVec3ToStr(mesh_bound_opt->center), mesh_bound_opt->radius);
-    glmesh::GpuTriangleMesh gpu_triangle_mesh = glmesh::ToGpuTriangleMesh(triangle_mesh);
+    glmesh::GpuTriangleMesh<> gpu_triangle_mesh = glmesh::ToGpuTriangleMesh(triangle_mesh);
     MeshWidget::UpdateError err;
     QString mesh_uid = ui_.meshRenderWidget->addMesh(gpu_triangle_mesh, *mesh_bound_opt, &err);
     if(mesh_uid.isEmpty()){

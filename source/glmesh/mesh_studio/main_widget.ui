@@ -146,7 +146,7 @@
     <property name="title">
      <string>Process</string>
     </property>
-    <addaction name="actionCleanMesh"/>
+    <addaction name="actionDrawPolyline"/>
    </widget>
    <widget class="QMenu" name="menuMeasure">
     <property name="title">
@@ -953,9 +953,9 @@
     <string>Mesh</string>
    </property>
   </action>
-  <action name="actionCleanMesh">
+  <action name="actionDrawPolyline">
    <property name="text">
-    <string>Mesh Clean</string>
+    <string>Draw Polyline</string>
    </property>
   </action>
   <action name="actionSimplifyMesh">

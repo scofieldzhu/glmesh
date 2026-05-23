@@ -226,7 +226,7 @@ void MeshWidget::initializeGL()
     gl_initialized_ = true;
 }
 
-QString MeshWidget::addMesh(const glmesh::GpuTriangleMesh& mesh_data, const glmesh::Bounds3D& bounds, UpdateError* out_err)
+QString MeshWidget::addMesh(const glmesh::GpuTriangleMesh<>& mesh_data, const glmesh::Bounds3D& bounds, UpdateError* out_err)
 {
     if(!gl_initialized_){
         if(out_err){

@@ -37,11 +37,16 @@
 
 GLMESH_NAMESPACE_BEGIN
 
+template<typename V> struct GpuRectangle;
+
 class GLMESH_KERNEL_API GLRectangle : public GLDrawable
 {
 public:
     void draw() const override;
-    void upload(const GpuRectangle& rect, uint32 usage);
+
+    template<typename V>
+    void upload(const GpuRectangle<V>& rect, uint32 usage);
+
     bool valid() const { return uploaded_; }
 
 private:
@@ -50,6 +55,19 @@ private:
     IndexBuffer ebo_;
     bool uploaded_ = false;
 };
+
+inline constexpr uint32 kRectIndices[6] = {0, 1, 2, 0, 2, 3};
+
+template<typename V>
+void GLRectangle::upload(const GpuRectangle<V>& rect, uint32 usage)
+{
+    vao_.bind();
+    vbo_.upload(rect.vertices.data(), rect.vertices.size() * sizeof(V), usage);
+    ebo_.upload(kRectIndices, sizeof(kRectIndices), usage);
+    V::SetupAttribs();
+    vao_.unbind();
+    uploaded_ = true;
+}
 
 GLMESH_NAMESPACE_END
 
