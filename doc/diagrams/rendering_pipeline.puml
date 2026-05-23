@@ -1,0 +1,128 @@
+@startuml glmesh渲染管线总览
+skinparam backgroundColor #FEFEFE
+skinparam activityBackgroundColor #E8F0FE
+skinparam activityBorderColor #3B82F6
+skinparam partitionBorderColor #1E293B
+skinparam partitionBackgroundColor #F8FAFC
+skinparam arrowColor #475569
+skinparam titleFontSize 18
+
+title glmesh 渲染管线总览
+
+' ============================================================
+' Data Import Stage
+' ============================================================
+
+partition "1. 数据导入 (离线阶段)" {
+
+  start
+
+  :QFileDialog 选择 .ply 文件;
+
+  :LoadPlyAsCpuPolygonMesh()
+  解析 PLY;
+
+  :CpuTriangleMesh::buildFromPolygonMesh()
+  三角化;
+
+  :calcBounds()
+  计算包围盒;
+
+  :ToGpuTriangleMesh()
+  CPU -> GPU 转换;
+
+  :GLTriangleMesh::upload()
+  创建 VAO/VBO/EBO
+  上传顶点/索引;
+
+  :组装 RenderableObject
+  插入 renderable_objects_ map;
+
+  :Camera::fitBounds()
+  适配相机;
+}
+
+' ============================================================
+' Per-Frame Stage
+' ============================================================
+
+partition "2. 逐帧渲染 MeshWidget::paintGL()" {
+
+  :glClear 清除缓冲;
+
+  partition "Pass 1: 背景" {
+    :SPT_BACKGROUND Shader;
+    :GLBkg::draw();
+  }
+
+  partition "Pass 2: 模型网格" {
+    :Camera 计算 MVP 矩阵;
+
+    repeat
+      :Material::bind()
+      SPT_MESH Shader;
+
+      :设置所有 Uniform
+      MVP / 法线矩阵 / 光照参数;
+
+      :glPolygonMode
+      Facet/Wireframe/Points;
+
+      :GLDrawable::draw()
+      glDrawElements GL_TRIANGLES;
+    repeat while (遍历 renderable_objects_)
+
+  }
+
+  partition "Pass 3: Trackball Gizmo" {
+    :SPT_GIZMO Shader;
+    :drawAxis X / Y / Z;
+  }
+
+  :Qt swapBuffers();
+
+  detach
+}
+
+' ============================================================
+' Shader Stage Detail
+' ============================================================
+
+partition "3. 着色器管线 SPT_MESH" {
+
+  partition "顶点着色器" {
+    :输入: aPosition vec3;
+    :输入: aNormal vec3;
+    :输入: aColor vec3;
+
+    :gl_Position =
+    uProj * uView * uModel * vec4(aPosition, 1.0);
+
+    :vNormal =
+    uNormalMatrix * aNormal;
+
+    :vColor = aColor;
+  }
+
+  partition "片段着色器" {
+    :环境光
+    ambient = uAmbientFactor * uAmbientLightColor;
+
+    :漫反射 Lambertian
+    diff = max(dot(N, uLightDir), 0)
+    双面光照: abs(dot(N, uLightDir));
+
+    :镜面高光 Blinn-Phong
+    spec = pow(max(dot(N, H), 0), 32);
+
+    :法线回退
+    if vNormal == 0 use dFdx/dFdy;
+
+    :finalColor =
+    (ambient + diffuse + specular) * baseColor;
+
+    :输出到帧缓冲;
+  }
+}
+
+@enduml

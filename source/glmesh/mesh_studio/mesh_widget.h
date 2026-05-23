@@ -40,6 +40,7 @@
 #include "glmesh/kernel/gl/gl_trackball_gizmo.h"
 #include "renderable_object.h"
 #include "arcball_rotator.h"
+#include "mouse_interaction.h"
 #include "glmesh/render/camera.h"
 
 class MeshWidget : public QOpenGLWidget 
@@ -65,6 +66,7 @@ public:
     void setDiffuseLightColor(const QColor& color);
     QColor diffuseLightColor()const{ return ToColor(diffuse_light_color_); }
     void setLightDirection(const glm::vec3& dir);
+    void setMouseInteraction(std::unique_ptr<IMouseInteraction> interaction);
     explicit MeshWidget(QWidget* parent = nullptr);
     ~MeshWidget() override;
 
@@ -80,13 +82,13 @@ private:
     void initTrackballGizmo();
     void drawTrackballGizmo();
     float computeGizmoWorldRadius() const;
-    int pickGizmoAxis(const QPoint& pos) const;
     void drawRenderableObjects();
     void handleMeshBoundsChanged(const glmesh::Bounds3D& bounds);
     std::mutex renderable_objects_mutex_;
     std::unordered_map<QString, RenderableObject> renderable_objects_;
     bool gl_initialized_ = false;
     ArcBallRotator ball_rotator_;
+    std::unique_ptr<IMouseInteraction> mouse_interaction_;
     std::unique_ptr<glmesh::GLBkg> gl_bkg_;
     std::unique_ptr<glmesh::GLTrackballGizmo> trackball_gizmo_;
     int hovered_gizmo_axis_ = -1;

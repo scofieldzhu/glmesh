@@ -1,0 +1,128 @@
+@startuml glmesh类关系
+skinparam backgroundColor #FEFEFE
+skinparam classBackgroundColor #E8F0FE
+skinparam classBorderColor #3B82F6
+skinparam titleFontSize 18
+skinparam packageBackgroundColor #F8FAFC
+skinparam packageBorderColor #1E293B
+
+title glmesh 核心类关系
+
+package "mesh_studio (Qt5 App)" {
+  class MainWidget {
+    + onImportMeshActionTriggered()
+    - ui_: Ui::MainWidget
+  }
+
+  class MeshWidget {
+    + paintGL()
+    + addMesh(gpu_mesh, bounds) : QString
+    - drawGradientBackground()
+    - drawRenderableObjects()
+    - drawTrackballGizmo()
+    - renderable_objects_: map<QString, RenderableObject>
+    - active_camera_: Camera
+    - ball_rotator_: ArcBallRotator
+  }
+
+  class RenderableObject {
+    + uid: QString
+    + visible: bool
+    + model_matrix: mat4
+    + bounds: Bounds3D
+    + material: Material
+    + drawable: shared_ptr<GLDrawable>
+  }
+
+  class Material {
+    + shader_prog_id: ProgramTypeId
+    + base_color: vec3
+    + point_size: float
+    + render_mode: MeshRenderMode
+    + bind()
+  }
+
+  class ShaderProgramManager {
+    - program_dict_: map<ProgramTypeId, ShaderProgram>
+    + {static} Inst() : ShaderProgramManager&
+    + addProgram(type_id, prog)
+    + getProgram(type_id) : ShaderProgram*
+  }
+}
+
+package "kernel (glmesh.kernel)" {
+  interface GLDrawable {
+    + draw()
+  }
+
+  class GLTriangleMesh {
+    - vao_: VertexArray
+    - vbo_: VertexBuffer
+    - ebo_: IndexBuffer
+    - index_count_: size_t
+    + upload(GpuTriangleMesh, usage)
+    + draw()
+  }
+
+  class GLBkg {
+    + draw()
+  }
+
+  class GLTrackballGizmo {
+    + draw()
+    + drawAxis(index, color)
+  }
+
+  class ShaderProgram {
+    - id_: uint32
+    - uniform_cache_: map
+    + createFromSource(vert, frag)
+    + use()
+    + unuse()
+    + setMat4(name, mat)
+    + setVec3(name, vec)
+  }
+
+  class GpuTriangleMesh {
+    + vertices: vector<GpuVertex>
+    + indices: vector<uint32>
+  }
+
+  class Bounds3D {
+    + center: vec3
+    + radius: float
+  }
+}
+
+package "render (glmesh.render)" {
+  class Camera {
+    + viewMatrix() : mat4
+    + projectionMatrix() : mat4
+    + modelCenterMatrix() : mat4
+    + fitBounds(center, radius)
+    - rotation_: quat
+    - distance_: float
+    - center_offset_: vec3
+  }
+}
+
+' ===== Relationships =====
+
+MainWidget --> MeshWidget : ui_.meshRenderWidget
+MeshWidget *-- Camera
+MeshWidget *-- "1..*" RenderableObject
+RenderableObject *-- Material
+RenderableObject o-- GLDrawable : drawable
+RenderableObject o-- Bounds3D
+
+GLDrawable <|.. GLTriangleMesh
+GLDrawable <|.. GLBkg
+GLDrawable <|.. GLTrackballGizmo
+
+GLTriangleMesh ..> GpuTriangleMesh : upload() 输入
+
+Material --> ShaderProgramManager : uses
+ShaderProgramManager *-- ShaderProgram : manages
+MeshWidget --> ShaderProgramManager : uses
+
+@enduml

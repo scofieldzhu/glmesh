@@ -1,0 +1,71 @@
+@startuml glmesh着色器管线
+skinparam backgroundColor #FEFEFE
+skinparam componentBackgroundColor #E8F0FE
+skinparam componentBorderColor #3B82F6
+skinparam noteBackgroundColor #FEF9C3
+skinparam noteBorderColor #CA8A04
+skinparam titleFontSize 18
+
+title glmesh 着色器管线 (SPT_MESH)
+
+note as UniformNote
+  **每帧每对象传入的 Uniform:**
+  ====
+  * uModel / uView / uProj : mat4
+  * uNormalMatrix : mat3
+  * uObjectColor : vec3
+  * uUseVertexColor : bool
+  * uAmbientFactor : float
+  * uAmbientLightColor : vec3
+  * uUseDiffuse : bool
+  * uDiffuseLightColor : vec3
+  * uLightDir : vec3
+  * uViewPos : vec3
+end note
+
+' Vertex Shader
+component "顶点着色器 (Vertex Shader)" as VS {
+
+  [location=0\n aPosition vec3] as attr_pos
+  [location=1\n aNormal vec3] as attr_norm
+  [location=2\n aColor vec3] as attr_col
+
+  [gl_Position =\n uProj * uView * uModel\n * vec4(aPosition, 1.0)] as calc_pos
+  [vNormal =\n uNormalMatrix * aNormal] as calc_norm
+  [vColor = aColor] as pass_col
+
+  attr_pos --> calc_pos
+  attr_norm --> calc_norm
+  attr_col --> pass_col
+}
+
+' Fragment Shader
+component "片段着色器 (Fragment Shader)" as FS {
+
+  [环境光 Ambient\nambient = uAmbientFactor\n  * uAmbientLightColor] as ambient
+
+  [漫反射 Diffuse\nN = normalize(vNormal)\ndiff = max(dot(N, uLightDir), 0)\n双面: abs(dot(N, uLightDir))] as diffuse
+
+  [镜面高光 Specular\nBlinn-Phong (shininess=32)\nspec = pow(max(dot(N, H), 0), 32)] as specular
+
+  [法线回退 Normal Fallback\nif vNormal == vec3(0)\n  use dFdx/dFdy] as fallback
+
+  [finalColor =\n (ambient + diffuse + specular)\n * baseColor] as final
+
+  [输出到帧缓冲] as output
+
+  ambient --> diffuse
+  diffuse --> specular
+  specular --> fallback
+  fallback --> final
+  final --> output
+}
+
+' Connections between VS and FS
+calc_pos -[hidden]down-> ambient
+calc_norm -[hidden]down-> diffuse
+pass_col -[hidden]down-> final
+
+VS -down-> FS : varying 变量传递
+
+@enduml

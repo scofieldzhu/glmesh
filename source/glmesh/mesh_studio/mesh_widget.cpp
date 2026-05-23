@@ -46,6 +46,7 @@
 #include "glmesh/kernel/gl/gl_trackball_gizmo.h"
 #include "common.h"
 #include "shader_program_manager.h"
+#include "orbit_interaction.h"
 #include "app_log.h"
 
 namespace
@@ -188,6 +189,7 @@ MeshWidget::MeshWidget(QWidget* parent)
     : QOpenGLWidget(parent)
 {
     setMouseTracking(true);
+    setMouseInteraction(std::make_unique<OrbitInteraction>());
 }
 
 MeshWidget::~MeshWidget()
@@ -198,6 +200,11 @@ MeshWidget::~MeshWidget()
     gl_bkg_.reset();
     ShaderProgramManager::Inst().destory();
     doneCurrent();
+}
+
+void MeshWidget::setMouseInteraction(std::unique_ptr<IMouseInteraction> interaction)
+{
+    mouse_interaction_ = std::move(interaction);
 }
 
 void MeshWidget::initializeGL()
@@ -338,30 +345,47 @@ void MeshWidget::paintGL()
 
 void MeshWidget::mousePressEvent(QMouseEvent* event)
 {
-    if(event->buttons() & Qt::LeftButton) {
-        ball_rotator_.onStartRotationEvent(event, size());
-    }
+    if (!mouse_interaction_) return;
+    MouseInteractionContext ctx{
+        &active_camera_,
+        &ball_rotator_,
+        trackball_gizmo_.get(),
+        &hovered_gizmo_axis_,
+        width(),
+        height(),
+        [this]() { update(); }
+    };
+    mouse_interaction_->onMousePress(event, ctx);
 }
 
 void MeshWidget::mouseMoveEvent(QMouseEvent* event)
 {
-    if(event->buttons() & Qt::LeftButton) {
-        ball_rotator_.onUpdateMousePos(event, size());
-        active_camera_.setRotation(ball_rotator_.getRotationMat());
-        update(); // 触发重绘
-        return;
-    }
-    int new_axis = pickGizmoAxis(event->pos());
-    if(new_axis != hovered_gizmo_axis_){
-        hovered_gizmo_axis_ = new_axis;
-        update();
-    }
+    if (!mouse_interaction_) return;
+    MouseInteractionContext ctx{
+        &active_camera_,
+        &ball_rotator_,
+        trackball_gizmo_.get(),
+        &hovered_gizmo_axis_,
+        width(),
+        height(),
+        [this]() { update(); }
+    };
+    mouse_interaction_->onMouseMove(event, ctx);
 }
 
 void MeshWidget::wheelEvent(QWheelEvent* event)
 {
-    active_camera_.zoomByWheelDelta(event->angleDelta().y());
-    update(); // 仅在视角变化时要求重绘
+    if (!mouse_interaction_) return;
+    MouseInteractionContext ctx{
+        &active_camera_,
+        &ball_rotator_,
+        trackball_gizmo_.get(),
+        &hovered_gizmo_axis_,
+        width(),
+        height(),
+        [this]() { update(); }
+    };
+    mouse_interaction_->onWheel(event, ctx);
 }
 
 void MeshWidget::drawGradientBackground()
@@ -598,61 +622,3 @@ float MeshWidget::computeGizmoWorldRadius() const
     return pixel_radius * 2.0f / (static_cast<float>(h) * p11);
 }
 
-int MeshWidget::pickGizmoAxis(const QPoint& pos) const
-{
-    if(!trackball_gizmo_ || !trackball_gizmo_->valid()){
-        return -1;
-    }
-    int w = width();
-    int h = height();
-    if(w <= 0 || h <= 0){
-        return -1;
-    }
-    float world_radius = const_cast<MeshWidget*>(this)->computeGizmoWorldRadius();
-    if(world_radius <= 0.0f){
-        return -1;
-    }
-
-    glm::mat4 mvp = active_camera_.projectionMatrix() *
-                    active_camera_.viewMatrix() *
-                    glm::scale(glm::mat4(1.0f), glm::vec3(world_radius));
-
-    auto project = [&](const glm::vec3& wp, glm::vec2& out_screen) -> bool {
-        glm::vec4 clip = mvp * glm::vec4(wp, 1.0f);
-        if(clip.w <= 0.0f){
-            return false;
-        }
-        glm::vec3 ndc(clip.x / clip.w, clip.y / clip.w, clip.z / clip.w);
-        out_screen.x = (ndc.x * 0.5f + 0.5f) * static_cast<float>(w);
-        out_screen.y = (1.0f - (ndc.y * 0.5f + 0.5f)) * static_cast<float>(h);
-        return true;
-    };
-
-    const float pick_threshold_px = 8.0f;
-    glm::vec2 mouse(static_cast<float>(pos.x()), static_cast<float>(pos.y()));
-    int seg = trackball_gizmo_->segments();
-    int best_axis = -1;
-    float best_d2 = pick_threshold_px * pick_threshold_px;
-
-    for(int axis = 0; axis < 3; ++axis){
-        for(int i = 0; i < seg; ++i){
-            glm::vec3 a_w = glmesh::GLTrackballGizmo::axisRingPoint(axis, i, seg);
-            glm::vec3 b_w = glmesh::GLTrackballGizmo::axisRingPoint(axis, (i + 1) % seg, seg);
-            glm::vec2 a_s, b_s;
-            if(!project(a_w, a_s) || !project(b_w, b_s)){
-                continue;
-            }
-            // 点到线段距离平方
-            glm::vec2 ab = b_s - a_s;
-            float ab_len2 = glm::dot(ab, ab);
-            float t = ab_len2 > 1e-6f ? glm::clamp(glm::dot(mouse - a_s, ab) / ab_len2, 0.0f, 1.0f) : 0.0f;
-            glm::vec2 closest = a_s + t * ab;
-            float d2 = glm::dot(mouse - closest, mouse - closest);
-            if(d2 < best_d2){
-                best_d2 = d2;
-                best_axis = axis;
-            }
-        }
-    }
-    return best_axis;
-}

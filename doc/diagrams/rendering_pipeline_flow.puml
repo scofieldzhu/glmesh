@@ -1,0 +1,119 @@
+@startuml glmesh渲染管线-数据流
+skinparam backgroundColor #FEFEFE
+skinparam activityBackgroundColor #E8F0FE
+skinparam activityBorderColor #3B82F6
+skinparam partitionBorderColor #1E293B
+skinparam partitionBackgroundColor #F8FAFC
+skinparam arrowColor #475569
+skinparam titleFontSize 18
+
+title glmesh 渲染管线 - 数据流
+
+' ============================================================
+' Part 1: Data Import
+' ============================================================
+
+partition "数据导入 (离线阶段)" {
+
+  start
+
+  :QFileDialog 选择 .ply 文件;
+
+  :LoadPlyAsCpuPolygonMesh()
+  解析 PLY -> CpuPolygonMesh;
+
+  :CpuTriangleMesh::buildFromPolygonMesh()
+  三角化;
+
+  :CpuTriangleMesh::calcBounds()
+  计算包围盒 Bounds3D;
+
+  :ToGpuTriangleMesh()
+  CPU -> GPU 顶点转换;
+
+  :MeshWidget::addMesh();
+
+  :new GLTriangleMesh()
+  创建 VAO + VBO + EBO;
+
+  :GLTriangleMesh::upload()
+  上传顶点/索引到 GPU;
+
+  :组装 RenderableObject;
+
+  :插入 renderable_objects_ map;
+
+  :Camera::fitBounds()
+  调整相机适配模型;
+
+  :Qt update() -> paintGL();
+}
+
+' ============================================================
+' Part 2: Per-Frame Rendering
+' ============================================================
+
+partition "逐帧渲染 MeshWidget::paintGL()" {
+
+  :paintGL() 入口;
+
+  :glClear()
+  清除颜色 + 深度缓冲;
+
+  partition "Pass 1: 背景" {
+    :glDisable GL_DEPTH_TEST;
+
+    :ShaderProgramManager
+    .getProgram(SPT_BACKGROUND);
+
+    :GLBkg::draw()
+    绘制全屏渐变四边形;
+  }
+
+  :glEnable GL_DEPTH_TEST;
+
+  partition "Pass 2: 模型网格" {
+    :Camera 计算矩阵
+    view / modelCenter / projection;
+
+    :遍历 renderable_objects_;
+
+    repeat
+      :Material::bind()
+      getProgram(SPT_MESH)
+      shader->use();
+
+      :设置 Uniform
+      uModel, uView, uProj
+      uNormalMatrix
+      uLightDir, uViewPos
+      uAmbient*, uDiffuse*;
+
+      :glPolygonMode()
+      Facet / Wireframe / Points;
+
+      :GLDrawable::draw()
+      glDrawElements();
+    repeat while (还有对象?)
+  }
+
+  partition "Pass 3: Trackball Gizmo" {
+    :ShaderProgramManager
+    .getProgram(SPT_GIZMO);
+
+    :计算屏幕恒定半径;
+
+    :drawAxis(0) X轴环 - 红;
+
+    :drawAxis(1) Y轴环 - 绿;
+
+    :drawAxis(2) Z轴环 - 蓝;
+  }
+
+  :Qt swapBuffers()
+  呈现到屏幕;
+
+  detach
+}
+
+@enduml
