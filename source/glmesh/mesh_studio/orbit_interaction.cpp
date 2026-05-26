@@ -116,15 +116,13 @@ int OrbitInteraction::pickGizmoAxis(const QPoint& pos, const MouseInteractionCon
     // computeGizmoWorldRadius is non-const because pick is conceptually read-only,
     // we cast away const on 'this' to match the original pattern.
     float world_radius = const_cast<OrbitInteraction*>(this)->computeGizmoWorldRadius(ctx);
-    if(world_radius <= 0.0f) {
+    if(world_radius <= 0.0f){
         return -1;
     }
-
     glm::mat4 mvp = ctx.camera->projectionMatrix() *
                     ctx.camera->viewMatrix() *
                     glm::scale(glm::mat4(1.0f), glm::vec3(world_radius));
-
-    auto project = [&](const glm::vec3& wp, glm::vec2& out_screen) -> bool {
+    auto project = [&](const glm::vec3& wp, glm::vec2& out_screen){
         glm::vec4 clip = mvp * glm::vec4(wp, 1.0f);
         if(clip.w <= 0.0f) {
             return false;
@@ -134,23 +132,24 @@ int OrbitInteraction::pickGizmoAxis(const QPoint& pos, const MouseInteractionCon
         out_screen.y = (1.0f - (ndc.y * 0.5f + 0.5f)) * static_cast<float>(h);
         return true;
     };
-
     const float pick_threshold_px = 8.0f;
     glm::vec2 mouse(static_cast<float>(pos.x()), static_cast<float>(pos.y()));
-    int seg = ctx.gizmo->segments();
+    int seg = ctx.gizmo->segmentCount();
     int best_axis = -1;
     float best_d2 = pick_threshold_px * pick_threshold_px;
-
     for(int axis = 0; axis < 3; ++axis) {
         for(int i = 0; i < seg; ++i) {
-            glm::vec3 a_w = glmesh::GLTrackballGizmo::axisRingPoint(axis, i, seg);
-            glm::vec3 b_w = glmesh::GLTrackballGizmo::axisRingPoint(axis, (i + 1) % seg, seg);
+            glm::vec3 a_w = glmesh::GLTrackballGizmo::AxisRingPoint(axis, i, seg);
+            glm::vec3 b_w = glmesh::GLTrackballGizmo::AxisRingPoint(axis, (i + 1) % seg, seg);
             glm::vec2 a_s, b_s;
             if(!project(a_w, a_s) || !project(b_w, b_s)) {
                 continue;
             }
             glm::vec2 ab = b_s - a_s;
             float ab_len2 = glm::dot(ab, ab);
+            // t = (|AM| × COS0) / |AB| 
+            //   = (|AM| × |AB| × COS0) / |AB|²
+            //   =  (AM * AB) / |AB|²
             float t = ab_len2 > 1e-6f ? glm::clamp(glm::dot(mouse - a_s, ab) / ab_len2, 0.0f, 1.0f) : 0.0f;
             glm::vec2 closest = a_s + t * ab;
             float d2 = glm::dot(mouse - closest, mouse - closest);

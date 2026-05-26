@@ -25,10 +25,10 @@ public:
     void draw() const override;
     void drawAxis(int axis) const;
     bool valid() const { return created_; }
-    int segments() const { return vertex_count_; }
+    int segmentCount() const { return vertex_count_; }
     // axis: 0=X(YZ-plane ring), 1=Y(XZ-plane ring), 2=Z(XY-plane ring)
     // i: vertex index in [0, segments)
-    static glm::vec3 axisRingPoint(int axis, int i, int segments);
+    static glm::vec3 AxisRingPoint(int axis, int i, int segments);
 
 private:
     VertexArray vao_[3];

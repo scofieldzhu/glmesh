@@ -18,7 +18,7 @@
 
 GLMESH_NAMESPACE_BEGIN
 
-glm::vec3 GLTrackballGizmo::axisRingPoint(int axis, int i, int segments)
+glm::vec3 GLTrackballGizmo::AxisRingPoint(int axis, int i, int segments)
 {
     const float two_pi = 2 * glm::pi<float>();
     float t = static_cast<float>(i) * (two_pi / static_cast<float>(segments));
@@ -45,7 +45,7 @@ void GLTrackballGizmo::create(int segments)
     for(int axis_id = 0; axis_id < 3; ++axis_id){
         rings[axis_id].resize(segments);
         for(int seg_id = 0; seg_id < segments; ++seg_id){
-            rings[axis_id][seg_id] = axisRingPoint(axis_id, seg_id, segments);
+            rings[axis_id][seg_id] = AxisRingPoint(axis_id, seg_id, segments);
         }
     }
 
