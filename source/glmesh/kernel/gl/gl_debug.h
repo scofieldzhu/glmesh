@@ -48,7 +48,7 @@ GLMESH_NAMESPACE_END
     do { \
         expr; \
         ::glmesh::gl::CheckGlError(#expr, __FILE__, __LINE__); \
-    } while (0)
+    } while(0)
 #else
     #define GL_CHECK(expr) expr
 #endif

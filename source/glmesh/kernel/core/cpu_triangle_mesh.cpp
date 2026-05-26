@@ -37,7 +37,7 @@ template<typename V>
 void CpuTriangleMesh<V>::buildFromPolygonMesh(const CpuPolygonMesh& polyon_mesh)
 {
     vertices.resize(polyon_mesh.vertices.size());
-    for (size_t i = 0; i < polyon_mesh.vertices.size(); ++i) {
+    for(size_t i = 0; i < polyon_mesh.vertices.size(); ++i) {
         const auto& src = polyon_mesh.vertices[i];
         vertices[i].position = src.position;
         if constexpr (VertexTraits<V>::has_normal) {
@@ -49,11 +49,11 @@ void CpuTriangleMesh<V>::buildFromPolygonMesh(const CpuPolygonMesh& polyon_mesh)
     }
 
     indices.clear();
-    for (const auto& poly : polyon_mesh.polygons) {
-        if (poly.size() < 3) {
+    for(const auto& poly : polyon_mesh.polygons) {
+        if(poly.size() < 3) {
             continue;
         }
-        for (auto i = 1; i + 1 < poly.size(); ++i) {
+        for(auto i = 1; i + 1 < poly.size(); ++i) {
             indices.push_back(poly[0]);
             indices.push_back(poly[i]);
             indices.push_back(poly[i + 1]);
@@ -64,7 +64,7 @@ void CpuTriangleMesh<V>::buildFromPolygonMesh(const CpuPolygonMesh& polyon_mesh)
 template<typename V>
 std::optional<Bounds3D> CpuTriangleMesh<V>::calcBounds() const
 {
-    if (vertices.empty()) {
+    if(vertices.empty()) {
         return std::nullopt;
     }
     Bounds3D bounds;
@@ -74,13 +74,13 @@ std::optional<Bounds3D> CpuTriangleMesh<V>::calcBounds() const
     float max_y = max_x;
     float min_z = min_x;
     float max_z = max_x;
-    for (const auto& v : vertices) {
-        if (v.position.x < min_x) { min_x = v.position.x; }
-        if (v.position.x > max_x) { max_x = v.position.x; }
-        if (v.position.y < min_y) { min_y = v.position.y; }
-        if (v.position.y > max_y) { max_y = v.position.y; }
-        if (v.position.z < min_z) { min_z = v.position.z; }
-        if (v.position.z > max_z) { max_z = v.position.z; }
+    for(const auto& v : vertices) {
+        if(v.position.x < min_x) { min_x = v.position.x; }
+        if(v.position.x > max_x) { max_x = v.position.x; }
+        if(v.position.y < min_y) { min_y = v.position.y; }
+        if(v.position.y > max_y) { max_y = v.position.y; }
+        if(v.position.z < min_z) { min_z = v.position.z; }
+        if(v.position.z > max_z) { max_z = v.position.z; }
     }
     bounds.min_x = min_x;
     bounds.max_x = max_x;
@@ -93,9 +93,9 @@ std::optional<Bounds3D> CpuTriangleMesh<V>::calcBounds() const
     bounds.center.z = (min_z + max_z) / 2.0;
 
     float max_dist = 0.0f;
-    for (const auto& v : vertices) {
+    for(const auto& v : vertices) {
         auto dist = glm::length(v.position - bounds.center);
-        if (dist > max_dist) {
+        if(dist > max_dist) {
             max_dist = dist;
         }
     }

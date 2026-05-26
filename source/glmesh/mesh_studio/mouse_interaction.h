@@ -35,8 +35,8 @@
 #include <functional>
 
 namespace glmesh {
-class Camera;
-class GLTrackballGizmo;
+    class Camera;
+    class GLTrackballGizmo;
 }
 
 class ArcBallRotator;

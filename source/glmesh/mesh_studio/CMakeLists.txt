@@ -78,10 +78,6 @@ if(WIN32)
         message(FATAL_ERROR "windeployqt not found")
     endif()
 
-    # get_target_property(qmake_executable Qt5::qmake IMPORTED_LOCATION)
-    # get_filename_component(qt_bin_dir "${qmake_executable}" DIRECTORY)
-    # find_program(WINDEPLOYQT_EXECUTABLE windeployqt HINTS "${qt_bin_dir}")
-
     # Copy all DLLs from build output to install bin (vcpkg deps: PCL, spdlog, etc.)
     install(CODE "
         file(GLOB build_dlls \"${CMAKE_BINARY_DIR}/bin/*.dll\")
@@ -92,14 +88,16 @@ if(WIN32)
         endforeach()
     ")
 
-    # Run windeployqt for Qt DLLs, platform plugin, and MSVC runtime
-    if(WINDEPLOYQT_EXECUTABLE)
-        install(CODE "
-            message(STATUS \"Running windeployqt...\")
+    # Run windeployqt on the installed binary to deploy Qt DLLs, platform plugin, and MSVC runtime
+    install(CODE "
+        file(GLOB _installed_exes \"\${CMAKE_INSTALL_PREFIX}/bin/${target}*.exe\")
+        if(_installed_exes)
+            list(GET _installed_exes 0 _installed_exe)
+            message(STATUS \"Running windeployqt on \${_installed_exe}...\")
             execute_process(
                 COMMAND \"${WINDEPLOYQT_EXECUTABLE}\"
                     --no-translations
-                    \"$<TARGET_FILE:${target}>\"
+                    \"\${_installed_exe}\"
                 RESULT_VARIABLE _wdqt_result
                 OUTPUT_VARIABLE _wdqt_out
                 ERROR_VARIABLE _wdqt_err
@@ -107,10 +105,10 @@ if(WIN32)
             if(NOT _wdqt_result EQUAL 0)
                 message(WARNING \"windeployqt failed (\${_wdqt_result}): \${_wdqt_err}\")
             else()
-                message(STATUS \"windeployqt completed\")
+                message(STATUS \"windeployqt completed.\")
             endif()
-        ")
-    else()
-        message(WARNING "windeployqt not found. Qt runtime DLLs must be deployed manually.")
-    endif()
+        else()
+            message(WARNING \"No ${target} binary found in \${CMAKE_INSTALL_PREFIX}/bin/ — windeployqt skipped.\")
+        endif()
+    ")
 endif()

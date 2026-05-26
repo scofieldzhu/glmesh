@@ -121,7 +121,7 @@ namespace gl
 
     void EnableDebugOutput(bool synchronous, bool enableNotifications) 
     {
-        if (!hasDebugSupport())
+        if(!hasDebugSupport())
         {
             std::fprintf(stderr,
                          "[OpenGL] debug output is not available "
@@ -131,14 +131,14 @@ namespace gl
 
         glEnable(GL_DEBUG_OUTPUT);
 
-        if (synchronous)
+        if(synchronous)
             glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
         else
             glDisable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 
         glDebugMessageCallback(debugCallback, nullptr);
 
-        if (!enableNotifications)
+        if(!enableNotifications)
         {
             glDebugMessageControl(GL_DONT_CARE,
                                   GL_DONT_CARE,
@@ -151,7 +151,7 @@ namespace gl
 
     void DisableDebugOutput()
     {
-        if (!hasDebugSupport())
+        if(!hasDebugSupport())
             return;
 
         glDebugMessageCallback(nullptr, nullptr);
@@ -163,7 +163,7 @@ namespace gl
     {
         bool ok = true;
 
-        for (GLenum err = glGetError(); err != GL_NO_ERROR; err = glGetError())
+        for(GLenum err = glGetError(); err != GL_NO_ERROR; err = glGetError())
         {
             ok = false;
             std::fprintf(stderr,

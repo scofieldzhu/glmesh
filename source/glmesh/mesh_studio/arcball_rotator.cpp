@@ -48,7 +48,7 @@ void ArcBallRotator::onUpdateMousePos(QMouseEvent *event, const QSize &event_wid
     // 计算旋转角度
     float angle = std::acos(dot_prod);
     
-    if (angle > 1e-5f) { // 如果确实发生了移动
+    if(angle > 1e-5f) { // 如果确实发生了移动
         // 通过叉乘得到旋转轴 (右手定则)
         glm::vec3 axis = glm::cross(last_arcball_vec_, current_arcball_vec);
         axis = glm::normalize(axis);
@@ -62,7 +62,6 @@ void ArcBallRotator::onUpdateMousePos(QMouseEvent *event, const QSize &event_wid
     
     // 更新记录，用于下一帧计算
     last_arcball_vec_ = current_arcball_vec;
-        
 }
 
 void ArcBallRotator::onStartRotationEvent(QMouseEvent *event, const QSize &event_widget_size)
@@ -87,13 +86,12 @@ glm::vec3 ArcBallRotator::getArcballVector(const QPoint& pt, const int widget_wi
     // 2. 计算点到屏幕中心的距离的平方
     float OP_squared = x * x + y * y;
     
-    if (OP_squared <= 1.0f) {
+    if(OP_squared <= 1.0f) {
         // 如果点在球体内（勾股定理求 Z）
         P.z = std::sqrt(1.0f - OP_squared); 
-    } else {
+    }else{
         // 如果点在球体外，把它拉回球面上（Z = 0）
         P = glm::normalize(P); 
     }
-    
     return P;
 }

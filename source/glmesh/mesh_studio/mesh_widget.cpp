@@ -54,7 +54,7 @@ namespace
     void* qtGetGlProcAddress(const char* name)
     {
         auto* ctx = QOpenGLContext::currentContext();
-        if (!ctx) {
+        if(!ctx) {
             return nullptr;
         }
         return reinterpret_cast<void*>(ctx->getProcAddress(name));
@@ -345,7 +345,9 @@ void MeshWidget::paintGL()
 
 void MeshWidget::mousePressEvent(QMouseEvent* event)
 {
-    if (!mouse_interaction_) return;
+    if(!mouse_interaction_){
+        return;
+    }
     MouseInteractionContext ctx{
         &active_camera_,
         &ball_rotator_,
@@ -353,14 +355,18 @@ void MeshWidget::mousePressEvent(QMouseEvent* event)
         &hovered_gizmo_axis_,
         width(),
         height(),
-        [this]() { update(); }
+        [this](){ 
+            update(); 
+        }
     };
     mouse_interaction_->onMousePress(event, ctx);
 }
 
 void MeshWidget::mouseMoveEvent(QMouseEvent* event)
 {
-    if (!mouse_interaction_) return;
+    if(!mouse_interaction_){
+        return;
+    }
     MouseInteractionContext ctx{
         &active_camera_,
         &ball_rotator_,
@@ -368,14 +374,18 @@ void MeshWidget::mouseMoveEvent(QMouseEvent* event)
         &hovered_gizmo_axis_,
         width(),
         height(),
-        [this]() { update(); }
+        [this](){
+            update(); 
+        }
     };
     mouse_interaction_->onMouseMove(event, ctx);
 }
 
 void MeshWidget::wheelEvent(QWheelEvent* event)
 {
-    if (!mouse_interaction_) return;
+    if(!mouse_interaction_){
+        return;
+    }
     MouseInteractionContext ctx{
         &active_camera_,
         &ball_rotator_,
@@ -383,7 +393,9 @@ void MeshWidget::wheelEvent(QWheelEvent* event)
         &hovered_gizmo_axis_,
         width(),
         height(),
-        [this]() { update(); }
+        [this](){ 
+            update(); 
+        }
     };
     mouse_interaction_->onWheel(event, ctx);
 }
@@ -547,12 +559,10 @@ void MeshWidget::drawTrackballGizmo()
     if(w <= 0 || h <= 0){
         return;
     }
-
     float world_radius = computeGizmoWorldRadius();
     if(world_radius <= 0.0f){
         return;
     }
-
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
     glLineWidth(1.5f);
