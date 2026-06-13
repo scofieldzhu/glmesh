@@ -32,6 +32,7 @@
 #include "glmesh/kernel/io/mesh_loader.h"
 #include "glmesh/kernel/core/cpu_polygon_mesh.h"
 #include "glmesh/kernel/cpu_to_gpu.h"
+#include "draw_polyline_interaction.h"
 #include "app_log.h"
 #include "resource_util.h"
 
@@ -51,6 +52,7 @@ MainWidget::MainWidget(QWidget *parent, Qt::WindowFlags flags)
     }
     ui_.meshRenderWidget->setObjectName("renderViewport");
     connect(ui_.actionImportMesh, &QAction::triggered, this, &MainWidget::onImportMeshActionTriggered);
+    connect(ui_.actionDrawPolyline, &QAction::triggered, this, &MainWidget::onDrawPolylineActionTriggered);
 
     QStringList header_labels;
     header_labels << tr("Model File Name") << tr("Visibility");
@@ -176,4 +178,22 @@ void MainWidget::onImportMeshActionTriggered()
     new_mesh_item->setToolTip(0, filepath);
     new_mesh_item->setCheckState(1, Qt::Checked);    
     ui_.modelTreeWidget->setCurrentItem(new_mesh_item);
+}
+
+void MainWidget::onDrawPolylineActionTriggered()
+{
+    APP_LOG_INFO("Draw Polyline mode activated");
+
+    // 创建折线绘制交互模式
+    auto draw_interaction = std::make_unique<DrawPolylineInteraction>();
+    auto* draw_ptr = draw_interaction.get();
+
+    // 设置交互模式到 MeshWidget
+    ui_.meshRenderWidget->setMouseInteraction(std::move(draw_interaction));
+
+    // 提示用户操作方式
+    APP_LOG_INFO("Left click to pick points on mesh, right click to finish, Esc to cancel");
+
+    // TODO: 可以添加状态栏提示或对话框
+    // statusBar()->showMessage(tr("Draw Polyline: Left click to add points, Right click to finish"));
 }

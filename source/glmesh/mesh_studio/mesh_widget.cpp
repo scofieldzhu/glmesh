@@ -44,6 +44,10 @@
 #include "glmesh/kernel/gl/gpu_bkg.h"
 #include "glmesh/kernel/gl/gl_bkg.h"
 #include "glmesh/kernel/gl/gl_trackball_gizmo.h"
+#include "glmesh/kernel/gl/gl_picker.h"
+#include "glmesh/kernel/gl/gl_polyline.h"
+#include "glmesh/kernel/gl/gpu_polyline.h"
+#include "glmesh/kernel/gl/gpu_vertex.h"
 #include "common.h"
 #include "shader_program_manager.h"
 #include "orbit_interaction.h"
@@ -230,6 +234,10 @@ void MeshWidget::initializeGL()
     initGradientBackground();
     initTrackballGizmo();
 
+    // 初始化 Renderer
+    renderer_.setRenderWindowSize(width(), height());
+    renderer_.setCamera(&active_camera_);
+
     gl_initialized_ = true;
 }
 
@@ -331,6 +339,7 @@ void MeshWidget::resizeGL(int w, int h)
 {
     ::glViewport(0, 0, w, h);
     active_camera_.setViewport(w, h);
+    renderer_.setRenderWindowSize(w, h);
 }
 
 void MeshWidget::paintGL()
@@ -341,6 +350,42 @@ void MeshWidget::paintGL()
     drawGradientBackground();
     drawRenderableObjects();
     drawTrackballGizmo();
+
+    // 绘制临时折线
+    if (temp_polyline_ && temp_polyline_->valid()) {
+        auto mesh_shader = ShaderProgramManager::Inst().getProgram(SPT_MESH);
+        if (mesh_shader) {
+            mesh_shader->use();
+
+            // 使用与 drawRenderableObjects 相同的矩阵设置
+            glm::mat4 model = active_camera_.modelCenterMatrix();
+            glm::mat4 view = active_camera_.viewMatrix();
+            glm::mat4 proj = active_camera_.projectionMatrix();
+            glm::mat3 normal_matrix = glm::mat3(glm::transpose(glm::inverse(model)));
+
+            mesh_shader->setMat4("uModel", model);
+            mesh_shader->setMat4("uView", view);
+            mesh_shader->setMat4("uProj", proj);
+            mesh_shader->setMat3("uNormalMatrix", normal_matrix);
+
+            // 设置材质属性
+            mesh_shader->setVec3("uObjectColor", glm::vec3(1.0f, 0.0f, 0.0f)); // 红色
+            mesh_shader->setBool("uUseVertexColor", true); // 使用顶点颜色
+
+            // 设置光照（简化版）
+            mesh_shader->setFloat("uAmbientFactor", 1.0f);
+            mesh_shader->setVec3("uAmbientLightColor", glm::vec3(1.0f));
+            mesh_shader->setBool("uUseDiffuse", false);
+
+            // 启用点精灵以渲染圆形点
+            glEnable(GL_PROGRAM_POINT_SIZE);
+
+            ::glLineWidth(3.0f);
+            temp_polyline_->drawWithPoints(10.0f); // 10像素的控制点
+
+            glDisable(GL_PROGRAM_POINT_SIZE);
+        }
+    }
 }
 
 void MeshWidget::mousePressEvent(QMouseEvent* event)
@@ -349,6 +394,7 @@ void MeshWidget::mousePressEvent(QMouseEvent* event)
         return;
     }
     MouseInteractionContext ctx{
+        this,
         &active_camera_,
         &ball_rotator_,
         trackball_gizmo_.get(),
@@ -368,6 +414,7 @@ void MeshWidget::mouseMoveEvent(QMouseEvent* event)
         return;
     }
     MouseInteractionContext ctx{
+        this,
         &active_camera_,
         &ball_rotator_,
         trackball_gizmo_.get(),
@@ -387,6 +434,7 @@ void MeshWidget::wheelEvent(QWheelEvent* event)
         return;
     }
     MouseInteractionContext ctx{
+        this,
         &active_camera_,
         &ball_rotator_,
         trackball_gizmo_.get(),
@@ -398,6 +446,27 @@ void MeshWidget::wheelEvent(QWheelEvent* event)
         }
     };
     mouse_interaction_->onWheel(event, ctx);
+}
+
+void MeshWidget::keyPressEvent(QKeyEvent* event)
+{
+    if(!mouse_interaction_){
+        QOpenGLWidget::keyPressEvent(event);
+        return;
+    }
+    MouseInteractionContext ctx{
+        this,
+        &active_camera_,
+        &ball_rotator_,
+        trackball_gizmo_.get(),
+        &hovered_gizmo_axis_,
+        width(),
+        height(),
+        [this](){
+            update();
+        }
+    };
+    mouse_interaction_->onKeyPress(event, ctx);
 }
 
 void MeshWidget::drawGradientBackground()
@@ -476,11 +545,21 @@ void MeshWidget::drawRenderableObjects()
                 glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
                 glPointSize(ren_obj.material.point_size);
                 break;
-            
+
             default:
                 break;
         }
-        ren_obj.drawable->draw();
+
+        // 检查是否是折线对象，如果是则绘制控制点
+        auto* polyline = dynamic_cast<glmesh::GLPolyline*>(ren_obj.drawable.get());
+        if (polyline) {
+            glEnable(GL_PROGRAM_POINT_SIZE);
+            glLineWidth(ren_obj.material.line_width);
+            polyline->drawWithPoints(10.0f); // 10像素的控制点
+            glDisable(GL_PROGRAM_POINT_SIZE);
+        } else {
+            ren_obj.drawable->draw();
+        }
     }
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -630,5 +709,139 @@ float MeshWidget::computeGizmoWorldRadius() const
     // 正交投影下半径与距离无关，但会跟随 orthographic_scale 缩放，
     // 此处用 proj[1][1] 推回 world 单位即可。
     return pixel_radius * 2.0f / (static_cast<float>(h) * p11);
+}
+
+std::optional<glm::vec3> MeshWidget::pickWorldPoint(int screen_x, int screen_y)
+{
+    if(!gl_initialized_) {
+        APP_LOG_WARN("pickWorldPoint called before GL initialization");
+        return std::nullopt;
+    }
+
+    makeCurrent();
+
+    // 使用 kernel 的 GLPicker 读取深度值
+    float depth = glmesh::GLPicker::ReadDepth(screen_x, screen_y, height());
+
+    doneCurrent();
+
+    // 检查是否拾取到有效深度
+    if(!glmesh::GLPicker::IsValidDepth(depth)) {
+        return std::nullopt;
+    }
+
+    // 使用 Renderer 进行坐标转换（考虑 modelCenterMatrix）
+    glm::mat4 model_matrix = active_camera_.modelCenterMatrix();
+    return renderer_.unprojectWithDepth(
+        static_cast<float>(screen_x),
+        static_cast<float>(screen_y),
+        depth,
+        model_matrix
+    );
+}
+
+void MeshWidget::updateTempPolyline(const std::vector<glm::vec3>& points)
+{
+    if(points.empty()){
+        clearTempPolyline();
+        return;
+    }
+    if(points.size() < 2){
+        // 至少需要2个点才能绘制折线
+        return;
+    }
+    makeCurrent();
+
+    // 创建折线的 GPU 数据
+    glmesh::GpuPolyline<glmesh::GpuVertexPC> gpu_polyline;
+    gpu_polyline.vertexes.reserve(points.size());
+
+    // 将点转换为 GPU 顶点（红色折线）
+    glm::vec3 line_color(1.0f, 0.0f, 0.0f); // 红色
+    for (const auto& pt : points) {
+        glmesh::GpuVertexPC vertex;
+        vertex.position = pt;
+        vertex.color = line_color;
+        gpu_polyline.vertexes.push_back(vertex);
+    }
+
+    // 创建索引（连续的线段）
+    gpu_polyline.indexes.reserve((points.size() - 1) * 2);
+    for (size_t i = 0; i < points.size() - 1; ++i) {
+        gpu_polyline.indexes.push_back(static_cast<glmesh::int32>(i));
+        gpu_polyline.indexes.push_back(static_cast<glmesh::int32>(i + 1));
+    }
+
+    // 创建或更新 GLPolyline
+    if (!temp_polyline_) {
+        temp_polyline_ = std::make_unique<glmesh::GLPolyline>();
+    }
+    temp_polyline_->upload(gpu_polyline, GL_DYNAMIC_DRAW);
+
+    doneCurrent();
+    update(); // 触发重绘
+}
+
+void MeshWidget::clearTempPolyline()
+{
+    temp_polyline_.reset();
+    update();
+}
+
+QString MeshWidget::finalizeTempPolyline(const std::vector<glm::vec3>& points)
+{
+    if (points.size() < 2) {
+        APP_LOG_WARN("Cannot finalize polyline with less than 2 points");
+        clearTempPolyline();
+        return QString();
+    }
+
+    makeCurrent();
+
+    // 创建永久折线对象
+    glmesh::GpuPolyline<glmesh::GpuVertexPC> gpu_polyline;
+    gpu_polyline.vertexes.reserve(points.size());
+
+    glm::vec3 line_color(0.0f, 1.0f, 0.0f); // 绿色（完成状态）
+    for (const auto& pt : points) {
+        glmesh::GpuVertexPC vertex;
+        vertex.position = pt;
+        vertex.color = line_color;
+        gpu_polyline.vertexes.push_back(vertex);
+    }
+
+    // 创建索引（连续的线段）
+    gpu_polyline.indexes.reserve((points.size() - 1) * 2);
+    for (size_t i = 0; i < points.size() - 1; ++i) {
+        gpu_polyline.indexes.push_back(static_cast<glmesh::int32>(i));
+        gpu_polyline.indexes.push_back(static_cast<glmesh::int32>(i + 1));
+    }
+
+    auto gl_polyline = std::make_shared<glmesh::GLPolyline>();
+    gl_polyline->upload(gpu_polyline, GL_STATIC_DRAW);
+
+    // 创建 RenderableObject
+    RenderableObject renderable;
+    renderable.uid = QUuid::createUuid().toString();
+    renderable.visible = true;
+    renderable.drawable = gl_polyline;
+    renderable.model_matrix = glm::mat4(1.0f);
+    renderable.material.shader_prog_id = SPT_MESH; // 设置正确的字段
+    renderable.material.render_mode = MeshRenderMode::Wireframe;
+    renderable.material.line_width = 3.0f;
+    renderable.material.base_color = line_color;
+    renderable.material.use_vertex_color = true;
+
+    // 添加到渲染对象列表
+    std::lock_guard<std::mutex> lock(renderable_objects_mutex_);
+    renderable_objects_[renderable.uid] = std::move(renderable);
+
+    doneCurrent();
+
+    // 清除临时折线
+    clearTempPolyline();
+
+    APP_LOG_INFO("Polyline finalized with {} points, UID: {}", points.size(), renderable.uid.toStdString());
+    return renderable.uid;
 }
 

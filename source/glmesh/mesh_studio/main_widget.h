@@ -43,6 +43,7 @@ public:
 
 private slots:
     void onImportMeshActionTriggered();
+    void onDrawPolylineActionTriggered();
     void onCustomContextMenuRequested(const QPoint &pos);
     void onCurrentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous);
     void onAmbientIntensitySliderValueChanged(int value);

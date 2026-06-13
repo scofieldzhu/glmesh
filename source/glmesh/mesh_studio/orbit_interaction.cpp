@@ -56,8 +56,8 @@ void OrbitInteraction::onMouseMove(QMouseEvent* event, const MouseInteractionCon
         QSize sz(ctx.widget_width, ctx.widget_height);
         ctx.ball_rotator->onUpdateMousePos(event, sz);
         ctx.camera->setRotation(ctx.ball_rotator->getRotationMat());
-        if(ctx.requestUpdate) {
-            ctx.requestUpdate();
+        if(ctx.request_update_func) {
+            ctx.request_update_func();
         }
         return;
     }
@@ -65,8 +65,8 @@ void OrbitInteraction::onMouseMove(QMouseEvent* event, const MouseInteractionCon
     int new_axis = pickGizmoAxis(event->pos(), ctx);
     if(ctx.hovered_gizmo_axis && new_axis != *ctx.hovered_gizmo_axis){
         *ctx.hovered_gizmo_axis = new_axis;
-        if(ctx.requestUpdate) {
-            ctx.requestUpdate();
+        if(ctx.request_update_func) {
+            ctx.request_update_func();
         }
     }
 }
@@ -77,8 +77,8 @@ void OrbitInteraction::onWheel(QWheelEvent* event, const MouseInteractionContext
         return;
     }
     ctx.camera->zoomByWheelDelta(event->angleDelta().y());
-    if(ctx.requestUpdate) {
-        ctx.requestUpdate();
+    if(ctx.request_update_func) {
+        ctx.request_update_func();
     }
 }
 

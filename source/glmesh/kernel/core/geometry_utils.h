@@ -31,7 +31,26 @@
 #define __geometry_utils_h__
 
 #include "glmesh/kernel/glmesh_kernel_typedef.h"
+#include "glmesh/kernel/glmesh_kernel_export.h"
+#include <glm/glm.hpp>
 
+GLMESH_NAMESPACE_BEGIN
 
+// struct Ray {
+//     glm::vec3 origin;
+//     glm::vec3 direction;
+// };
+
+// // 经典射线与三角形求交
+// GLMESH_KERNEL_API
+// std::optional<glm::vec3> RayTriangleIntersect(
+//     const Ray& ray,
+//     const glm::vec3& v0,
+//     const glm::vec3& v1,
+//     const glm::vec3& v2,
+//     float& t
+// );
+
+GLMESH_NAMESPACE_END
 
 #endif

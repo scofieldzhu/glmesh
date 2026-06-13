@@ -5,15 +5,27 @@ set(EXPORT_HEAD_FILES
     glmesh_render_export.h
     glmesh_render_typedef.h
     camera.h
+    renderer.h
 )
 
 set(SOURCE_FILES
     camera.cpp
+    renderer.cpp
 )
 
 add_library(${PKG_PROJ} SHARED
     ${EXPORT_HEAD_FILES}
-    ${SOURCE_FILES}    
+    ${SOURCE_FILES}
+)
+
+# Link against glmesh.kernel for GLAD and other dependencies
+target_link_libraries(${PKG_PROJ} PUBLIC
+    glmesh.kernel
+)
+
+# Include GLAD headers from kernel module
+target_include_directories(${PKG_PROJ} PRIVATE
+    ${CMAKE_SOURCE_DIR}/source/glmesh/kernel/third_party/glad/include
 )
 
 if(MSVC)

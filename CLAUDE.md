@@ -1,6 +1,20 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude (claude.ai/code) when working with code in this repository.
+
+## Quick Start
+
+Requires: Visual Studio 2022, Qt5 (msvc2017_64), vcpkg, CMake 3.15+.
+
+**Setup prerequisite:** Before configuring, ensure `CMakeUserPresets.json` exists with `CMAKE_TOOLCHAIN_FILE` pointing to the vcpkg toolchain and `CMAKE_PREFIX_PATH` pointing to the Qt5 installation directory.
+
+**Common commands:**
+```bash
+cmake --preset vs2022-local                    # Configure
+cmake --build --preset build-debug-local       # Build Debug
+cmake --build --preset build-release-local     # Build Release
+./build/vs2022-local/bin/MeshStudio.exe        # Run the application
+```
 
 ## Build Commands
 
@@ -16,12 +30,13 @@ cmake --build --preset build-debug-local
 # Build Release
 cmake --build --preset build-release-local
 
-# Install (copies binaries, DLLs, and headers to CMAKE_INSTALL_PREFIX, default: ./install/)
+# Install (optional; copies binaries, DLLs, and headers to CMAKE_INSTALL_PREFIX, default: ./install/)
+# Run windeployqt to collect Qt5 runtime DLLs alongside vcpkg dependency DLLs
 cmake --install build/vs2022-local --config Debug
 cmake --install build/vs2022-local --config Release
 ```
 
-Output binaries go to `build/vs2022-local/bin/`. The install step runs `windeployqt` to collect Qt5 runtime DLLs alongside vcpkg dependency DLLs.
+Output binaries go to `build/vs2022-local/bin/`. The install step is useful for packaging/distribution but not required during development.
 
 ## Dependencies
 
@@ -45,7 +60,9 @@ Low-level OpenGL abstractions and data types. Three sub-layers:
 - **cpu_to_gpu** - conversion functions from CPU structs to GPU structs (e.g. `ToGpuTriangleMesh`, `ToGpuVertex`)
 
 ### render (`glmesh.render` shared library)
-Higher-level rendering utilities. Currently contains `Camera` (orbit/pan/zoom, perspective/orthographic projection, quaternion-based rotation).
+Higher-level rendering utilities:
+- **Camera** - orbit/pan/zoom, perspective/orthographic projection, quaternion-based rotation. Focuses on view/projection matrix generation and camera operations. Viewport management is handled by Renderer.
+- **Renderer** - viewport management, background control, coordinate system conversions (World/View/Display), multi-layer rendering support. Inspired by VTK's vtkRenderer and OSG's osg::Camera design patterns. Handles all coordinate transformations including screen-to-world unprojection with depth values.
 
 ### mesh_studio (`MeshStudio` executable)
 Qt5 application that ties everything together:
@@ -110,6 +127,25 @@ Key files: `mouse_interaction.h` (interface + context), `orbit_interaction.h`/`.
 ### Resource management
 
 Qt resources (QSS stylesheets in `res/qss/`, images in `res/image/`) are compiled via `res/resource.qrc`. `resource_util.h` provides `ApplyWidgetStyleSheet()` and `ReadStyleSheetFiles()` for loading QSS at runtime.
+
+### Renderer
+
+`Renderer` (`render/renderer.h`) provides VTK/OSG-inspired rendering management:
+
+**Viewport management** — supports both normalized [0,1] coordinates (like VTK's `vtkViewport`) and pixel coordinates. Call `setViewport()` for normalized or `setViewportInPixels()` for pixel-based. Use `getViewportInPixels()` to retrieve pixel coordinates for `glViewport()`.
+
+**Coordinate system conversions** — three coordinate systems (World, View, Display) with conversion methods:
+- `worldToDisplay()` / `displayToWorld()` — 3D world ↔ 2D screen pixels (VTK-style)
+- `worldToView()` / `viewToWorld()` — world ↔ camera view space
+- `convertCoordinate()` — generic converter between any two systems
+
+**Ray casting** — `computePickRay(screen_x, screen_y)` generates a picking ray from screen coordinates (OSG-style).
+
+**Multi-layer rendering** — `setLayer(int)` for rendering order (higher = rendered later), `setTransparent(bool)` for overlay layers.
+
+**Background** — `setBackground()` for solid color, `setBackgroundGradient()` for top-to-bottom gradient.
+
+**Important:** Renderer does NOT call OpenGL functions directly (to avoid linking issues with GLAD in the DLL). The caller must apply viewport/background using the getter methods. See `renderer_usage.md` for complete examples.
 
 ## Logging
 

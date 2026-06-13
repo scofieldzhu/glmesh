@@ -32,6 +32,7 @@
 
 #include <QMouseEvent>
 #include <QWheelEvent>
+#include <QKeyEvent>
 #include <functional>
 
 namespace glmesh {
@@ -39,26 +40,29 @@ namespace glmesh {
     class GLTrackballGizmo;
 }
 
+class MeshWidget;
 class ArcBallRotator;
 
 struct MouseInteractionContext
 {
+    MeshWidget* mesh_widget_ = nullptr;
     glmesh::Camera* camera = nullptr;
     ArcBallRotator* ball_rotator = nullptr;
     glmesh::GLTrackballGizmo* gizmo = nullptr;
     int* hovered_gizmo_axis = nullptr;
     int widget_width = 0;
     int widget_height = 0;
-    std::function<void()> requestUpdate;
+    std::function<void()> request_update_func;
 };
 
 class IMouseInteraction
 {
 public:
-    virtual ~IMouseInteraction() = default;
     virtual void onMousePress(QMouseEvent* event, const MouseInteractionContext& ctx) = 0;
     virtual void onMouseMove(QMouseEvent* event, const MouseInteractionContext& ctx) = 0;
     virtual void onWheel(QWheelEvent* event, const MouseInteractionContext& ctx) = 0;
+    virtual void onKeyPress(QKeyEvent* event, const MouseInteractionContext& ctx) { /* 默认空实现 */ }
+    virtual ~IMouseInteraction() = default;
 };
 
 #endif

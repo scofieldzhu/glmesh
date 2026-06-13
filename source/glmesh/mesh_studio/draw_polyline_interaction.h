@@ -4,7 +4,7 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates
  *  coherent OpenGL.
  *
- *  File: gl_polyline.h
+ *  File: draw_polyline_interaction.h
  *  Copyright (c) 2024-2026 scofieldzhu
  *
  *  MIT License
@@ -27,49 +27,46 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *  SOFTWARE.
  */
-#ifndef __gl_polyline_h__
-#define __gl_polyline_h__
+#ifndef __draw_polyine_interaction_h__
+#define __draw_polyine_interaction_h__
 
-#include "glmesh/kernel/gl/gl_drawable.h"
-#include "glmesh/kernel/gl/vertex_array.h"
-#include "glmesh/kernel/gl/vertex_buffer.h"
-#include "glmesh/kernel/gl/index_buffer.h"
+#include "mouse_interaction.h"
+#include "glmesh/kernel/glmesh_kernel_typedef.h"
+#include "glmesh/kernel/gl/gl_polyline.h"
+#include <memory>
 
-GLMESH_NAMESPACE_BEGIN
-
-template<typename V> struct GpuPolyline;
-
-class GLMESH_KERNEL_API GLPolyline : public GLDrawable
+class DrawPolylineInteraction : public IMouseInteraction
 {
 public:
-    void draw() const override;
-    void drawWithPoints(float point_size) const; // 绘制折线和控制点
-    template<typename V>
-    void upload(const GpuPolyline<V>& gpu_line, uint32 usage);
-    bool valid() const { return uploaded_; }
+    void onMousePress(QMouseEvent* event, const MouseInteractionContext& ctx) override;
+    void onMouseMove(QMouseEvent* event, const MouseInteractionContext& ctx) override;
+    void onWheel(QWheelEvent* event, const MouseInteractionContext& ctx) override;
+    void onKeyPress(QKeyEvent* event, const MouseInteractionContext& ctx) override;
+
+    /**
+     * @brief 完成折线绘制，返回绘制的点集
+     * @return 折线顶点集合
+     */
+    std::vector<glm::vec3> finishDrawing();
+
+    /**
+     * @brief 取消折线绘制，清空已拾取的点
+     */
+    void cancelDrawing();
+
+    /**
+     * @brief 撤销最后一个点
+     */
+    void undoLastPoint();
+
+    /**
+     * @brief 获取当前已拾取的点数量
+     */
+    size_t pointCount() const { return polyline_points_.size(); }
 
 private:
-    VertexArray vao_;
-    VertexBuffer vbo_;
-    IndexBuffer ebo_;
-    std::size_t index_count_ = 0;
-    std::size_t vertex_count_ = 0;
-    bool uploaded_ = false;
+    std::vector<glm::vec3> polyline_points_;
+    bool preview_mode_enabled_ = true;  // 是否启用预览模式
 };
-
-template<typename V>
-void GLPolyline::upload(const GpuPolyline<V>& gpu_line, uint32 usage)
-{
-    index_count_ = gpu_line.indexes.size();
-    vertex_count_ = gpu_line.vertexes.size();
-    vao_.bind();
-    vbo_.upload(gpu_line.vertexes.data(), gpu_line.vertexes.size() * sizeof(V), usage);
-    ebo_.upload(gpu_line.indexes.data(), gpu_line.indexes.size() * sizeof(uint32), usage);
-    V::SetupAttribs();
-    vao_.unbind();
-    uploaded_ = true;
-}
-
-GLMESH_NAMESPACE_END
 
 #endif

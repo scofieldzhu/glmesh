@@ -45,6 +45,15 @@ enum class MeshLoadError
 };
 GLMESH_KERNEL_API bool LoadPlyAsCpuPolygonMesh(const std::string& ply_filepath, CpuPolygonMesh& out_mesh, MeshLoadError* out_err = nullptr);
 
+struct PlyLoader
+{
+    bool load(const std::string& ply_filepath);
+    bool existNormalMesh()const;
+    void convertToCpuPolygonMesh();
+    void unload();
+
+};
+
 GLMESH_NAMESPACE_END
 
 #endif

@@ -27,3 +27,42 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *  SOFTWARE.
  */
+#include "geometry_utils.h"
+
+GLMESH_NAMESPACE_BEGIN
+
+// std::optional<glm::vec3>
+// RayTriangleIntersect(const Ray& ray, 
+//                      const glm::vec3& v0, 
+//                      const glm::vec3& v1, const glm::vec3& v2, 
+//                      float& t)
+// {
+//     const float EPSILON = 1e-6f;
+//     glm::vec3 edge1 = v1 - v0;
+//     glm::vec3 edge2 = v2 - v0;
+//     glm::vec3 h = glm::cross(ray.direction, edge2);
+//     // a = e1•(D × e2) <=> a = D•(e1 × e2)
+//     float a = glm::dot(edge1, h);
+//     if(a > -EPSILON && a < EPSILON){
+//         // 射线与三角形平行
+//         return std::nullopt; 
+//     } 
+//     float f = 1.0f / a;
+//     glm::vec3 s = ray.origin - v0;
+//     float u = f * glm::dot(s, h);
+//     if(u < 0.0f || u > 1.0f){
+//         return std::nullopt; 
+//     }
+//     glm::vec3 q = glm::cross(s, edge1);
+//     float v = f * glm::dot(ray.direction, q);
+//     if(v < 0.0f || u + v > 1.0f){
+//         return std::nullopt;    
+//     } 
+//     t = f * glm::dot(edge2, q);
+//     if(t > EPSILON){ // 射线正方向相交
+//         return ray.origin + ray.direction * t;
+//     }
+//     return std::nullopt;
+// }
+
+GLMESH_NAMESPACE_END

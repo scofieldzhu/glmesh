@@ -31,11 +31,17 @@
 #define __camera_h__
 
 #include "glmesh/render/glmesh_render_typedef.h"
+#include "glmesh/kernel/core/geometry_utils.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
 
 GLMESH_NAMESPACE_BEGIN
+
+struct Ray {
+    glm::vec3 origin;
+    glm::vec3 direction;
+};
 
 class GLMESH_RENDER_API Camera
 {
@@ -47,7 +53,6 @@ public:
     void setProjectionType(ProjectionType type);
     ProjectionType projectionType() const{ return projection_type_; }
     void reset();
-    void setViewport(int width, int height);
     void setPerspective(float fov_y_deg, float near_plane, float far_plane);
     void setOrthographicScale(float scale);
     void setCenter(const glm::vec3& center);
@@ -73,15 +78,36 @@ public:
     glm::vec3 forward() const;
     glm::vec3 right() const;
     glm::vec3 up() const;
+
+    /**
+     * @brief 获取视口宽高比（用于投影矩阵计算）
+     * @note 视口尺寸应由 Renderer 管理，Camera 仅维护宽高比
+     */
     float aspectRatio() const;
+
+    /**
+     * @brief 设置视口宽高比
+     * @param aspect 宽高比（width / height）
+     */
+    void setAspectRatio(float aspect);
+
+    /**
+     * @brief 设置视口尺寸（用于计算宽高比）
+     * @deprecated 建议使用 setAspectRatio()，视口管理应由 Renderer 负责
+     */
+    void setViewport(int width, int height);
+
     Camera();
     ~Camera() = default;
 
 private:
+    void updateViewMatrix();
+    void updateProjectionMatrix();
+    void updateCombinedMatrices();
     float clampDistance(float distance) const;
+
     ProjectionType projection_type_ = ProjectionType::Perspective;
-    int viewport_width_ = 1;
-    int viewport_height_ = 1;
+    float aspect_ratio_ = 1.0f;  // 宽高比（替代 viewport_width_ 和 viewport_height_）
     glm::vec3 center_ = {0.0f, 0.0f, 0.0f};
     glm::vec3 center_offset_ = {0.0f, 0.0f, 0.0f};
     float distance_ = 100.0f;
@@ -94,6 +120,11 @@ private:
     float orthographic_scale_ = 10.0f;
     float orbit_sensitivity_ = 0.005f;
     float pan_sensitivity_ = 0.0015f;
+
+    glm::mat4 view_matrix_ = glm::mat4(1.0f);
+    glm::mat4 projection_matrix_ = glm::mat4(1.0f);
+    glm::mat4 view_projection_matrix_ = glm::mat4(1.0f);
+    glm::mat4 inv_view_projection_matrix_ = glm::mat4(1.0f);
 };
 
 GLMESH_NAMESPACE_END

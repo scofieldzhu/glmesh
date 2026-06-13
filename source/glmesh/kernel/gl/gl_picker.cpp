@@ -4,7 +4,7 @@
  *  It reduces the amount of OpenGL code required for rendering and facilitates
  *  coherent OpenGL.
  *
- *  File: gl_polyline.h
+ *  File: gl_picker.cpp
  *  Copyright (c) 2024-2026 scofieldzhu
  *
  *  MIT License
@@ -27,49 +27,28 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *  SOFTWARE.
  */
-#ifndef __gl_polyline_h__
-#define __gl_polyline_h__
-
-#include "glmesh/kernel/gl/gl_drawable.h"
-#include "glmesh/kernel/gl/vertex_array.h"
-#include "glmesh/kernel/gl/vertex_buffer.h"
-#include "glmesh/kernel/gl/index_buffer.h"
+#include "gl_picker.h"
+#include "glad/glad.h"
 
 GLMESH_NAMESPACE_BEGIN
 
-template<typename V> struct GpuPolyline;
-
-class GLMESH_KERNEL_API GLPolyline : public GLDrawable
+float GLPicker::ReadDepth(int x, int y, int viewport_height)
 {
-public:
-    void draw() const override;
-    void drawWithPoints(float point_size) const; // 绘制折线和控制点
-    template<typename V>
-    void upload(const GpuPolyline<V>& gpu_line, uint32 usage);
-    bool valid() const { return uploaded_; }
+    // OpenGL 的 Y 轴从下到上，Qt 的 Y 轴从上到下
+    // 需要翻转 Y 坐标
+    int gl_y = viewport_height - y - 1;
 
-private:
-    VertexArray vao_;
-    VertexBuffer vbo_;
-    IndexBuffer ebo_;
-    std::size_t index_count_ = 0;
-    std::size_t vertex_count_ = 0;
-    bool uploaded_ = false;
-};
+    float depth = 1.0f;
+    glReadPixels(x, gl_y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &depth);
 
-template<typename V>
-void GLPolyline::upload(const GpuPolyline<V>& gpu_line, uint32 usage)
+    return depth;
+}
+
+bool GLPicker::IsValidDepth(float depth)
 {
-    index_count_ = gpu_line.indexes.size();
-    vertex_count_ = gpu_line.vertexes.size();
-    vao_.bind();
-    vbo_.upload(gpu_line.vertexes.data(), gpu_line.vertexes.size() * sizeof(V), usage);
-    ebo_.upload(gpu_line.indexes.data(), gpu_line.indexes.size() * sizeof(uint32), usage);
-    V::SetupAttribs();
-    vao_.unbind();
-    uploaded_ = true;
+    // 深度值接近 1.0 表示远裁剪面，即没有拾取到任何几何体
+    // 使用小的容差值来判断
+    return depth < 0.9999f;
 }
 
 GLMESH_NAMESPACE_END
-
-#endif

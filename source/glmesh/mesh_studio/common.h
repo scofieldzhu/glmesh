@@ -31,6 +31,7 @@
 #define __common_h__
 
 #include <QColor>
+#include <format>
 #include "glmesh/kernel/glmesh_kernel_typedef.h"
 
 enum ShaderProgramType
@@ -50,6 +51,11 @@ using ProgramTypeId = glmesh::uint32;
 
 inline QColor ToColor(const glm::vec3& clr){
     return QColor::fromRgbF(clr[0], clr[1], clr[2]);
+}
+
+inline std::string GlmVec3ToString(const glm::vec3& vec)
+{
+    return std::format("({:.4f}, {:.4f}, {:.4f})", vec[0], vec[1], vec[2]);
 }
 
 #endif

@@ -38,10 +38,13 @@
 #include "glmesh/kernel/gl/gpu_triangle_mesh.h"
 #include "glmesh/kernel/gl/gl_bkg.h"
 #include "glmesh/kernel/gl/gl_trackball_gizmo.h"
+#include "glmesh/kernel/gl/gl_polyline.h"
 #include "renderable_object.h"
 #include "arcball_rotator.h"
 #include "mouse_interaction.h"
 #include "glmesh/render/camera.h"
+#include "glmesh/render/renderer.h"
+#include <optional>
 
 class MeshWidget : public QOpenGLWidget 
 {
@@ -67,6 +70,33 @@ public:
     QColor diffuseLightColor()const{ return ToColor(diffuse_light_color_); }
     void setLightDirection(const glm::vec3& dir);
     void setMouseInteraction(std::unique_ptr<IMouseInteraction> interaction);
+
+    /**
+     * @brief 在指定屏幕位置拾取世界坐标点
+     * @param screen_x 屏幕 X 坐标（左上角为原点）
+     * @param screen_y 屏幕 Y 坐标（左上角为原点）
+     * @return 如果拾取到几何体，返回世界坐标点；否则返回 std::nullopt
+     */
+    std::optional<glm::vec3> pickWorldPoint(int screen_x, int screen_y);
+
+    /**
+     * @brief 更新临时折线（用于绘制过程中的实时预览）
+     * @param points 折线顶点集合
+     */
+    void updateTempPolyline(const std::vector<glm::vec3>& points);
+
+    /**
+     * @brief 清除临时折线
+     */
+    void clearTempPolyline();
+
+    /**
+     * @brief 完成折线绘制，将临时折线转为永久对象
+     * @param points 折线顶点集合
+     * @return 折线对象的 UID
+     */
+    QString finalizeTempPolyline(const std::vector<glm::vec3>& points);
+
     explicit MeshWidget(QWidget* parent = nullptr);
     ~MeshWidget() override;
 
@@ -77,6 +107,7 @@ private:
     void mousePressEvent(QMouseEvent* event) override;
     void mouseMoveEvent(QMouseEvent* event) override;
     void wheelEvent(QWheelEvent* event) override;
+    void keyPressEvent(QKeyEvent* event) override;
     void initGradientBackground();
     void drawGradientBackground();
     void initTrackballGizmo();
@@ -91,12 +122,14 @@ private:
     std::unique_ptr<IMouseInteraction> mouse_interaction_;
     std::unique_ptr<glmesh::GLBkg> gl_bkg_;
     std::unique_ptr<glmesh::GLTrackballGizmo> trackball_gizmo_;
+    std::unique_ptr<glmesh::GLPolyline> temp_polyline_;
     int hovered_gizmo_axis_ = -1;
     QString current_active_mesh_uid_;
     glmesh::Camera active_camera_;
+    glmesh::Renderer renderer_;
     double ambient_factor_ = 1.0f;
     glm::vec3 ambient_light_color_{1.0f, 1.0f, 1.0f};
-    glm::vec3 diffuse_light_color_{1.0f, 0.0f, 0.0f};    
+    glm::vec3 diffuse_light_color_{1.0f, 0.0f, 0.0f};
     bool diffuse_light_on_ = true;
     glm::vec3 light_dir_{1.0f, 1.0f, 1.0f};  // 光照方向 (默认从右上方往左下方打光，世界坐标系)
 };

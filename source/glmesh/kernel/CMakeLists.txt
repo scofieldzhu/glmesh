@@ -14,6 +14,7 @@ set(EXPORT_HEAD_FILES
     gl/gl_rectangle.h
     gl/gl_bkg.h
     gl/gl_trackball_gizmo.h
+    gl/gl_picker.h
     gl/gl_api_init.h
     gl/shader_program.h
     gl/gl_debug.h
@@ -52,6 +53,7 @@ set(SOURCE_FILES
     gl/gl_debug.cpp    
     gl/gl_bkg.cpp
     gl/gl_trackball_gizmo.cpp
+    gl/gl_picker.cpp
     gl/gpu_vertex.cpp
     gl/gpu_bkg_vertex.cpp    
     core/cpu_triangle_mesh.cpp

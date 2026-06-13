@@ -33,6 +33,8 @@ set(SOURCE_FILES
     "orbit_interaction.cpp"
     "color_button.h"
     "color_button.cpp"
+    "draw_polyline_interaction.h"
+    "draw_polyline_interaction.cpp"
     ${CMAKE_SOURCE_DIR}/res/resource.qrc
 )
 

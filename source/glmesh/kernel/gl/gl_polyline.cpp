@@ -36,6 +36,21 @@ void GLPolyline::draw() const
 {
     vao_.bind();
     glDrawElements(GL_LINES, static_cast<GLsizei>(index_count_), GL_UNSIGNED_INT, nullptr);
+    vao_.unbind();
+}
+
+void GLPolyline::drawWithPoints(float point_size) const
+{
+    vao_.bind();
+
+    // 绘制线段
+    glDrawElements(GL_LINES, static_cast<GLsizei>(index_count_), GL_UNSIGNED_INT, nullptr);
+
+    // 绘制控制点（小球）
+    glPointSize(point_size);
+    glDrawArrays(GL_POINTS, 0, static_cast<GLsizei>(vertex_count_));
+
+    vao_.unbind();
 }
 
 GLMESH_NAMESPACE_END
