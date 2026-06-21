@@ -172,7 +172,7 @@ void Camera::zoom(float factor)
 {
     factor = std::clamp(factor, 0.05f, 20.0f);
     distance_ = clampDistance(distance_ * factor);
-    if(projection_type_ == ProjectionType::Orthographic) {
+    if(projection_type_ == ProjectionType::Orthographic){
         orthographic_scale_ = std::max(0.0001f, orthographic_scale_ * factor);
         updateProjectionMatrix();
     }
@@ -262,9 +262,9 @@ void Camera::updateViewMatrix()
 void Camera::updateProjectionMatrix()
 {
     float aspect = aspectRatio();
-    if(projection_type_ == ProjectionType::Perspective) {
+    if(projection_type_ == ProjectionType::Perspective){
         projection_matrix_ = glm::perspective(glm::radians(fov_y_deg_), aspect, near_plane_, far_plane_);
-    } else {
+    }else{
         float half_height = orthographic_scale_ * 0.5f;
         float half_width = half_height * aspect;
         projection_matrix_ = glm::ortho(-half_width, half_width, -half_height, half_height, near_plane_, far_plane_);

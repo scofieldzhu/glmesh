@@ -72,20 +72,20 @@ protected:
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // 3. 如果使用渐变背景，需要渲染背景四边形
-        if (renderer_.isGradientBackground()) {
+        if(renderer_.isGradientBackground()){
             // 使用 GLBkg 渲染渐变背景
             // bg_drawable_->draw();
         }
 
         // 4. 设置深度测试
-        if (renderer_.isDepthTestEnabled()) {
+        if(renderer_.isDepthTestEnabled()){
             glEnable(GL_DEPTH_TEST);
-        } else {
+        }else{
             glDisable(GL_DEPTH_TEST);
         }
 
         // 5. 渲染场景对象...
-        // for (auto& obj : renderable_objects_) {
+        // for(auto& obj : renderable_objects_){
         //     obj.material.bind(shader_program);
         //     obj.drawable->draw();
         // }
@@ -96,7 +96,7 @@ protected:
         last_mouse_pos_ = event->pos();
 
         // 示例：使用 Renderer 进行射线投射拾取
-        if (event->button() == Qt::LeftButton) {
+        if(event->button() == Qt::LeftButton){
             Ray pick_ray = renderer_.computePickRay(
                 static_cast<float>(event->x()),
                 static_cast<float>(event->y())
@@ -104,7 +104,7 @@ protected:
 
             // 使用射线进行拾取
             // bool hit = pickObject(pick_ray, hit_point);
-            // if (hit) {
+            // if(hit){
             //     qDebug() << "Picked point:" << hit_point.x << hit_point.y << hit_point.z;
             // }
         }
@@ -115,11 +115,11 @@ protected:
         QPoint delta = event->pos() - last_mouse_pos_;
         last_mouse_pos_ = event->pos();
 
-        if (event->buttons() & Qt::LeftButton) {
+        if(event->buttons() & Qt::LeftButton){
             // 轨道旋转
             camera_.orbit(delta.x(), delta.y());
             update();
-        } else if (event->buttons() & Qt::MiddleButton) {
+        }else if(event->buttons() & Qt::MiddleButton){
             // 平移
             camera_.pan(delta.x(), delta.y());
             update();
@@ -156,7 +156,7 @@ private:
         // 示例 4: 判断点是否在 Viewport 内
         float mouse_x = 100.0f;
         float mouse_y = 200.0f;
-        if (renderer_.isInViewport(mouse_x, mouse_y)) {
+        if(renderer_.isInViewport(mouse_x, mouse_y)){
             // 处理鼠标事件
         }
     }
@@ -184,14 +184,14 @@ private:
             &overlay_renderer
         };
 
-        for (auto* renderer : renderers) {
+        for(auto* renderer : renderers){
             // 应用该层的 Viewport
             int x, y, w, h;
             renderer->getViewportInPixels(x, y, w, h);
             glViewport(x, y, w, h);
 
             // 非透明层需要清屏
-            if (!renderer->isTransparent()) {
+            if(!renderer->isTransparent()){
                 const auto& bg = renderer->background();
                 glClearColor(bg.r, bg.g, bg.b, 1.0f);
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -269,7 +269,7 @@ protected:
             &right_renderer_
         };
 
-        for (auto* renderer : renderers) {
+        for(auto* renderer : renderers){
             // 应用该视图的 Viewport
             int x, y, w, h;
             renderer->getViewportInPixels(x, y, w, h);

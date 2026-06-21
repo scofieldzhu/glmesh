@@ -23,6 +23,8 @@ set(SOURCE_FILES
     "resource_util.cpp"
     "shader_program_manager.h"
     "shader_program_manager.cpp"
+    "scene_manager.h"
+    "scene_manager.cpp"
     "common.h"
     "material.h"
     "material.cpp"

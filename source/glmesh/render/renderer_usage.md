@@ -41,10 +41,10 @@ renderer.setBackgroundGradient(
 );
 
 // 应用背景（需要在 OpenGL 上下文中）
-if (renderer.isGradientBackground()) {
+if(renderer.isGradientBackground()) {
     // 使用渐变背景需要渲染四边形
     // 可以参考 GLBkg 类的实现
-} else {
+}else{
     const auto& bg = renderer.background();
     glClearColor(bg.r, bg.g, bg.b, 1.0f);
 }
@@ -121,7 +121,7 @@ Ray ray = renderer.computePickRay(mouse_x, mouse_y);
 
 // 射线与平面/物体求交
 float t;
-if (intersectRayWithPlane(ray, plane, t)) {
+if(intersectRayWithPlane(ray, plane, t)) {
     glm::vec3 hit_point = ray.origin + ray.direction * t;
 }
 ```
@@ -145,12 +145,12 @@ ui_renderer.setLayer(2);
 ui_renderer.setTransparent(true);
 
 // 渲染循环
-for (auto* renderer : {&bg_renderer, &main_renderer, &ui_renderer}) {
+for(auto* renderer : {&bg_renderer, &main_renderer, &ui_renderer}) {
     int x, y, w, h;
     renderer->getViewportInPixels(x, y, w, h);
     glViewport(x, y, w, h);
     
-    if (!renderer->isTransparent()) {
+    if(!renderer->isTransparent()) {
         const auto& bg = renderer->background();
         glClearColor(bg.r, bg.g, bg.b, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -164,7 +164,7 @@ for (auto* renderer : {&bg_renderer, &main_renderer, &ui_renderer}) {
 
 ```cpp
 // 判断屏幕点是否在 Viewport 内
-if (renderer.isInViewport(mouse_x, mouse_y)) {
+if(renderer.isInViewport(mouse_x, mouse_y)) {
     // 处理鼠标事件
 }
 

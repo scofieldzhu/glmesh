@@ -38,10 +38,12 @@
 namespace glmesh {
     class Camera;
     class GLTrackballGizmo;
+    class Renderer;
 }
 
 class MeshWidget;
 class ArcBallRotator;
+class SceneManager;
 
 struct MouseInteractionContext
 {
@@ -53,6 +55,10 @@ struct MouseInteractionContext
     int widget_width = 0;
     int widget_height = 0;
     std::function<void()> request_update_func;
+    SceneManager* scene_manager = nullptr;          // 场景管理器
+    glmesh::Renderer* renderer = nullptr;           // 渲染器（坐标转换/拾取）
+    std::function<float(int,int)> readDepthFunc;   // 读取深度缓冲（需 GL 上下文）
+    std::function<void(std::function<void()>)> runInGLContext;  // 在 GL 上下文中执行代码块
 };
 
 class IMouseInteraction
@@ -61,7 +67,7 @@ public:
     virtual void onMousePress(QMouseEvent* event, const MouseInteractionContext& ctx) = 0;
     virtual void onMouseMove(QMouseEvent* event, const MouseInteractionContext& ctx) = 0;
     virtual void onWheel(QWheelEvent* event, const MouseInteractionContext& ctx) = 0;
-    virtual void onKeyPress(QKeyEvent* event, const MouseInteractionContext& ctx) { /* 默认空实现 */ }
+    virtual void onKeyPress(QKeyEvent* event, const MouseInteractionContext& ctx){ /* 默认空实现 */ }
     virtual ~IMouseInteraction() = default;
 };
 

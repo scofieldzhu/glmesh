@@ -38,15 +38,14 @@
 #include "glmesh/kernel/gl/gpu_triangle_mesh.h"
 #include "glmesh/kernel/gl/gl_bkg.h"
 #include "glmesh/kernel/gl/gl_trackball_gizmo.h"
-#include "glmesh/kernel/gl/gl_polyline.h"
 #include "renderable_object.h"
 #include "arcball_rotator.h"
 #include "mouse_interaction.h"
+#include "scene_manager.h"
 #include "glmesh/render/camera.h"
 #include "glmesh/render/renderer.h"
-#include <optional>
 
-class MeshWidget : public QOpenGLWidget 
+class MeshWidget : public QOpenGLWidget
 {
     Q_OBJECT
 public:
@@ -72,30 +71,17 @@ public:
     void setMouseInteraction(std::unique_ptr<IMouseInteraction> interaction);
 
     /**
-     * @brief 在指定屏幕位置拾取世界坐标点
+     * @brief 获取场景管理器
+     */
+    SceneManager* sceneManager(){ return &scene_manager_; }
+
+    /**
+     * @brief 读取指定屏幕位置的深度缓冲值
      * @param screen_x 屏幕 X 坐标（左上角为原点）
      * @param screen_y 屏幕 Y 坐标（左上角为原点）
-     * @return 如果拾取到几何体，返回世界坐标点；否则返回 std::nullopt
+     * @return 深度值 [0.0 (近裁剪面), 1.0 (远裁剪面)]，需要有效的 GL 上下文
      */
-    std::optional<glm::vec3> pickWorldPoint(int screen_x, int screen_y);
-
-    /**
-     * @brief 更新临时折线（用于绘制过程中的实时预览）
-     * @param points 折线顶点集合
-     */
-    void updateTempPolyline(const std::vector<glm::vec3>& points);
-
-    /**
-     * @brief 清除临时折线
-     */
-    void clearTempPolyline();
-
-    /**
-     * @brief 完成折线绘制，将临时折线转为永久对象
-     * @param points 折线顶点集合
-     * @return 折线对象的 UID
-     */
-    QString finalizeTempPolyline(const std::vector<glm::vec3>& points);
+    float readDepthPixel(int screen_x, int screen_y) const;
 
     explicit MeshWidget(QWidget* parent = nullptr);
     ~MeshWidget() override;
@@ -117,12 +103,12 @@ private:
     void handleMeshBoundsChanged(const glmesh::Bounds3D& bounds);
     std::mutex renderable_objects_mutex_;
     std::unordered_map<QString, RenderableObject> renderable_objects_;
+    SceneManager scene_manager_;
     bool gl_initialized_ = false;
     ArcBallRotator ball_rotator_;
     std::unique_ptr<IMouseInteraction> mouse_interaction_;
     std::unique_ptr<glmesh::GLBkg> gl_bkg_;
     std::unique_ptr<glmesh::GLTrackballGizmo> trackball_gizmo_;
-    std::unique_ptr<glmesh::GLPolyline> temp_polyline_;
     int hovered_gizmo_axis_ = -1;
     QString current_active_mesh_uid_;
     glmesh::Camera active_camera_;

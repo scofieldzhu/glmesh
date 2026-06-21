@@ -54,7 +54,7 @@ void Renderer::setViewport(float x_norm, float y_norm, float width_norm, float h
 
 void Renderer::setViewportInPixels(int x, int y, int width, int height)
 {
-    if (render_window_width_ > 0 && render_window_height_ > 0) {
+    if(render_window_width_ > 0 && render_window_height_ > 0){
         viewport_x_norm_ = static_cast<float>(x) / render_window_width_;
         viewport_y_norm_ = static_cast<float>(y) / render_window_height_;
         viewport_width_norm_ = static_cast<float>(width) / render_window_width_;
@@ -114,14 +114,14 @@ void Renderer::setCamera(Camera* camera)
 
 void Renderer::resetCamera()
 {
-    if (camera_) {
+    if(camera_){
         camera_->reset();
     }
 }
 
 void Renderer::resetCamera(const glm::vec3& bounds_min, const glm::vec3& bounds_max)
 {
-    if (camera_) {
+    if(camera_){
         camera_->fitBounds(bounds_min, bounds_max);
     }
 }
@@ -130,7 +130,7 @@ void Renderer::resetCamera(const glm::vec3& bounds_min, const glm::vec3& bounds_
 
 glm::vec3 Renderer::worldToDisplay(const glm::vec3& world_pos) const
 {
-    if (!camera_) {
+    if(!camera_){
         return glm::vec3(0.0f);
     }
 
@@ -139,7 +139,7 @@ glm::vec3 Renderer::worldToDisplay(const glm::vec3& world_pos) const
     glm::vec4 clip_pos = view_proj * glm::vec4(world_pos, 1.0f);
 
     // 透视除法 → NDC（标准化设备坐标）
-    if (std::abs(clip_pos.w) < 1e-6f) {
+    if(std::abs(clip_pos.w) < 1e-6f){
         return glm::vec3(0.0f);
     }
     glm::vec3 ndc = glm::vec3(clip_pos) / clip_pos.w;
@@ -157,7 +157,7 @@ glm::vec3 Renderer::worldToDisplay(const glm::vec3& world_pos) const
 
 glm::vec3 Renderer::displayToWorld(const glm::vec3& display_pos) const
 {
-    if (!camera_) {
+    if(!camera_){
         return glm::vec3(0.0f);
     }
 
@@ -174,7 +174,7 @@ glm::vec3 Renderer::displayToWorld(const glm::vec3& display_pos) const
     glm::vec4 clip_pos(ndc_x, ndc_y, ndc_z, 1.0f);
     glm::vec4 world_pos = inv_view_proj * clip_pos;
 
-    if (std::abs(world_pos.w) < 1e-6f) {
+    if(std::abs(world_pos.w) < 1e-6f){
         return glm::vec3(0.0f);
     }
 
@@ -183,7 +183,7 @@ glm::vec3 Renderer::displayToWorld(const glm::vec3& display_pos) const
 
 glm::vec3 Renderer::worldToView(const glm::vec3& world_pos) const
 {
-    if (!camera_) {
+    if(!camera_){
         return glm::vec3(0.0f);
     }
 
@@ -193,7 +193,7 @@ glm::vec3 Renderer::worldToView(const glm::vec3& world_pos) const
 
 glm::vec3 Renderer::viewToWorld(const glm::vec3& view_pos) const
 {
-    if (!camera_) {
+    if(!camera_){
         return glm::vec3(0.0f);
     }
 
@@ -220,7 +220,7 @@ glm::vec3 Renderer::convertCoordinate(const glm::vec3& pos,
                                       CoordinateSystem from_system,
                                       CoordinateSystem to_system) const
 {
-    if (from_system == to_system) {
+    if(from_system == to_system){
         return pos;
     }
 
@@ -228,7 +228,7 @@ glm::vec3 Renderer::convertCoordinate(const glm::vec3& pos,
     glm::vec3 world_pos = pos;
 
     // From → World
-    switch (from_system) {
+    switch (from_system){
         case CoordinateSystem::World:
             world_pos = pos;
             break;
@@ -241,7 +241,7 @@ glm::vec3 Renderer::convertCoordinate(const glm::vec3& pos,
     }
 
     // World → To
-    switch (to_system) {
+    switch (to_system){
         case CoordinateSystem::World:
             return world_pos;
         case CoordinateSystem::View:
@@ -257,7 +257,7 @@ glm::vec3 Renderer::convertCoordinate(const glm::vec3& pos,
 
 Ray Renderer::computePickRay(float screen_x, float screen_y) const
 {
-    if (!camera_) {
+    if(!camera_){
         return Ray{glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, -1.0f)};
     }
 
@@ -274,10 +274,9 @@ Ray Renderer::computePickRay(float screen_x, float screen_y) const
     return ray;
 }
 
-glm::vec3 Renderer::unprojectWithDepth(float screen_x, float screen_y, float depth,
-                                        const glm::mat4& model_matrix) const
+glm::vec3 Renderer::unprojectWithDepth(float screen_x, float screen_y, float depth, const glm::mat4& model_matrix) const
 {
-    if (!camera_) {
+    if(!camera_){
         return glm::vec3(0.0f);
     }
 
@@ -300,11 +299,21 @@ glm::vec3 Renderer::unprojectWithDepth(float screen_x, float screen_y, float dep
     glm::vec4 world_pos = inv_mvp * clip_pos;
 
     // 透视除法
-    if (std::abs(world_pos.w) > 1e-6f) {
+    if(std::abs(world_pos.w) > 1e-6f){
         world_pos /= world_pos.w;
     }
 
     return glm::vec3(world_pos);
+}
+
+std::optional<glm::vec3> Renderer::pickWorldPoint(float screen_x, float screen_y, float depth,
+                                                   const glm::mat4& model_matrix) const
+{
+    // 深度值接近 1.0 表示远裁剪面，即没有拾取到几何体
+    if(depth >= 0.9999f){
+        return std::nullopt;
+    }
+    return unprojectWithDepth(screen_x, screen_y, depth, model_matrix);
 }
 
 // ========== 渲染层级管理 ==========
@@ -364,7 +373,7 @@ float Renderer::viewportAspectRatio() const
     int vp_x, vp_y, vp_width, vp_height;
     getViewportInPixels(vp_x, vp_y, vp_width, vp_height);
 
-    if (vp_height > 0) {
+    if(vp_height > 0){
         return static_cast<float>(vp_width) / static_cast<float>(vp_height);
     }
     return 1.0f;

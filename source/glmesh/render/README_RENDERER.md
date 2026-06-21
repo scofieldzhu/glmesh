@@ -296,7 +296,7 @@ glViewport(x, y, w, h);
 
 A: 需要渲染一个全屏四边形（参考 `GLBkg` 类）：
 ```cpp
-if (renderer.isGradientBackground()) {
+if(renderer.isGradientBackground()) {
     // 使用 GLBkg 渲染渐变背景
 }
 ```

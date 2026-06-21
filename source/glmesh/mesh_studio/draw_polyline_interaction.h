@@ -33,7 +33,10 @@
 #include "mouse_interaction.h"
 #include "glmesh/kernel/glmesh_kernel_typedef.h"
 #include "glmesh/kernel/gl/gl_polyline.h"
+#include "renderable_object.h"
 #include <memory>
+#include <vector>
+#include <glm/glm.hpp>
 
 class DrawPolylineInteraction : public IMouseInteraction
 {
@@ -64,9 +67,21 @@ public:
      */
     size_t pointCount() const { return polyline_points_.size(); }
 
+    /**
+     * @brief 从世界坐标点创建折线 RenderableObject（需要 GL 上下文）
+     * @param points 折线顶点（世界坐标）
+     * @param color 折线颜色
+     * @param line_width 线宽
+     * @return RenderableObject（未添加到场景，需手动添加）
+     */
+    static RenderableObject createPolyline(
+        const std::vector<glm::vec3>& points,
+        const glm::vec3& color,
+        float line_width = 2.0f
+    );
+
 private:
     std::vector<glm::vec3> polyline_points_;
     bool preview_mode_enabled_ = true;  // 是否启用预览模式
 };
-
 #endif

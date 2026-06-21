@@ -33,6 +33,7 @@
 #include "glmesh/render/glmesh_render_typedef.h"
 #include "glmesh/render/camera.h"
 #include <memory>
+#include <optional>
 #include <vector>
 #include <functional>
 
@@ -228,6 +229,19 @@ public:
      */
     glm::vec3 unprojectWithDepth(float screen_x, float screen_y, float depth,
                                   const glm::mat4& model_matrix = glm::mat4(1.0f)) const;
+
+    /**
+     * @brief 从屏幕坐标和深度值拾取世界坐标点（便捷方法）
+     * @param screen_x 屏幕 X 坐标（像素，Qt 风格左上角为原点）
+     * @param screen_y 屏幕 Y 坐标（像素，Qt 风格左上角为原点）
+     * @param depth 深度值 [0.0 (近裁剪面), 1.0 (远裁剪面)]，通常通过 glReadPixels(GL_DEPTH_COMPONENT) 获取
+     * @param model_matrix 模型矩阵（默认为单位矩阵）
+     * @return 如果深度有效（命中几何体），返回世界坐标点；否则返回 std::nullopt
+     *
+     * 深度值由调用方负责读取（需要 OpenGL 上下文），本方法仅执行纯数学的坐标反投影。
+     */
+    std::optional<glm::vec3> pickWorldPoint(float screen_x, float screen_y, float depth,
+                                             const glm::mat4& model_matrix = glm::mat4(1.0f)) const;
 
     // ========== 渲染层级管理（多 Renderer 支持）==========
 

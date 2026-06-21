@@ -58,8 +58,8 @@ MainWidget::MainWidget(QWidget *parent, Qt::WindowFlags flags)
     header_labels << tr("Model File Name") << tr("Visibility");
     ui_.modelTreeWidget->setHeaderLabels(header_labels);
     ui_.modelTreeWidget->clear();
-    connect(ui_.modelTreeWidget, &QTreeWidget::itemChanged, this, [this](QTreeWidgetItem* item, int column) {
-        if(column == 1) { 
+    connect(ui_.modelTreeWidget, &QTreeWidget::itemChanged, this, [this](QTreeWidgetItem* item, int column){
+        if(column == 1){ 
             bool visible = (item->checkState(1) == Qt::Checked);
             auto mesh_uid = this->treeItemToMeshUid(item);
             ui_.meshRenderWidget->setMeshVisible(mesh_uid, visible);

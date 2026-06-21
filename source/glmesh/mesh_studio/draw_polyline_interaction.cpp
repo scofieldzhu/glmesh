@@ -29,51 +29,71 @@
  */
 #include "draw_polyline_interaction.h"
 #include "glmesh/render/camera.h"
+#include "glmesh/kernel/gl/gpu_polyline.h"
 #include "mesh_widget.h"
 #include "orbit_interaction.h"
 #include "app_log.h"
 
 void DrawPolylineInteraction::onMousePress(QMouseEvent* event, const MouseInteractionContext& ctx)
 {
-    if (event->button() == Qt::LeftButton) {
-        // 左键点击：拾取点
-        auto world_pt_opt = ctx.mesh_widget_->pickWorldPoint(event->x(), event->y());
-        if (world_pt_opt) {
-            polyline_points_.push_back(*world_pt_opt);
-
-            // 更新临时折线显示
-            ctx.mesh_widget_->updateTempPolyline(polyline_points_);
-
-            APP_LOG_INFO("Polyline point {} picked: ({:.3f}, {:.3f}, {:.3f})",
-                polyline_points_.size(),
-                world_pt_opt->x, world_pt_opt->y, world_pt_opt->z);
-        } else {
-            APP_LOG_WARN("No geometry picked at screen position ({}, {})", event->x(), event->y());
-        }
-    } else if (event->button() == Qt::RightButton) {
-        // 右键点击：完成绘制并退出模式
-        if (polyline_points_.size() >= 2) {
-            QString uid = ctx.mesh_widget_->finalizeTempPolyline(polyline_points_);
-            if (!uid.isEmpty()) {
-                APP_LOG_INFO("Polyline drawing finished with {} points, UID: {}",
-                    polyline_points_.size(), uid.toStdString());
+    if(event->button() == Qt::LeftButton){
+        // 左键点击：读取深度缓冲，通过 Renderer 拾取世界坐标
+        if(ctx.readDepthFunc && ctx.renderer && ctx.runInGLContext){
+            float depth = ctx.readDepthFunc(event->x(), event->y());
+            glm::mat4 model_matrix = ctx.camera ? ctx.camera->modelCenterMatrix() : glm::mat4(1.0f);
+            auto world_pt_opt = ctx.renderer->pickWorldPoint(
+                static_cast<float>(event->x()),
+                static_cast<float>(event->y()),
+                depth,
+                model_matrix
+            );
+            if(world_pt_opt){
+                polyline_points_.push_back(*world_pt_opt);
+                // 更新临时折线预览（需要 GL 上下文）
+                ctx.runInGLContext([&](){
+                    auto preview_obj = createPolyline(polyline_points_, glm::vec3(1.0f, 1.0f, 0.0f));
+                    ctx.scene_manager->setTempObject("polyline_preview", std::move(preview_obj));
+                });
+                ctx.request_update_func();
+                APP_LOG_INFO("Polyline point {} picked: ({:.3f}, {:.3f}, {:.3f})",
+                    polyline_points_.size(),
+                    world_pt_opt->x, world_pt_opt->y, world_pt_opt->z);
+            }else{
+                APP_LOG_WARN("No geometry picked at screen position ({}, {})", event->x(), event->y());
             }
-        } else {
+        }
+    }else if(event->button() == Qt::RightButton){
+        // 右键点击：完成绘制并退出模式
+        if(polyline_points_.size() >= 2){
+            ctx.runInGLContext([&](){
+                ctx.scene_manager->clearTempObject("polyline_preview");
+                auto final_obj = createPolyline(polyline_points_, glm::vec3(0.0f, 1.0f, 0.0f));
+                ctx.scene_manager->addObject(std::move(final_obj));
+            });
+            APP_LOG_INFO("Polyline drawing finished with {} points",
+                polyline_points_.size());
+        }else{
             APP_LOG_WARN("Need at least 2 points to finish polyline, canceling");
-            ctx.mesh_widget_->clearTempPolyline();
+            ctx.scene_manager->clearTempObject("polyline_preview");
         }
         polyline_points_.clear();
+        ctx.request_update_func();
 
         // 恢复默认的 Orbit 交互模式
         ctx.mesh_widget_->setMouseInteraction(std::make_unique<OrbitInteraction>());
         APP_LOG_INFO("Exited polyline drawing mode");
-    } else if (event->button() == Qt::MiddleButton) {
+    }else if(event->button() == Qt::MiddleButton){
         // 中键：撤销最后一个点
         undoLastPoint();
-        if (!polyline_points_.empty()) {
-            ctx.mesh_widget_->updateTempPolyline(polyline_points_);
-        } else {
-            ctx.mesh_widget_->clearTempPolyline();
+        if(!polyline_points_.empty()){
+            ctx.runInGLContext([&](){
+                auto preview_obj = createPolyline(polyline_points_, glm::vec3(1.0f, 1.0f, 0.0f));
+                ctx.scene_manager->setTempObject("polyline_preview", std::move(preview_obj));
+            });
+            ctx.request_update_func();
+        }else{
+            ctx.scene_manager->clearTempObject("polyline_preview");
+            ctx.request_update_func();
         }
     }
 }
@@ -81,17 +101,30 @@ void DrawPolylineInteraction::onMousePress(QMouseEvent* event, const MouseIntera
 void DrawPolylineInteraction::onMouseMove(QMouseEvent* event, const MouseInteractionContext& ctx)
 {
     // 实时预览：显示从最后一个点到鼠标位置的连线
-    if (!preview_mode_enabled_ || polyline_points_.empty()) {
+    if(!preview_mode_enabled_ || polyline_points_.empty()){
         return;
     }
 
-    // 尝试拾取鼠标位置的世界坐标
-    auto world_pt_opt = ctx.mesh_widget_->pickWorldPoint(event->x(), event->y());
-    if (world_pt_opt) {
-        // 构建预览折线：已有点 + 当前鼠标位置
-        std::vector<glm::vec3> preview_points = polyline_points_;
-        preview_points.push_back(*world_pt_opt);
-        ctx.mesh_widget_->updateTempPolyline(preview_points);
+    // 读取深度缓冲，通过 Renderer 拾取世界坐标
+    if(ctx.readDepthFunc && ctx.renderer && ctx.runInGLContext){
+        float depth = ctx.readDepthFunc(event->x(), event->y());
+        glm::mat4 model_matrix = ctx.camera ? ctx.camera->modelCenterMatrix() : glm::mat4(1.0f);
+        auto world_pt_opt = ctx.renderer->pickWorldPoint(
+            static_cast<float>(event->x()),
+            static_cast<float>(event->y()),
+            depth,
+            model_matrix
+        );
+        if(world_pt_opt){
+            // 构建预览折线：已有点 + 当前鼠标位置（需要 GL 上下文）
+            std::vector<glm::vec3> preview_points = polyline_points_;
+            preview_points.push_back(*world_pt_opt);
+            ctx.runInGLContext([&](){
+                auto preview_obj = createPolyline(preview_points, glm::vec3(1.0f, 1.0f, 0.0f));
+                ctx.scene_manager->setTempObject("polyline_preview", std::move(preview_obj));
+            });
+            ctx.request_update_func();
+        }
     }
 }
 
@@ -103,32 +136,41 @@ void DrawPolylineInteraction::onWheel(QWheelEvent* event, const MouseInteraction
 
 void DrawPolylineInteraction::onKeyPress(QKeyEvent* event, const MouseInteractionContext& ctx)
 {
-    if (event->key() == Qt::Key_Escape) {
+    if(event->key() == Qt::Key_Escape){
         // ESC：取消绘制并退出
         APP_LOG_INFO("Polyline drawing canceled (ESC pressed)");
         cancelDrawing();
-        ctx.mesh_widget_->clearTempPolyline();
+        ctx.scene_manager->clearTempObject("polyline_preview");
+        ctx.request_update_func();
 
         // 恢复默认交互
         ctx.mesh_widget_->setMouseInteraction(std::make_unique<OrbitInteraction>());
-    } else if (event->key() == Qt::Key_Z && (event->modifiers() & Qt::ControlModifier)) {
+    }else if(event->key() == Qt::Key_Z && (event->modifiers() & Qt::ControlModifier)){
         // Ctrl+Z：撤销最后一个点
         undoLastPoint();
-        if (!polyline_points_.empty()) {
-            ctx.mesh_widget_->updateTempPolyline(polyline_points_);
-        } else {
-            ctx.mesh_widget_->clearTempPolyline();
+        if(!polyline_points_.empty()){
+            ctx.runInGLContext([&](){
+                auto preview_obj = createPolyline(polyline_points_, glm::vec3(1.0f, 1.0f, 0.0f));
+                ctx.scene_manager->setTempObject("polyline_preview", std::move(preview_obj));
+            });
+            ctx.request_update_func();
+        }else{
+            ctx.scene_manager->clearTempObject("polyline_preview");
+            ctx.request_update_func();
         }
-    } else if (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter) {
+    }else if(event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter){
         // Enter：完成绘制
-        if (polyline_points_.size() >= 2) {
-            QString uid = ctx.mesh_widget_->finalizeTempPolyline(polyline_points_);
-            if (!uid.isEmpty()) {
-                APP_LOG_INFO("Polyline drawing finished with {} points (Enter pressed), UID: {}",
-                    polyline_points_.size(), uid.toStdString());
-            }
+        if(polyline_points_.size() >= 2){
+            ctx.runInGLContext([&](){
+                ctx.scene_manager->clearTempObject("polyline_preview");
+                auto final_obj = createPolyline(polyline_points_, glm::vec3(0.0f, 1.0f, 0.0f));
+                ctx.scene_manager->addObject(std::move(final_obj));
+            });
+            APP_LOG_INFO("Polyline drawing finished with {} points (Enter pressed)",
+                polyline_points_.size());
             polyline_points_.clear();
-        } else {
+            ctx.request_update_func();
+        }else{
             APP_LOG_WARN("Need at least 2 points to finish polyline");
         }
 
@@ -153,10 +195,55 @@ void DrawPolylineInteraction::cancelDrawing()
 
 void DrawPolylineInteraction::undoLastPoint()
 {
-    if (!polyline_points_.empty()) {
+    if(!polyline_points_.empty()){
         polyline_points_.pop_back();
         APP_LOG_INFO("Undo last point, {} points remaining", polyline_points_.size());
-    } else {
+    }else{
         APP_LOG_WARN("No points to undo");
     }
+}
+
+RenderableObject DrawPolylineInteraction::createPolyline(
+    const std::vector<glm::vec3>& points,
+    const glm::vec3& color,
+    float line_width)
+{
+    if(points.size() < 2){
+        APP_LOG_ERROR("Cannot create polyline with less than 2 points");
+        return RenderableObject{};
+    }
+
+    // 创建 GPU 数据
+    glmesh::GpuPolyline<glmesh::GpuVertexPC> gpu_polyline;
+    gpu_polyline.vertexes.reserve(points.size());
+
+    for(const auto& pt : points){
+        glmesh::GpuVertexPC vertex;
+        vertex.position = pt;
+        vertex.color = color;
+        gpu_polyline.vertexes.push_back(vertex);
+    }
+
+    // 创建索引（连续的线段）
+    gpu_polyline.indexes.reserve((points.size() - 1) * 2);
+    for(size_t i = 0; i < points.size() - 1; ++i){
+        gpu_polyline.indexes.push_back(static_cast<glmesh::int32>(i));
+        gpu_polyline.indexes.push_back(static_cast<glmesh::int32>(i + 1));
+    }
+
+    // 创建 GLPolyline 并上传
+    auto gl_polyline = std::make_shared<glmesh::GLPolyline>();
+    gl_polyline->upload(gpu_polyline, 0x88E4);  // 0x88E4 = GL_STATIC_DRAW
+
+    // 创建 RenderableObject
+    RenderableObject renderable;
+    renderable.visible = true;
+    renderable.drawable = gl_polyline;
+    renderable.model_matrix = glm::mat4(1.0f);
+    renderable.material.shader_prog_id = SPT_MESH;
+    renderable.material.render_mode = MeshRenderMode::Wireframe;
+    renderable.material.line_width = line_width;
+    renderable.material.base_color = color;
+    renderable.material.use_vertex_color = true;
+    return renderable;
 }

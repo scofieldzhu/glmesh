@@ -58,7 +58,7 @@ namespace
     void* qtGetGlProcAddress(const char* name)
     {
         auto* ctx = QOpenGLContext::currentContext();
-        if(!ctx) {
+        if(!ctx){
             return nullptr;
         }
         return reinterpret_cast<void*>(ctx->getProcAddress(name));
@@ -120,11 +120,11 @@ namespace
             if(uUseDiffuse){
                 vec3 N;
                 // 关键防御逻辑：如果顶点法线无效(长度接近0)，则实时生成 Flat 法线
-                if (length(vNormal) < 0.01) {
+                if(length(vNormal) < 0.01){
                     vec3 fdx = dFdx(vFragPos);
                     vec3 fdy = dFdy(vFragPos);
                     N = normalize(cross(fdx, fdy));
-                } else {
+                }else{
                     N = normalize(vNormal);
                 }
                 // L 向量：光源方向取反（指向光源）
@@ -140,7 +140,7 @@ namespace
                 vec3 halfVector = normalize(L + viewDir);      // 光线与视线的半程向量
                 
                 // 只有被光照到的面（diff > 0）才有高光
-                if (diff > 0.0) {
+                if(diff > 0.0){
                     // 32.0 是反光度(Shininess)，值越大光斑越小越锐利(像金属)，越小光斑越散(像塑料)
                     float spec = pow(max(dot(N, halfVector), 0.0), 32);
                     // 高光一般用光源颜色（这里让它稍微偏白一点，效果更好）
@@ -351,10 +351,14 @@ void MeshWidget::paintGL()
     drawRenderableObjects();
     drawTrackballGizmo();
 
-    // 绘制临时折线
-    if (temp_polyline_ && temp_polyline_->valid()) {
+    // 绘制临时对象（从 SceneManager）
+    for(const auto& [category, temp_obj] : scene_manager_.tempObjects()){
+        if(!temp_obj.visible || !temp_obj.drawable){
+            continue;
+        }
+
         auto mesh_shader = ShaderProgramManager::Inst().getProgram(SPT_MESH);
-        if (mesh_shader) {
+        if(mesh_shader){
             mesh_shader->use();
 
             // 使用与 drawRenderableObjects 相同的矩阵设置
@@ -369,8 +373,8 @@ void MeshWidget::paintGL()
             mesh_shader->setMat3("uNormalMatrix", normal_matrix);
 
             // 设置材质属性
-            mesh_shader->setVec3("uObjectColor", glm::vec3(1.0f, 0.0f, 0.0f)); // 红色
-            mesh_shader->setBool("uUseVertexColor", true); // 使用顶点颜色
+            mesh_shader->setVec3("uObjectColor", temp_obj.material.base_color);
+            mesh_shader->setBool("uUseVertexColor", temp_obj.material.use_vertex_color);
 
             // 设置光照（简化版）
             mesh_shader->setFloat("uAmbientFactor", 1.0f);
@@ -380,8 +384,15 @@ void MeshWidget::paintGL()
             // 启用点精灵以渲染圆形点
             glEnable(GL_PROGRAM_POINT_SIZE);
 
-            ::glLineWidth(3.0f);
-            temp_polyline_->drawWithPoints(10.0f); // 10像素的控制点
+            ::glLineWidth(temp_obj.material.line_width);
+
+            // 如果是折线，绘制点和线
+            auto polyline = std::dynamic_pointer_cast<glmesh::GLPolyline>(temp_obj.drawable);
+            if(polyline && polyline->valid()){
+                polyline->drawWithPoints(10.0f); // 10像素的控制点
+            }else{
+                temp_obj.drawable->draw();
+            }
 
             glDisable(GL_PROGRAM_POINT_SIZE);
         }
@@ -401,8 +412,21 @@ void MeshWidget::mousePressEvent(QMouseEvent* event)
         &hovered_gizmo_axis_,
         width(),
         height(),
-        [this](){ 
-            update(); 
+        [this](){
+            update();
+        },
+        &scene_manager_,
+        &renderer_,
+        [this](int sx, int sy) -> float {
+            makeCurrent();
+            float d = readDepthPixel(sx, sy);
+            doneCurrent();
+            return d;
+        },
+        [this](std::function<void()> fn){
+            makeCurrent();
+            fn();
+            doneCurrent();
         }
     };
     mouse_interaction_->onMousePress(event, ctx);
@@ -422,7 +446,20 @@ void MeshWidget::mouseMoveEvent(QMouseEvent* event)
         width(),
         height(),
         [this](){
-            update(); 
+            update();
+        },
+        &scene_manager_,
+        &renderer_,
+        [this](int sx, int sy) -> float {
+            makeCurrent();
+            float d = readDepthPixel(sx, sy);
+            doneCurrent();
+            return d;
+        },
+        [this](std::function<void()> fn){
+            makeCurrent();
+            fn();
+            doneCurrent();
         }
     };
     mouse_interaction_->onMouseMove(event, ctx);
@@ -441,8 +478,21 @@ void MeshWidget::wheelEvent(QWheelEvent* event)
         &hovered_gizmo_axis_,
         width(),
         height(),
-        [this](){ 
-            update(); 
+        [this](){
+            update();
+        },
+        &scene_manager_,
+        &renderer_,
+        [this](int sx, int sy) -> float {
+            makeCurrent();
+            float d = readDepthPixel(sx, sy);
+            doneCurrent();
+            return d;
+        },
+        [this](std::function<void()> fn){
+            makeCurrent();
+            fn();
+            doneCurrent();
         }
     };
     mouse_interaction_->onWheel(event, ctx);
@@ -464,6 +514,19 @@ void MeshWidget::keyPressEvent(QKeyEvent* event)
         height(),
         [this](){
             update();
+        },
+        &scene_manager_,
+        &renderer_,
+        [this](int sx, int sy) -> float {
+            makeCurrent();
+            float d = readDepthPixel(sx, sy);
+            doneCurrent();
+            return d;
+        },
+        [this](std::function<void()> fn){
+            makeCurrent();
+            fn();
+            doneCurrent();
         }
     };
     mouse_interaction_->onKeyPress(event, ctx);
@@ -485,24 +548,20 @@ void MeshWidget::drawGradientBackground()
 
 void MeshWidget::drawRenderableObjects()
 {
-    std::lock_guard lock(renderable_objects_mutex_);
-    if(renderable_objects_.empty()){
-        return;
-    }
     auto view = active_camera_.viewMatrix();
     auto model = active_camera_.modelCenterMatrix();
     auto proj = active_camera_.projectionMatrix();
     glm::mat3 normal_matrix = glm::transpose(glm::inverse(glm::mat3(model)));
 
-    for(auto& kv : renderable_objects_){
-        auto& ren_obj = kv.second;
+    // Lambda: 渲染单个对象
+    auto renderObject = [&](const RenderableObject& ren_obj){
         if(!ren_obj.visible || !ren_obj.drawable || ren_obj.material.shader_prog_id < 0){
-            continue;
+            return;
         }
         ren_obj.material.bind();
         auto shader_prog = ShaderProgramManager::Inst().getProgram(ren_obj.material.shader_prog_id);
         if(shader_prog == nullptr){
-            continue;
+            return;
         }
         shader_prog->setMat4("uModel", model);
         shader_prog->setMat4("uView", view);
@@ -511,23 +570,18 @@ void MeshWidget::drawRenderableObjects()
 
         shader_prog->setFloat("uAmbientFactor", ambient_factor_);
         shader_prog->setVec3("uAmbientLightColor", ambient_light_color_);
-        shader_prog->setBool("uUseDiffuse", diffuse_light_on_);        
+        shader_prog->setBool("uUseDiffuse", diffuse_light_on_);
         shader_prog->setVec3("uDiffuseLightColor", diffuse_light_color_);
 
         glm::mat4 inv_view    = glm::inverse(view);
-        glm::vec3 cam_back    = glm::vec3(inv_view[2]); // 指向相机后方
+        glm::vec3 cam_back    = glm::vec3(inv_view[2]);
         glm::vec3 cam_forward = -glm::vec3(inv_view[2]);
         glm::vec3 cam_up      =  glm::vec3(inv_view[1]);
         glm::vec3 cam_right   =  glm::vec3(inv_view[0]);
 
-        // 让光源从相机的 右上方 打向模型，而不是正前方
-        // 偏移系数 (0.5右, 0.5上) 可以自己微调
-        // 构造一个新的光源方向：放在相机的右上方，并照向模型
-        // 也就是顺着 相机右方(0.5) + 相机上方(0.5) + 相机前方(-1.0) 的混合方向打光
         glm::vec3 custom_light_dir = glm::normalize(0.5f * cam_right + 0.5f * cam_up - 1.0f * cam_back);
         shader_prog->setVec3("uLightDir", custom_light_dir);
 
-        // 为了算高光，我们还需要把相机当前的世界坐标传给 Shader
         glm::vec3 cam_pos = glm::vec3(inv_view[3]);
         shader_prog->setVec3("uViewPos", cam_pos);
 
@@ -552,16 +606,30 @@ void MeshWidget::drawRenderableObjects()
 
         // 检查是否是折线对象，如果是则绘制控制点
         auto* polyline = dynamic_cast<glmesh::GLPolyline*>(ren_obj.drawable.get());
-        if (polyline) {
+        if(polyline){
             glEnable(GL_PROGRAM_POINT_SIZE);
             glLineWidth(ren_obj.material.line_width);
-            polyline->drawWithPoints(10.0f); // 10像素的控制点
+            polyline->drawWithPoints(10.0f);
             glDisable(GL_PROGRAM_POINT_SIZE);
-        } else {
+        }else{
             ren_obj.drawable->draw();
+        }
+    };
+
+    // 渲染旧的 renderable_objects_（保持向后兼容）
+    {
+        std::lock_guard lock(renderable_objects_mutex_);
+        for(auto& kv : renderable_objects_){
+            renderObject(kv.second);
         }
     }
 
+    // 渲染 SceneManager 中的对象（新架构）
+    for(const auto& [uid, obj] : scene_manager_.objects()){
+        renderObject(obj);
+    }
+
+    // 恢复默认状态
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glLineWidth(1.0f);
     glPointSize(1.0f);
@@ -711,137 +779,15 @@ float MeshWidget::computeGizmoWorldRadius() const
     return pixel_radius * 2.0f / (static_cast<float>(h) * p11);
 }
 
-std::optional<glm::vec3> MeshWidget::pickWorldPoint(int screen_x, int screen_y)
+float MeshWidget::readDepthPixel(int screen_x, int screen_y) const
 {
-    if(!gl_initialized_) {
-        APP_LOG_WARN("pickWorldPoint called before GL initialization");
-        return std::nullopt;
+    if(!gl_initialized_){
+        APP_LOG_WARN("readDepthPixel called before GL initialization");
+        return 1.0f;
     }
 
-    makeCurrent();
-
-    // 使用 kernel 的 GLPicker 读取深度值
-    float depth = glmesh::GLPicker::ReadDepth(screen_x, screen_y, height());
-
-    doneCurrent();
-
-    // 检查是否拾取到有效深度
-    if(!glmesh::GLPicker::IsValidDepth(depth)) {
-        return std::nullopt;
-    }
-
-    // 使用 Renderer 进行坐标转换（考虑 modelCenterMatrix）
-    glm::mat4 model_matrix = active_camera_.modelCenterMatrix();
-    return renderer_.unprojectWithDepth(
-        static_cast<float>(screen_x),
-        static_cast<float>(screen_y),
-        depth,
-        model_matrix
-    );
+    // GL 上下文必须由调用方确保有效
+    return glmesh::GLPicker::ReadDepth(screen_x, screen_y, height());
 }
 
-void MeshWidget::updateTempPolyline(const std::vector<glm::vec3>& points)
-{
-    if(points.empty()){
-        clearTempPolyline();
-        return;
-    }
-    if(points.size() < 2){
-        // 至少需要2个点才能绘制折线
-        return;
-    }
-    makeCurrent();
-
-    // 创建折线的 GPU 数据
-    glmesh::GpuPolyline<glmesh::GpuVertexPC> gpu_polyline;
-    gpu_polyline.vertexes.reserve(points.size());
-
-    // 将点转换为 GPU 顶点（红色折线）
-    glm::vec3 line_color(1.0f, 0.0f, 0.0f); // 红色
-    for (const auto& pt : points) {
-        glmesh::GpuVertexPC vertex;
-        vertex.position = pt;
-        vertex.color = line_color;
-        gpu_polyline.vertexes.push_back(vertex);
-    }
-
-    // 创建索引（连续的线段）
-    gpu_polyline.indexes.reserve((points.size() - 1) * 2);
-    for (size_t i = 0; i < points.size() - 1; ++i) {
-        gpu_polyline.indexes.push_back(static_cast<glmesh::int32>(i));
-        gpu_polyline.indexes.push_back(static_cast<glmesh::int32>(i + 1));
-    }
-
-    // 创建或更新 GLPolyline
-    if (!temp_polyline_) {
-        temp_polyline_ = std::make_unique<glmesh::GLPolyline>();
-    }
-    temp_polyline_->upload(gpu_polyline, GL_DYNAMIC_DRAW);
-
-    doneCurrent();
-    update(); // 触发重绘
-}
-
-void MeshWidget::clearTempPolyline()
-{
-    temp_polyline_.reset();
-    update();
-}
-
-QString MeshWidget::finalizeTempPolyline(const std::vector<glm::vec3>& points)
-{
-    if (points.size() < 2) {
-        APP_LOG_WARN("Cannot finalize polyline with less than 2 points");
-        clearTempPolyline();
-        return QString();
-    }
-
-    makeCurrent();
-
-    // 创建永久折线对象
-    glmesh::GpuPolyline<glmesh::GpuVertexPC> gpu_polyline;
-    gpu_polyline.vertexes.reserve(points.size());
-
-    glm::vec3 line_color(0.0f, 1.0f, 0.0f); // 绿色（完成状态）
-    for (const auto& pt : points) {
-        glmesh::GpuVertexPC vertex;
-        vertex.position = pt;
-        vertex.color = line_color;
-        gpu_polyline.vertexes.push_back(vertex);
-    }
-
-    // 创建索引（连续的线段）
-    gpu_polyline.indexes.reserve((points.size() - 1) * 2);
-    for (size_t i = 0; i < points.size() - 1; ++i) {
-        gpu_polyline.indexes.push_back(static_cast<glmesh::int32>(i));
-        gpu_polyline.indexes.push_back(static_cast<glmesh::int32>(i + 1));
-    }
-
-    auto gl_polyline = std::make_shared<glmesh::GLPolyline>();
-    gl_polyline->upload(gpu_polyline, GL_STATIC_DRAW);
-
-    // 创建 RenderableObject
-    RenderableObject renderable;
-    renderable.uid = QUuid::createUuid().toString();
-    renderable.visible = true;
-    renderable.drawable = gl_polyline;
-    renderable.model_matrix = glm::mat4(1.0f);
-    renderable.material.shader_prog_id = SPT_MESH; // 设置正确的字段
-    renderable.material.render_mode = MeshRenderMode::Wireframe;
-    renderable.material.line_width = 3.0f;
-    renderable.material.base_color = line_color;
-    renderable.material.use_vertex_color = true;
-
-    // 添加到渲染对象列表
-    std::lock_guard<std::mutex> lock(renderable_objects_mutex_);
-    renderable_objects_[renderable.uid] = std::move(renderable);
-
-    doneCurrent();
-
-    // 清除临时折线
-    clearTempPolyline();
-
-    APP_LOG_INFO("Polyline finalized with {} points, UID: {}", points.size(), renderable.uid.toStdString());
-    return renderable.uid;
-}
 

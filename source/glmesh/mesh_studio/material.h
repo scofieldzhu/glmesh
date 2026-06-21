@@ -36,7 +36,7 @@
 struct Material
 {
     void bind() const;
-    ProgramTypeId shader_prog_id = -1;    
+    ProgramTypeId shader_prog_id = 0;  // 默认值改为 0（SPT_BACKGROUND）
     glm::vec3 base_color{ 1.0f, 1.0f, 1.0f }; // 统一的材质颜色
     float point_size = 1.0f;
     float line_width = 1.0f;

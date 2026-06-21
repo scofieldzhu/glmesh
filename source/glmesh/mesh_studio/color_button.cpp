@@ -42,7 +42,7 @@ void ColorButton::mousePressEvent(QMouseEvent *ev)
 {
     if(ev->button() & Qt::LeftButton){
         QColor color = QColorDialog::getColor(color_, nullptr, tr("Please choose color"));
-        if(color.isValid()) {
+        if(color.isValid()){
             setColor(color);
         }
     }
